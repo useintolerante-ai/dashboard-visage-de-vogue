@@ -145,7 +145,7 @@
     </main>
 
     <script>
-        // *** COLOQUE SEU URL DA WEB APP AQUI! ***
+        // *** URL DA SUA API DO GOOGLE APPS SCRIPT JÁ ATUALIZADA ***
         const API_URL = 'https://script.google.com/macros/s/AKfycbwIP-5VZn2ZGuXcGRZS_ysvhpQrIwmpRKdV8L4mk8ckbs6DNGHWsGO1RPd9LN-PO0qe/exec';
 
         function formatCurrency(value) {
@@ -194,11 +194,10 @@
         async function carregarDadosDoDashboard() {
             try {
                 const response = await fetch(API_URL);
-                if (!response.ok) { throw new Error(`Erro na rede: ${response.statusText}`); }
+                if (!response.ok) { throw new Error(`Erro na rede: ${response.status} ${response.statusText}`); }
                 const data = await response.json(); 
 
-                // *** PASSO DE DEBUG: Verifique o console do navegador! ***
-                console.log("Dados carregados com sucesso pela API:", data);
+                console.log("Dados recebidos da API:", data);
 
                 // --- KPIs ---
                 const totalFaturamento = data.faturamento.reduce((sum, item) => sum + item.Valor, 0);
@@ -238,10 +237,13 @@
                 }
 
             } catch (error) {
-                console.error("ERRO GRAVE ao carregar ou processar dados:", error);
+                console.error("ERRO ao carregar ou processar dados do dashboard:", error);
                 document.getElementById('faturamento-total').innerText = "Erro";
                 document.getElementById('saidas-total').innerText = "Erro";
                 document.getElementById('pagamentos-crediario-total').innerText = "Erro";
+                document.getElementById('faturamento-chart-message').innerText = "Falha ao carregar gráfico.";
+                document.getElementById('saidas-table-body').innerHTML = '<tr><td colspan="3" class="loading-message">Falha ao carregar saídas.</td></tr>';
+                document.getElementById('crediario-body').innerHTML = '<tr><td colspan="3" class="loading-message">Falha ao carregar crediário.</td></tr>';
             }
         }
 
