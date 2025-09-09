@@ -3,334 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Final 2025 - Visage de Vogue</title>
+    <title>Visage de Vogue - Dashboard Financeiro</title>
+    <!-- Inclui a biblioteca Chart.js para criar gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: #f0f0f0; margin: 0; padding: 20px; }
-        .container { max-width: 1400px; margin: auto; }
-        header { text-align: center; margin-bottom: 30px; }
-        header h1 { background-image: linear-gradient(45deg, #f3ec78, #af4261); background-clip: text; -webkit-background-clip: text; color: transparent; margin: 0; font-size: 2.8em; font-weight: 700; }
-        .filters { margin-bottom: 20px; text-align: center; border-bottom: 1px solid #222; padding-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px; }
-        .filters button { background-color: #1a1a1a; border: 1px solid #444; color: #ddd; padding: 12px 25px; margin: 5px; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; font-size: 1em; }
-        .filters button.active, .filters button:hover { background-color: #af4261; color: #fff; border-color: #af4261; }
-        .month-filter-container { display: flex; align-items: center; gap: 10px; }
-        .month-filter-select { background-color: #1a1a1a; border: 1px solid #444; color: #ddd; padding: 12px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1em; }
-        .view { display: none; }
-        .view.active { display: block; }
-        
-        /* AJUSTE COMPLETO DO LAYOUT DOS CARDS */
-        .grid {
-            display: grid;
-            gap: 20px;
-            /* Define 6 colunas, dando menos espaço para a última (Nº de Vendas) */
-            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 0.7fr; 
-        }
-        .card {
-            background-color: #161616;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #222;
-            display: flex; /* USA FLEXBOX PARA ALINHAMENTO INTERNO */
-            flex-direction: column;
-            justify-content: space-between; /* ALINHA TÍTULO NO TOPO E NÚMERO NA BASE */
-            min-height: 100px; /* GARANTE ALTURA MÍNIMA IGUAL PARA TODOS */
-        }
-        .card h3 {
+        body {
+            font-family: Arial, sans-serif;
             margin: 0;
-            color: #888;
-            text-transform: uppercase;
-            font-size: 0.8em;
-            font-weight: 500;
-            text-align: center;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
         }
-        .kpi-value {
-            margin: 10px 0 0 0;
-            font-weight: 600;
-            color: #fff;
+        header {
+            background-color: #5d6d7e;
+            color: white;
+            padding: 15px 20px;
             text-align: center;
-            white-space: nowrap; /* IMPEDE A QUEBRA DE LINHA */
-            overflow: hidden; /* Garante que não vai vazar */
-            text-overflow: ellipsis; /* Adiciona '...' se for absurdamente grande */
-            font-size: clamp(1.1em, 2.5vw, 1.9em); /* Ajuste fino da fonte */
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
-        /* FIM DO AJUSTE DOS CARDS */
-
-        .table-container { background-color: #161616; padding: 20px; border-radius: 12px; margin-top: 20px; border: 1px solid #222; overflow-x: auto; }
-        h2 { color: #f0f0f0; text-align: center; font-weight: 600; }
-        .item-row { background-color: #1e1e1e; margin-top: 10px; padding: 15px; border-radius: 8px; cursor: pointer; display: grid; grid-template-columns: 2fr 1fr 1fr; align-items: center; transition: background-color 0.2s ease; gap: 10px;}
-        .item-row:hover { background-color: #2a2a2a; }
-        .item-name { font-weight: 600; font-size: 1.1em; word-break: break-word; }
-        .item-total-compra { color: #a29bfe; text-align: right; }
-        .item-total-value { font-weight: bold; color: #ff7675; font-size: 1.1em; text-align: right; }
-        .details-row, .static-table { background-color: #111; padding: 20px; margin-top: -5px; border-radius: 0 0 8px 8px; }
-        .details-row { display: none; }
-        .details-row.visible { display: block; }
-        .details-row table, .static-table table { width: 100%; border-collapse: collapse;}
-        .details-row th, .details-row td, .static-table th, .static-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #2a2a2a; }
-        .details-row th, .static-table th { color: #aaa; font-weight: 500; }
-        .static-table tfoot td { font-weight: bold; color: #f0f0f0; background-color: #2a2a2a;}
-
-        /* Media Query para telas menores (celulares) */
-        @media (max-width: 768px) {
-            .grid {
-                /* Em telas menores, volta a ter 2 colunas iguais */
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            }
+        h1, h2, h3 {
+            color: #3d4f61;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        section {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .kpi-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .kpi-card {
+            border-left: 5px solid #28a745; /* Cor para faturamento */
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 250px;
+            max-width: 300px;
+            box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura */
+        }
+        .kpi-card.saida {
+            border-left-color: #dc3545; /* Cor para saída */
+        }
+        .kpi-card.pgto-cred {
+            border-left-color: #ffc107; /* Cor para pagamentos crediário */
+        }
+        .kpi-card h3 {
+            margin-top: 0;
+            font-size: 1.1em;
+            color: #555;
+        }
+        .kpi-card p {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 0;
+            color: #3d4f61;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        tbody tr:hover {
+            background-color: #e2e6ea;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #777;
+        }
+        .loading-message {
+            text-align: center;
+            padding: 10px;
+            color: #6c757d;
+        }
+        /* Estilo para a área do gráfico */
+        #faturamento-mensal-chart-section .chart-container {
+            width: 100%;
+            height: 400px; /* Altura fixa para o gráfico */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative; /* Para posicionar mensagem de erro/carregamento */
+        }
+        #faturamento-mensal-chart-section canvas {
+            max-width: 100%;
+            max-height: 100%;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header><h1>Dashboard de Gestão 2025 | Visage de Vogue</h1></header>
-        <main>
-            <div class="filters">
-                <button onclick="showView('visaoGeral')" class="active">Visão Geral</button>
-                <button onclick="showView('crediario')">Crediário</button>
-                <button onclick="showView('saidas')">Saídas</button>
+    <header>
+        <h1>Dashboard Visage de Vogue</h1>
+        <p>Visão geral financeira e de crediário</p>
+    </header>
+
+    <main>
+        <section id="kpis-section">
+            <h2>Resumo Financeiro</h2>
+            <div class="kpi-container">
+                <div class="kpi-card">
+                    <h3>Faturamento Total</h3>
+                    <p id="faturamento-total" class="loading-message">Carregando...</p>
+                </div>
+                <div class="kpi-card saida">
+                    <h3>Saídas Totais</h3>
+                    <p id="saidas-total" class="loading-message">Carregando...</p>
+                </div>
+                <div class="kpi-card pgto-cred">
+                    <h3>Pagamentos Crediário Total</h3>
+                    <p id="pagamentos-crediario-total" class="loading-message">Carregando...</p>
+                </div>
             </div>
+        </section>
+
+        <!-- Nova Seção para o Gráfico de Faturamento Mensal -->
+        <section id="faturamento-mensal-chart-section">
+            <h2>Faturamento Mensal</h2>
+            <div class="chart-container">
+                <canvas id="faturamentoMensalChart"></canvas>
+                <p id="faturamento-chart-message" class="loading-message">Carregando gráfico de faturamento...</p>
+            </div>
+        </section>
+
+        <section id="tabela-saidas-section">
+            <h2>Detalhe de Saídas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody id="saidas-table-body">
+                    <tr><td colspan="3" class="loading-message">Carregando dados das saídas...</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="tabela-crediario-section">
+            <h2>Resumo do Crediário por Cliente</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Vendas Totais</th>
+                        <th>Saldo Devedor</th>
+                    </tr>
+                </thead>
+                <tbody id="crediario-body">
+                    <tr><td colspan="3" class="loading-message">Carregando dados do crediário...</td></tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Visage de Vogue. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        // *** ÚNICA ALTERAÇÃO: URL DA API ATUALIZADA PARA A VERSÃO CORRETA ***
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwIP-5VZn2ZGuXcGRZS_ysvhpQrIwmpRKdV8L4mk8ckbs6DNGHWsGO1RPd9LN-PO0qe/exec';
+
+        // Função para formatar números como moeda
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        }
+
+        // Função para processar os dados diários de faturamento para um formato mensal
+        function processMonthlyFaturamento(faturamentoData) {
+            const monthlyData = {};
+            const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+
+            faturamentoData.forEach(item => {
+                const date = new Date(item.Data + 'T00:00:00'); 
+                const year = date.getFullYear();
+                const monthIndex = date.getMonth(); 
+                const monthYearKey = `${monthNames[monthIndex]}/${year}`; 
+
+                if (!monthlyData[monthYearKey]) {
+                    monthlyData[monthYearKey] = 0;
+                }
+                monthlyData[monthYearKey] += item.Valor;
+            });
+
+            const sortedKeys = Object.keys(monthlyData).sort((a, b) => {
+                const [monthA, yearA] = a.split('/');
+                const [monthB, yearB] = b.split('/');
+                const monthIndexA = monthNames.indexOf(monthA);
+                const monthIndexB = monthNames.indexOf(monthB);
+
+                if (parseInt(yearA) !== parseInt(yearB)) { // Garante que compara os anos como números
+                    return parseInt(yearA) - parseInt(yearB);
+                }
+                return monthIndexA - monthIndexB;
+            });
             
-            <div id="visaoGeralView" class="view active">
-                <div class="month-filter-container" style="justify-content: center; margin-bottom: 20px;">
-                    <select id="geral-month-filter" class="month-filter-select" onchange="updateDashboard(this.value)"></select>
-                </div>
-                <div class="grid">
-                    <div class="card"><h3>💰 Faturamento</h3><p class="kpi-value" id="kpi-faturamento">R$ 0,00</p></div>
-                    <div class="card"><h3>💸 Saídas</h3><p class="kpi-value" id="kpi-saidas-geral">R$ 0,00</p></div>
-                    <div class="card"><h3>📈 Lucro Bruto</h3><p class="kpi-value" id="kpi-lucro">R$ 0,00</p></div>
-                    <div class="card"><h3>📥 Recebido (Cred.)</h3><p class="kpi-value" id="kpi-valor-recebido">R$ 0,00</p></div>
-                    <div class="card"><h3>💳 A Receber (Cred.)</h3><p class="kpi-value" id="kpi-a-receber">R$ 0,00</p></div>
-                    <div class="card"><h3>📊 Nº de Vendas</h3><p class="kpi-value" id="kpi-num-vendas">0</p></div>
-                </div>
-                <div class="chart-container" id="chart-container-geral" style="margin-top: 20px; height: 40vh;"><canvas id="mainChart"></canvas></div>
-            </div>
+            const labels = sortedKeys;
+            const data = sortedKeys.map(key => monthlyData[key]);
 
-            <div id="crediarioView" class="view">
-                <div class="table-container">
-                    <h2>Análise de Clientes <span style="font-size: 0.7em; color: #888;">(Clique para ver detalhes)</span></h2>
-                    <div id="crediarioContainer"></div>
-                </div>
-            </div>
+            return { labels, data };
+        }
 
-            <div id="saidasView" class="view">
-                <div class="month-filter-container" style="justify-content: center; margin-bottom: 20px;">
-                    <select id="saidas-month-filter" class="month-filter-select" onchange="renderSaidasView(this.value)"></select>
-                </div>
-                <div class="table-container">
-                    <h2>Detalhamento de Saídas por Mês</h2>
-                    <div id="saidasContainer" class="static-table"></div>
-                </div>
-            </div>
-        </main>
-    </div>
+        // Função para renderizar o gráfico de faturamento mensal
+        function renderMonthlyFaturamentoChart(labels, data) {
+            const ctx = document.getElementById('faturamentoMensalChart').getContext('2d');
+            document.getElementById('faturamento-chart-message').style.display = 'none'; 
 
-<script>
-    // =======================================================================
-    // CONFIGURAÇÕES DE CONEXÃO - NÃO ALTERAR A MENOS QUE SEJA NECESSÁRIO
-    // =======================================================================
-    const GOOGLE_SHEET_API_KEY = 'AIzaSyCPfPLSZ1jCEx1_ABkLj6iUvQGxeHC81I8';
-    const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwIP-5VZn2ZGuXcGRZS_ysvhpQrIwmpRKdV8L4mk8ckbs6DNGHWsGO1RPd9LN-PO0qe/exec';
-    // =======================================================================
+            new Chart(ctx, {
+                type: 'bar', 
+                data: {
+                    labels: labels, 
+                    datasets: [{
+                        label: 'Faturamento Mensal (R$)',
+                        data: data, 
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)', 
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, 
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Valor (R$)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Mês/Ano'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
-    // =======================================================================
-    // DADOS MOCKADOS PARA O DASHBOARD (VÃO SER SUBSTITUÍDOS PELOS DADOS DA PLANILHA)
-    // =======================================================================
-    let dadosVendas2025 = [];
-    let dadosSaidas2025 = [];
-    let dadosPagamentosCrediario = [];
-    let dadosCrediario = [];
-    // =======================================================================
+        // Função principal para carregar e exibir os dados
+        async function carregarDadosDoDashboard() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(`Erro na rede: ${response.status} ${response.statusText}`);
+                }
+                const data = await response.json(); 
 
-    let mainChart;
-    const formatCurrency = (value) => value != null ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00';
-    const formatDate = (dateString) => {
-        if (!dateString) return "N/A";
-        const [year, month, day] = dateString.split('-');
-        return `${day}/${month}/${year.slice(-2)}`;
-    };
+                console.log("Dados carregados com sucesso:", data);
 
-    async function loadDataFromGoogleSheet() {
-        try {
-            // A API Key é necessária para acesso à API do Google Sheets caso estivéssemos lendo a planilha diretamente daqui.
-            // No entanto, como estamos usando o Apps Script como intermediário, ele já tem permissão.
-            // A chave é mantida aqui para fins de demonstração ou para uma futura conexão direta.
-            
-            const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL);
-            if (!response.ok) {
-                throw new Error(`Erro ao carregar dados: ${response.statusText}`);
+                // --- KPIs ---
+                const totalFaturamento = data.faturamento.reduce((sum, item) => sum + item.Valor, 0);
+                document.getElementById('faturamento-total').innerText = formatCurrency(totalFaturamento);
+
+                const totalSaidas = data.saidas.reduce((sum, item) => sum + item.Valor, 0);
+                document.getElementById('saidas-total').innerText = formatCurrency(totalSaidas);
+
+                const totalPagamentosCrediario = data.pagamentosCrediario.reduce((sum, item) => sum + item.Valor, 0);
+                document.getElementById('pagamentos-crediario-total').innerText = formatCurrency(totalPagamentosCrediario);
+
+                // --- Gráfico de Faturamento Mensal ---
+                const { labels: monthlyLabels, data: monthlyValues } = processMonthlyFaturamento(data.faturamento);
+                if (monthlyLabels.length > 0) {
+                    renderMonthlyFaturamentoChart(monthlyLabels, monthlyValues);
+                } else {
+                    document.getElementById('faturamento-chart-message').innerText = 'Nenhum dado de faturamento mensal disponível para o gráfico.';
+                }
+
+                // --- Tabela de Saídas ---
+                const saidasTableBody = document.getElementById('saidas-table-body');
+                saidasTableBody.innerHTML = ''; 
+                if (data.saidas.length === 0) {
+                    saidasTableBody.innerHTML = '<tr><td colspan="3" class="loading-message">Nenhum dado de saída encontrado.</td></tr>';
+                } else {
+                    data.saidas.sort((a, b) => b.Data.localeCompare(a.Data)); 
+                    data.saidas.forEach(item => {
+                        const row = `
+                            <tr>
+                                <td>${item.Data}</td>
+                                <td>${item.Descricao}</td>
+                                <td>${formatCurrency(item.Valor)}</td>
+                            </tr>
+                        `;
+                        saidasTableBody.insertAdjacentHTML('beforeend', row);
+                    });
+                }
+
+                // --- Tabela de Crediário por Cliente ---
+                const crediarioBody = document.getElementById('crediario-body');
+                crediarioBody.innerHTML = ''; 
+                if (data.crediario.length === 0) {
+                    crediarioBody.innerHTML = '<tr><td colspan="3" class="loading-message">Nenhum dado de crediário encontrado.</td></tr>';
+                } else {
+                    data.crediario.sort((a, b) => b.SaldoDevedor - a.SaldoDevedor);
+                    data.crediario.forEach(cliente => {
+                        const row = `
+                            <tr>
+                                <td>${cliente.Cliente}</td>
+                                <td>${formatCurrency(cliente.VendasTotais)}</td>
+                                <td>${formatCurrency(cliente.SaldoDevedor)}</td>
+                            </tr>
+                        `;
+                        crediarioBody.insertAdjacentHTML('beforeend', row);
+                    });
+                }
+
+            } catch (error) {
+                console.error("Erro ao carregar dados da API:", error);
+                const errorText = "Erro ao carregar";
+                document.getElementById('faturamento-total').innerText = errorText;
+                document.getElementById('saidas-total').innerText = errorText;
+                document.getElementById('pagamentos-crediario-total').innerText = errorText;
+                document.getElementById('faturamento-chart-message').innerText = errorText + " o gráfico."; 
+                document.getElementById('saidas-table-body').innerHTML = `<tr><td colspan="3" class="loading-message">${errorText}</td></tr>`;
+                document.getElementById('crediario-body').innerHTML = `<tr><td colspan="3" class="loading-message">${errorText}</td></tr>`;
             }
-            const data = await response.json();
-
-            // Atualiza os dados mockados com os dados reais da planilha
-            dadosVendas2025 = data.vendas || [];
-            dadosSaidas2025 = data.saidas || [];
-            dadosPagamentosCrediario = data.pagamentosCrediario || [];
-            dadosCrediario = data.crediario || [];
-
-            // Calcula o total a receber (diferente do valor recebido, que é pagamentosCrediario)
-            const totalAReceber = dadosCrediario.reduce((acc, curr) => acc + curr.SaldoDevedor, 0);
-            document.getElementById('kpi-a-receber').innerText = formatCurrency(totalAReceber);
-
-            populateMonthFilters();
-            updateDashboard('todos');
-            renderCrediarioView();
-            renderSaidasView('todos');
-            showView('visaoGeral');
-
-        } catch (error) {
-            console.error("Erro ao carregar dados da planilha:", error);
-            alert("Não foi possível carregar os dados da planilha. Verifique a URL do Apps Script e as permissões.");
-            // Usa dados mockados se a conexão falhar
-            alert("Carregando dados de exemplo para demonstração, pois a conexão falhou. Verifique as permissões do Google Apps Script.");
-            // Dados mockados originais, caso a conexão com o Apps Script falhe:
-            dadosVendas2025 = [/*...dados mockados do seu código original...*/];
-            dadosSaidas2025 = [/*...dados mockados do seu código original...*/];
-            dadosPagamentosCrediario = [/*...dados mockados do seu código original...*/];
-            dadosCrediario = [/*...dados mockados do seu código original...*/];
-            // Recarrega o dashboard com dados de exemplo
-            const totalAReceber = dadosCrediario.reduce((acc, curr) => acc + curr.SaldoDevedor, 0);
-            document.getElementById('kpi-a-receber').innerText = formatCurrency(totalAReceber);
-            populateMonthFilters();
-            updateDashboard('todos');
-            renderCrediarioView();
-            renderSaidasView('todos');
-            showView('visaoGeral');
-        }
-    }
-    
-    function populateMonthFilters() {
-        // Gera a lista de meses com base nos dados reais (ou mockados se a conexão falhar)
-        const allDates = [...dadosVendas2025.map(d => d.Data), ...dadosSaidas2025.map(d => d.Data), ...dadosPagamentosCrediario.map(d => d.Data)];
-        const months = [...new Set(allDates.map(d => d.substring(0, 7)))].sort();
-        
-        const filters = document.querySelectorAll('.month-filter-select');
-        filters.forEach(filter => {
-            const currentVal = filter.value;
-            filter.innerHTML = '<option value="todos">Ano Inteiro (2025)</option>';
-            months.forEach(month => {
-                const [year, monthNum] = month.split('-');
-                const monthName = new Date(year, monthNum - 1, 1).toLocaleString('pt-BR', { month: 'long' });
-                filter.innerHTML += `<option value="${month}">${monthName.charAt(0).toUpperCase() + monthName.slice(1)}</option>`;
-            });
-            filter.value = currentVal || 'todos';
-        });
-    }
-
-    function updateDashboard(selectedMonth) {
-        let filteredVendas = dadosVendas2025;
-        if (selectedMonth && selectedMonth !== 'todos') {
-            filteredVendas = dadosVendas2025.filter(d => d.Data.startsWith(selectedMonth));
         }
 
-        const faturamento = filteredVendas.reduce((acc, curr) => acc + curr.Valor, 0);
-        const saidas = dadosSaidas2025.filter(s => selectedMonth === 'todos' || s.Data.startsWith(selectedMonth)).reduce((acc, curr) => acc + curr.Valor, 0);
-        const recebido = dadosPagamentosCrediario.filter(p => selectedMonth === 'todos' || p.Data.startsWith(selectedMonth)).reduce((acc, curr) => acc + curr.Valor, 0);
-        
-        const lucro = faturamento - saidas;
-        const numVendas = filteredVendas.length;
-        
-        document.getElementById('kpi-faturamento').innerText = formatCurrency(faturamento);
-        document.getElementById('kpi-saidas-geral').innerText = formatCurrency(saidas);
-        document.getElementById('kpi-lucro').innerText = formatCurrency(lucro);
-        document.getElementById('kpi-lucro').style.color = lucro >= 0 ? '#20c997' : '#ff7675';
-        document.getElementById('kpi-valor-recebido').innerText = formatCurrency(recebido);
-        document.getElementById('kpi-num-vendas').innerText = numVendas;
-        
-        let graphData = {};
-        if (selectedMonth === 'todos') {
-            dadosVendas2025.forEach(venda => {
-                const key = venda.Data.substring(0, 7);
-                if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
-                graphData[key].Faturamento += venda.Valor;
-            });
-            dadosSaidas2025.forEach(saida => {
-                const key = saida.Data.substring(0, 7);
-                if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
-                graphData[key].Saidas += saida.Valor;
-            });
-        } else {
-             filteredVendas.forEach(venda => {
-                const key = venda.Data;
-                if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
-                graphData[key].Faturamento += venda.Valor;
-            });
-            dadosSaidas2025.filter(s => s.Data.startsWith(selectedMonth)).forEach(saida => {
-                 const key = saida.Data;
-                if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
-                graphData[key].Saidas += saida.Valor;
-            });
-        }
-        
-        const labels = Object.keys(graphData).sort();
-        const faturamentoData = labels.map(key => graphData[key].Faturamento || 0);
-        const saidasData = labels.map(key => graphData[key].Saidas || 0);
-
-        if (mainChart) mainChart.destroy();
-        const chartContainer = document.getElementById('chart-container-geral');
-        chartContainer.innerHTML = '<canvas id="mainChart"></canvas>';
-        mainChart = new Chart(document.getElementById('mainChart'), { type: 'bar', data: { labels: labels.map(l => selectedMonth === 'todos' ? new Date(l+'-02').toLocaleString('default',{month:'short',year:'2-digit'}) : formatDate(l)), datasets: [ { label: 'Faturamento', data: faturamentoData, backgroundColor: '#af4261' }, { label: 'Saídas', data: saidasData, backgroundColor: '#6c757d' } ] }, options: { responsive: true, maintainAspectRatio: false, color: '#f0f0f0', scales: { y: { ticks: { color: '#aaa' }, grid: { color: '#222' } }, x: { ticks: { color: '#aaa' }, grid: { display: false } } } }});
-    }
-    
-    function renderSaidasView(selectedMonth) {
-        let filteredSaidas = dadosSaidas2025;
-        if (selectedMonth && selectedMonth !== 'todos') {
-            filteredSaidas = dadosSaidas2025.filter(s => s.Data.startsWith(selectedMonth));
-        }
-        const totalSaidasMes = filteredSaidas.reduce((sum, item) => sum + item.Valor, 0);
-
-        const container = document.getElementById('saidasContainer');
-        let tableHTML = `<table><thead><tr><th>Data</th><th>Descrição da Saída</th><th style="text-align:right;">Valor</th></tr></thead><tbody>`;
-        if (filteredSaidas.length > 0) {
-            filteredSaidas.sort((a,b) => new Date(b.Data) - new Date(a.Data)).forEach(saida => {
-                tableHTML += `<tr><td>${formatDate(saida.Data)}</td><td>${saida.Descricao}</td><td style="text-align:right;">${formatCurrency(saida.Valor)}</td></tr>`;
-            });
-        } else {
-            tableHTML += `<tr><td colspan="3" style="text-align:center;">Nenhuma saída encontrada.</td></tr>`;
-        }
-        tableHTML += `</tbody><tfoot><tr><td colspan="2" style="text-align:right;">Total do Mês:</td><td style="text-align:right;">${formatCurrency(totalSaidasMes)}</td></tr></tfoot></table>`;
-        container.innerHTML = tableHTML;
-    }
-
-    function renderCrediarioView() {
-        const container = document.getElementById('crediarioContainer');
-        container.innerHTML = '';
-        const sortedData = dadosCrediario.filter(d => d.SaldoDevedor > 0).sort((a, b) => b.SaldoDevedor - a.SaldoDevedor);
-        sortedData.forEach((item, index) => {
-            const itemId = `crediario-details-${index}`;
-            const itemRow = document.createElement('div');
-            itemRow.className = 'item-row';
-            itemRow.setAttribute('onclick', `toggleDetails('${itemId}')`);
-            itemRow.innerHTML = `<span class="item-name">${item.Cliente}</span><span class="item-total-compra">Total: ${formatCurrency(item.VendasTotais)}</span><span class="item-total-value">Devido: ${formatCurrency(item.SaldoDevedor)}</span>`;
-            
-            const detailsRow = document.createElement('div');
-            detailsRow.className = 'details-row';
-            detailsRow.id = itemId;
-            let detailsTable = `<table><thead><tr><th>Data da Compra</th><th style="text-align:right;">Valor</th></tr></thead><tbody>`;
-            if (item.Compras && item.Compras.length > 0) {
-                item.Compras.sort((a, b) => new Date(b.Data) - new Date(a.Data)).forEach(detail => {
-                    detailsTable += `<tr><td>${formatDate(detail.Data)}</td><td style="text-align:right;">${formatCurrency(detail.Valor)}</td></tr>`;
-                });
-            } else {
-                detailsTable += `<tr><td colspan="2" style="text-align:center;">Nenhum detalhe de compra.</td></tr>`;
-            }
-            detailsTable += '</tbody></table>';
-            detailsRow.innerHTML = detailsTable;
-            
-            container.appendChild(itemRow);
-            container.appendChild(detailsRow);
-        });
-    }
-
-    function toggleDetails(elementId) { document.getElementById(elementId).classList.toggle('visible'); }
-    function showView(viewName) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById(viewName + 'View').classList.add('active');
-        document.querySelectorAll('.filters button').forEach(btn => btn.classList.remove('active'));
-        document.querySelector(`.filters button[onclick="showView('${viewName}')"]`).classList.add('active');
-    }
-
-    // Inicializa o dashboard carregando os dados do Google Apps Script
-    window.onload = loadDataFromGoogleSheet;
-</script>
+        document.addEventListener('DOMContentLoaded', carregarDadosDoDashboard);
+    </script>
 </body>
 </html>
