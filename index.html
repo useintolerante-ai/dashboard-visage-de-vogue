@@ -128,12 +128,12 @@
     // =======================================================================
     // CONFIGURAÇÕES DE CONEXÃO - NÃO ALTERAR A MENOS QUE SEJA NECESSÁRIO
     // =======================================================================
-    const GOOGLE_SHEET_API_KEY = 'AIzaSyCPfPLSZ1jCEx1_ABkLj6iUvQGxeHC81I8';
+    const GOOGLE_SHEET_API_KEY = 'AIzaSyCPfPLSZ1jCEx1_ABkLj6iUvQGxeHC81I8'; // Não utilizado com Apps Script
     const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwIP-5VZn2ZGuXcGRZS_ysvhpQrIwmpRKdV8L4mk8ckbs6DNGHWsGO1RPd9LN-PO0qe/exec';
     // =======================================================================
 
     // =======================================================================
-    // DADOS MOCKADOS PARA O DASHBOARD (VÃO SER SUBSTITUÍDOS PELOS DADOS DA PLANILHA)
+    // DADOS INICIAIS (VÃO SER SUBSTITUÍDOS PELOS DADOS REAIS DA PLANILHA)
     // =======================================================================
     let dadosVendas2025 = [];
     let dadosSaidas2025 = [];
@@ -151,24 +151,24 @@
 
     async function loadDataFromGoogleSheet() {
         try {
-            // A API Key é necessária para acesso à API do Google Sheets caso estivéssemos lendo a planilha diretamente daqui.
-            // No entanto, como estamos usando o Apps Script como intermediário, ele já tem permissão.
-            // A chave é mantida aqui para fins de demonstração ou para uma futura conexão direta.
-            
             const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL);
             if (!response.ok) {
                 throw new Error(`Erro ao carregar dados: ${response.statusText}`);
             }
             const data = await response.json();
 
-            // Atualiza os dados mockados com os dados reais da planilha
-            dadosVendas2025 = data.vendas || [];
+            // =========================================================================
+            // *** IMPORTANTE: A CORREÇÃO DE SEGURANÇA JÁ APLICADA AQUI E RENOMEADA 'faturamento' para 'vendas' no Apps Script ***
+            // Agora o Apps Script envia 'vendas', e o HTML está preparado para receber 'vendas'
+            // Garante que os arrays existam, mesmo que vazios
+            dadosVendas2025 = data.vendas || []; // Recebe dados de 'vendas'
             dadosSaidas2025 = data.saidas || [];
             dadosPagamentosCrediario = data.pagamentosCrediario || [];
             dadosCrediario = data.crediario || [];
+            // =========================================================================
 
             // Calcula o total a receber (diferente do valor recebido, que é pagamentosCrediario)
-            const totalAReceber = dadosCrediario.reduce((acc, curr) => acc + curr.SaldoDevedor, 0);
+            const totalAReceber = dadosCrediario.reduce((acc, curr) => acc + (curr.SaldoDevedor || 0), 0);
             document.getElementById('kpi-a-receber').innerText = formatCurrency(totalAReceber);
 
             populateMonthFilters();
@@ -180,26 +180,25 @@
         } catch (error) {
             console.error("Erro ao carregar dados da planilha:", error);
             alert("Não foi possível carregar os dados da planilha. Verifique a URL do Apps Script e as permissões.");
-            // Usa dados mockados se a conexão falhar
-            alert("Carregando dados de exemplo para demonstração, pois a conexão falhou. Verifique as permissões do Google Apps Script.");
-            // Dados mockados originais, caso a conexão com o Apps Script falhe:
-            dadosVendas2025 = [/*...dados mockados do seu código original...*/];
-            dadosSaidas2025 = [/*...dados mockados do seu código original...*/];
-            dadosPagamentosCrediario = [/*...dados mockados do seu código original...*/];
-            dadosCrediario = [/*...dados mockados do seu código original...*/];
-            // Recarrega o dashboard com dados de exemplo
-            const totalAReceber = dadosCrediario.reduce((acc, curr) => acc + curr.SaldoDevedor, 0);
-            document.getElementById('kpi-a-receber').innerText = formatCurrency(totalAReceber);
-            populateMonthFilters();
-            updateDashboard('todos');
-            renderCrediarioView();
-            renderSaidasView('todos');
-            showView('visaoGeral');
+            // Não usaremos dados mockados aqui, o objetivo é que os dados reais funcionem.
+            // Se a conexão falhar, as KPIs ficarão com 'R$ 0,00' e as tabelas vazias, como esperado.
+            document.getElementById('kpi-faturamento').innerText = formatCurrency(0);
+            document.getElementById('kpi-saidas-geral').innerText = formatCurrency(0);
+            document.getElementById('kpi-lucro').innerText = formatCurrency(0);
+            document.getElementById('kpi-valor-recebido').innerText = formatCurrency(0);
+            document.getElementById('kpi-a-receber').innerText = formatCurrency(0);
+            document.getElementById('kpi-num-vendas').innerText = '0';
+
+            // Garante que o dashboard tente inicializar mesmo com erro na API para exibir estado de erro
+            populateMonthFilters(); // Popula os filtros de mês
+            updateDashboard('todos'); // Tenta atualizar o dashboard com dados vazios
+            renderCrediarioView(); // Renderiza a view de crediário (mostrará "Nenhum dado...")
+            renderSaidasView('todos'); // Renderiza a view de saídas (mostrará "Nenhuma saída...")
+            showView('visaoGeral'); // Mostra a view inicial
         }
     }
     
     function populateMonthFilters() {
-        // Gera a lista de meses com base nos dados reais (ou mockados se a conexão falhar)
         const allDates = [...dadosVendas2025.map(d => d.Data), ...dadosSaidas2025.map(d => d.Data), ...dadosPagamentosCrediario.map(d => d.Data)];
         const months = [...new Set(allDates.map(d => d.substring(0, 7)))].sort();
         
@@ -222,9 +221,9 @@
             filteredVendas = dadosVendas2025.filter(d => d.Data.startsWith(selectedMonth));
         }
 
-        const faturamento = filteredVendas.reduce((acc, curr) => acc + curr.Valor, 0);
-        const saidas = dadosSaidas2025.filter(s => selectedMonth === 'todos' || s.Data.startsWith(selectedMonth)).reduce((acc, curr) => acc + curr.Valor, 0);
-        const recebido = dadosPagamentosCrediario.filter(p => selectedMonth === 'todos' || p.Data.startsWith(selectedMonth)).reduce((acc, curr) => acc + curr.Valor, 0);
+        const faturamento = filteredVendas.reduce((acc, curr) => acc + (curr.Valor || 0), 0); // Adicionado (curr.Valor || 0) para segurança
+        const saidas = dadosSaidas2025.filter(s => selectedMonth === 'todos' || s.Data.startsWith(selectedMonth)).reduce((acc, curr) => acc + (curr.Valor || 0), 0); // Adicionado (curr.Valor || 0)
+        const recebido = dadosPagamentosCrediario.filter(p => selectedMonth === 'todos' || p.Data.startsWith(selectedMonth)).reduce((acc, curr) => acc + (curr.Valor || 0), 0); // Adicionado (curr.Valor || 0)
         
         const lucro = faturamento - saidas;
         const numVendas = filteredVendas.length;
@@ -241,23 +240,23 @@
             dadosVendas2025.forEach(venda => {
                 const key = venda.Data.substring(0, 7);
                 if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
-                graphData[key].Faturamento += venda.Valor;
+                graphData[key].Faturamento += (venda.Valor || 0);
             });
             dadosSaidas2025.forEach(saida => {
                 const key = saida.Data.substring(0, 7);
                 if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
-                graphData[key].Saidas += saida.Valor;
+                graphData[key].Saidas += (saida.Valor || 0);
             });
         } else {
              filteredVendas.forEach(venda => {
                 const key = venda.Data;
                 if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
-                graphData[key].Faturamento += venda.Valor;
+                graphData[key].Faturamento += (venda.Valor || 0);
             });
             dadosSaidas2025.filter(s => s.Data.startsWith(selectedMonth)).forEach(saida => {
                  const key = saida.Data;
                 if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
-                graphData[key].Saidas += saida.Valor;
+                graphData[key].Saidas += (saida.Valor || 0);
             });
         }
         
@@ -276,7 +275,7 @@
         if (selectedMonth && selectedMonth !== 'todos') {
             filteredSaidas = dadosSaidas2025.filter(s => s.Data.startsWith(selectedMonth));
         }
-        const totalSaidasMes = filteredSaidas.reduce((sum, item) => sum + item.Valor, 0);
+        const totalSaidasMes = filteredSaidas.reduce((sum, item) => sum + (item.Valor || 0), 0); // Adicionado (item.Valor || 0)
 
         const container = document.getElementById('saidasContainer');
         let tableHTML = `<table><thead><tr><th>Data</th><th>Descrição da Saída</th><th style="text-align:right;">Valor</th></tr></thead><tbody>`;
@@ -294,7 +293,13 @@
     function renderCrediarioView() {
         const container = document.getElementById('crediarioContainer');
         container.innerHTML = '';
-        const sortedData = dadosCrediario.filter(d => d.SaldoDevedor > 0).sort((a, b) => b.SaldoDevedor - a.SaldoDevedor);
+        const sortedData = dadosCrediario.filter(d => d.SaldoDevedor > 0).sort((a, b) => (b.SaldoDevedor || 0) - (a.SaldoDevedor || 0)); // Adicionado ( || 0) para segurança
+        
+        // **OBSERVAÇÃO:** O script do Google Apps Script atual não fornece o array 'Compras' dentro de cada cliente.
+        // Portanto, a seção de detalhes de compra no frontend estará vazia ou não funcionará como esperado.
+        // Para que 'Compras' funcione, seria necessário buscar essas informações na planilha e adicioná-las
+        // ao objeto 'crediario' retornado pelo Apps Script. Por ora, apenas o resumo do cliente será exibido.
+
         sortedData.forEach((item, index) => {
             const itemId = `crediario-details-${index}`;
             const itemRow = document.createElement('div');
@@ -306,7 +311,7 @@
             detailsRow.className = 'details-row';
             detailsRow.id = itemId;
             let detailsTable = `<table><thead><tr><th>Data da Compra</th><th style="text-align:right;">Valor</th></tr></thead><tbody>`;
-            if (item.Compras && item.Compras.length > 0) {
+            if (item.Compras && item.Compras.length > 0) { // Esta condição dependerá do Apps Script
                 item.Compras.sort((a, b) => new Date(b.Data) - new Date(a.Data)).forEach(detail => {
                     detailsTable += `<tr><td>${formatDate(detail.Data)}</td><td style="text-align:right;">${formatCurrency(detail.Valor)}</td></tr>`;
                 });
