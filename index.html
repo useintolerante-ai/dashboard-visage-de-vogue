@@ -36,16 +36,24 @@
             word-wrap: break-word; /* Garante que palavras longas quebram */
         }
         .message-box {
-            background-color: #ffe0b2; /* Laranja claro para avisos */
-            border: 1px solid #ff9800; /* Laranja para borda */
+            background-color: #e0f7fa; /* Azul claro para mensagens */
+            border: 1px solid #00bcd4; /* Azul para borda */
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            color: #333;
+        }
+        .success-box {
+            background-color: #e8f5e9; /* Verde claro para sucesso */
+            border: 1px solid #4CAF50; /* Verde para borda */
             padding: 10px;
             margin-bottom: 20px;
             border-radius: 5px;
             color: #333;
         }
         .error-box {
-            background-color: #ffcdd2; /* Vermelho claro para erros */
-            border: 1px solid #f44336; /* Vermelho para borda */
+            background-color: #ffe0b2; /* Laranja claro para erros */
+            border: 1px solid #ff9800; /* Laranja para borda */
             padding: 10px;
             margin-bottom: 20px;
             border-radius: 5px;
@@ -73,8 +81,8 @@
     <!-- Exemplo: <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
 
     <script>
-        // ESTA É A URL CORRETA E ATUALIZADA DO SEU APPS SCRIPT!
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyB5WZrkAsjZiL0BkmS11-VsXRXvNnu3gExIkPp3vae-Y0a69VHhrP5F-E-SXVqQu2A/exec';
+        // *** COLOQUE AQUI A SUA URL ATUALIZADA DO APPS SCRIPT OBTIDA NO PASSO 1 ***
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'COLE_AQUI_SUA_NOVA_E_CORRETA_URL_DO_APPS_SCRIPT'; 
 
         // Dados de exemplo para serem usados se a conexão real falhar
         const EXAMPLE_DATA = {
@@ -105,13 +113,18 @@
             const rawDataDisplay = document.getElementById('rawData');
             
             statusMessage.textContent = 'Carregando dados da sua planilha...';
-            statusMessage.classList.remove('error-box');
+            statusMessage.classList.remove('error-box', 'success-box');
             statusMessage.classList.add('message-box');
 
             try {
+                // Verifica se a URL foi atualizada. Se não, avisa.
+                if (GOOGLE_APPS_SCRIPT_WEB_APP_URL === 'COLE_AQUI_SUA_NOVA_E_CORRETA_URL_DO_APPS_SCRIPT') {
+                    throw new Error("A URL do Apps Script não foi atualizada no index.html. Por favor, siga o Passo 1!");
+                }
+
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`Erro HTTP! status: ${response.status}`);
                 }
                 const data = await response.json();
                 
@@ -123,18 +136,23 @@
                 // Dados carregados com sucesso!
                 rawDataDisplay.textContent = JSON.stringify(data, null, 2);
                 statusMessage.textContent = 'Dados carregados com sucesso! 🎉';
-                statusMessage.classList.remove('error-box');
-                statusMessage.classList.add('message-box'); // Pode mudar para uma classe de sucesso se tiver
+                statusMessage.classList.remove('message-box', 'error-box');
+                statusMessage.classList.add('success-box');
                 
-                // Aqui você vai processar 'data' para exibir no seu dashboard
-                // Por exemplo, chamar funções que renderizam gráficos e tabelas
-                // processAndDisplayDashboard(data); 
+                // --- SEU CÓDIGO DE PROCESSAMENTO E EXIBIÇÃO DE DADOS VAI AQUI ---
+                // Você pode chamar funções que renderizam gráficos e tabelas com 'data'
+                // Exemplo: processAndDisplayDashboard(data); 
+
+                // A parte do erro `TypeError: Cannot read properties of undefined (reading 'substring')`
+                // que você viu anteriormente acontece porque o seu código está tentando processar 
+                // dados que não foram carregados. Assim que 'data' tiver o conteúdo correto,
+                // essas funções devem parar de dar erro.
 
             } catch (error) {
                 console.error("Falha ao carregar dados do Apps Script:", error);
                 rawDataDisplay.textContent = `Falha ao carregar dados do Apps Script. Erro: ${error.message}\n\nCarregando dados de exemplo para demonstração.`;
-                statusMessage.textContent = 'Falha ao carregar dados da planilha. Verifique a URL do Apps Script e as permissões. ��';
-                statusMessage.classList.remove('message-box');
+                statusMessage.textContent = 'Falha ao carregar dados da planilha. Verifique a URL do Apps Script e as permissões. 🙁';
+                statusMessage.classList.remove('message-box', 'success-box');
                 statusMessage.classList.add('error-box');
             }
         }
@@ -143,11 +161,11 @@
         document.addEventListener('DOMContentLoaded', loadData);
 
         // --- Funções de exemplo para processamento de dados (coloque seu código aqui) ---
+        // Você pode ter suas próprias funções aqui que utilizam os 'data' carregados.
+        // Por exemplo, uma função para popular filtros ou criar gráficos.
         // function processAndDisplayDashboard(data) {
-        //     // Exemplo: Mostrar o total de vendas
-        //     const totalVendas = data.vendas.reduce((sum, item) => sum + (item.faturamento || 0), 0);
-        //     console.log("Total de Vendas:", totalVendas);
-        //     // Você pode adicionar mais elementos HTML e manipular o DOM aqui
+        //     // Seu código aqui para usar 'data.vendas', 'data.saidas', etc.
+        //     // e atualizar o HTML do dashboard.
         // }
 
     </script>
