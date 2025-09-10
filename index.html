@@ -129,8 +129,8 @@
     // CONFIGURAÇÕES DE CONEXÃO - NÃO ALTERAR A MENOS QUE SEJA NECESSÁRIO
     // =======================================================================
     const GOOGLE_SHEET_API_KEY = 'AIzaSyCPfPLSZ1jCEx1_ABkLj6iUvQGxeHC81I8'; // Não utilizado com Apps Script
-    // *** URL DA SUA API DO GOOGLE APPS SCRIPT ATUALIZADA E CONFIRMADA ***
-    const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwIP-5VZn2ZGuXcGRZS_ysvhpQrIwmpRKdV8L4mk8ckbs6DNGHWsGO1RPd9LN-PO0qe/exec';
+    // *** COLE A SUA URL AQUI - A QUE VOCÊ COPIOU DO APPS SCRIPT NO PASSO ANTERIOR ***
+    const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'SUA_URL_AQUI'; // EX: 'https://script.google.com/macros/s/AKfycbwIP-5VZn2ZGuXcGRZS_ysvhpQrIwmpRKdV8L4mk8ckbs6DNGHWsGO1RPd9LN-PO0qe/exec';
     // =======================================================================
 
     // =======================================================================
@@ -159,6 +159,7 @@
             const data = await response.json();
 
             // *** ESTA É A LINHA DE DEBUG CRUCIAL: VERIFIQUE O CONSOLE DO SEU NAVEGADOR (F12) ***
+            // Ela mostrará exatamente quais dados estão chegando da sua API.
             console.log("Dados recebidos da API:", data);
 
             // Agora o Apps Script envia 'vendas', e o HTML está preparado para receber 'vendas'
@@ -345,8 +346,16 @@
         document.querySelectorAll('.filters button').forEach(btn => btn.classList.remove('active'));
         document.querySelector(`.filters button[onclick="showView('${viewName}')"]`).classList.add('active');
     }
+
     // Inicializa o dashboard carregando os dados do Google Apps Script quando a página carrega
     window.onload = loadDataFromGoogleSheet;
+
+    // =======================================================================
+    // *** CÓDIGO PARA ATUALIZAÇÃO AUTOMÁTICA DOS DADOS (POLLING) ***
+    // Define um intervalo para carregar os dados novamente a cada 60 segundos (60000 milissegundos)
+    const INTERVALO_ATUALIZACAO_MS = 60 * 1000; // 1 minuto
+    setInterval(loadDataFromGoogleSheet, INTERVALO_ATUALIZACAO_MS);
+    // =======================================================================
 </script>
 </body>
 </html>
