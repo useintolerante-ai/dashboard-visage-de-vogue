@@ -54,12 +54,12 @@
                     <select id="geral-month-filter" class="month-filter-select" onchange="updateDashboard(this.value)"></select>
                 </div>
                 <div class="grid">
-                    <div class="card"><h3>💰 Faturamento</h3><p class="kpi-value" id="kpi-faturamento">R$ 0,00</p></div>
-                    <div class="card"><h3>💸 Saídas</h3><p class="kpi-value" id="kpi-saidas-geral">R$ 0,00</p></div>
+                    <div class="card"><h3>�� Faturamento</h3><p class="kpi-value" id="kpi-faturamento">R$ 0,00</p></div>
+                    <div class="card"><h3>�� Saídas</h3><p class="kpi-value" id="kpi-saidas-geral">R$ 0,00</p></div>
                     <div class="card"><h3>📈 Lucro Bruto</h3><p class="kpi-value" id="kpi-lucro">R$ 0,00</p></div>
                     <div class="card"><h3>📥 Recebido (Cred.)</h3><p class="kpi-value" id="kpi-valor-recebido">R$ 0,00</p></div>
                     <div class="card"><h3>💳 A Receber (Cred.)</h3><p class="kpi-value" id="kpi-a-receber">R$ 0,00</p></div>
-                    <div class="card"><h3>📊 Nº de Vendas</h3><p class="kpi-value" id="kpi-num-vendas">0</p></div>
+                    <div class="card"><h3>�� Nº de Vendas</h3><p class="kpi-value" id="kpi-num-vendas">0</p></div>
                 </div>
                 <div class="chart-container" id="chart-container-geral" style="margin-top: 20px; height: 40vh;"><canvas id="mainChart"></canvas></div>
             </div>
@@ -85,10 +85,9 @@
 
 <script>
     // =======================================================================
-    // CONFIGURAÇÕES DE CONEXÃO - VERSÃO FINAL
+    // CONFIGURAÇÕES DE CONEXÃO - VERSÃO FINAL E FUNCIONAL
     // =======================================================================
-    // A URL ABAIXO É A VERSÃO CORRETA E FUNCIONAL GERADA EM 09/09/2025.
-    const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxr9UXyEDoPMMDt3ansCc5nDZnr3vKdQeOLn0iGLic6qjcpDed4dPzVBsHdMgkcKPrC/exec';
+    const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyzD7lmS0WBIUKicm8WmFxVNqCyRkk-F0KiCkQD_wAFQeu3REBNeUogGAKFR9vO2nf6/exec';
     
     // =======================================================================
     // VARIÁVEIS GLOBAIS
@@ -231,13 +230,15 @@
         const container = document.getElementById('saidasContainer');
         let tableHTML = `<table><thead><tr><th>Data</th><th>Descrição da Saída</th><th style="text-align:right;">Valor</th></tr></thead><tbody>`;
         if (filteredSaidas.length > 0) {
+            // Note: O valor da saída não é buscado, apenas a descrição. O valor é fixo em 1 no script.
             filteredSaidas.sort((a,b) => new Date(b.Data) - new Date(a.Data)).forEach(saida => {
-                tableHTML += `<tr><td>${formatDate(saida.Data)}</td><td>${saida.Descricao}</td><td style="text-align:right;">${formatCurrency(saida.Valor)}</td></tr>`;
+                tableHTML += `<tr><td>${formatDate(saida.Data)}</td><td>${saida.Descricao}</td><td style="text-align:right;">-</td></tr>`;
             });
         } else {
             tableHTML += `<tr><td colspan="3" style="text-align:center;">Nenhuma saída encontrada para este período.</td></tr>`;
         }
-        tableHTML += `</tbody><tfoot><tr><td colspan="2" style="text-align:right;">Total do Período:</td><td style="text-align:right;">${formatCurrency(totalSaidasMes)}</td></tr></tfoot></table>`;
+        // O total de saídas não pode ser calculado aqui, pois não temos o valor individual.
+        tableHTML += `</tbody><tfoot><tr><td colspan="2" style="text-align:right;">Total do Período:</td><td style="text-align:right;">Verificar KPI</td></tr></tfoot></table>`;
         container.innerHTML = tableHTML;
     }
 
@@ -262,13 +263,8 @@
             detailsRow.className = 'details-row';
             detailsRow.id = itemId;
             let detailsTable = `<table><thead><tr><th>Data da Compra</th><th style="text-align:right;">Valor</th></tr></thead><tbody>`;
-            if (item.Compras && item.Compras.length > 0) { 
-                item.Compras.sort((a, b) => new Date(b.Data) - new Date(a.Data)).forEach(detail => {
-                    detailsTable += `<tr><td>${formatDate(detail.Data)}</td><td style="text-align:right;">${formatCurrency(detail.Valor)}</td></tr>`;
-                });
-            } else {
-                detailsTable += `<tr><td colspan="2" style="text-align:center;">Nenhum detalhe de compra disponível.</td></tr>`;
-            }
+            // A API atual não envia o detalhe das compras, então exibimos uma mensagem.
+            detailsTable += `<tr><td colspan="2" style="text-align:center;">Nenhum detalhe de compra disponível.</td></tr>`;
             detailsTable += '</tbody></table>';
             detailsRow.innerHTML = detailsTable;
             
