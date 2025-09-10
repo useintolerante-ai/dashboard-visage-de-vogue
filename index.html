@@ -18,44 +18,10 @@
         .month-filter-select { background-color: #1a1a1a; border: 1px solid #444; color: #ddd; padding: 12px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1em; }
         .view { display: none; }
         .view.active { display: block; }
-        
-        /* AJUSTE COMPLETO DO LAYOUT DOS CARDS */
-        .grid {
-            display: grid;
-            gap: 20px;
-            /* Define 6 colunas, dando menos espaço para a última (Nº de Vendas) */
-            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 0.7fr; 
-        }
-        .card {
-            background-color: #161616;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #222;
-            display: flex; /* USA FLEXBOX PARA ALINHAMENTO INTERNO */
-            flex-direction: column;
-            justify-content: space-between; /* ALINHA TÍTULO NO TOPO E NÚMERO NA BASE */
-            min-height: 100px; /* GARANTE ALTURA MÍNIMA IGUAL PARA TODOS */
-        }
-        .card h3 {
-            margin: 0;
-            color: #888;
-            text-transform: uppercase;
-            font-size: 0.8em;
-            font-weight: 500;
-            text-align: center;
-        }
-        .kpi-value {
-            margin: 10px 0 0 0;
-            font-weight: 600;
-            color: #fff;
-            text-align: center;
-            white-space: nowrap; /* IMPEDE A QUEBRA DE LINHA */
-            overflow: hidden; /* Garante que não vai vazar */
-            text-overflow: ellipsis; /* Adiciona '...' se for absurdamente grande */
-            font-size: clamp(1.1em, 2.5vw, 1.9em); /* Ajuste fino da fonte */
-        }
-        /* FIM DO AJUSTE DOS CARDS */
-
+        .grid { display: grid; gap: 20px; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 0.7fr; }
+        .card { background-color: #161616; padding: 20px; border-radius: 12px; border: 1px solid #222; display: flex; flex-direction: column; justify-content: space-between; min-height: 100px; }
+        .card h3 { margin: 0; color: #888; text-transform: uppercase; font-size: 0.8em; font-weight: 500; text-align: center; }
+        .kpi-value { margin: 10px 0 0 0; font-weight: 600; color: #fff; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: clamp(1.1em, 2.5vw, 1.9em); }
         .table-container { background-color: #161616; padding: 20px; border-radius: 12px; margin-top: 20px; border: 1px solid #222; overflow-x: auto; }
         h2 { color: #f0f0f0; text-align: center; font-weight: 600; }
         .item-row { background-color: #1e1e1e; margin-top: 10px; padding: 15px; border-radius: 8px; cursor: pointer; display: grid; grid-template-columns: 2fr 1fr 1fr; align-items: center; transition: background-color 0.2s ease; gap: 10px;}
@@ -70,14 +36,7 @@
         .details-row th, .details-row td, .static-table th, .static-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #2a2a2a; }
         .details-row th, .static-table th { color: #aaa; font-weight: 500; }
         .static-table tfoot td { font-weight: bold; color: #f0f0f0; background-color: #2a2a2a;}
-
-        /* Media Query para telas menores (celulares) */
-        @media (max-width: 768px) {
-            .grid {
-                /* Em telas menores, volta a ter 2 colunas iguais */
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            }
-        }
+        @media (max-width: 768px) { .grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); } }
     </style>
 </head>
 <body>
@@ -126,23 +85,20 @@
 
 <script>
     // =======================================================================
-    // CONFIGURAÇÕES DE CONEXÃO - NÃO ALTERAR A MENOS QUE SEJA NECESSÁRIO
+    // CONFIGURAÇÕES DE CONEXÃO - VERSÃO FINAL
     // =======================================================================
-    const GOOGLE_SHEET_API_KEY = 'AIzaSyCPfPLSZ1jCEx1_ABkLj6iUvQGxeHC81I8'; // Não utilizado com Apps Script
-    // *** COLE A SUA URL AQUI - A QUE VOCÊ COPIOU DO APPS SCRIPT NO PASSO ANTERIOR ***
-    const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'SUA_URL_AQUI'; // EX: 'https://script.google.com/macros/s/AKfycbwIP-5VZn2ZGuXcGRZS_ysvhpQrIwmpRKdV8L4mk8ckbs6DNGHWsGO1RPd9LN-PO0qe/exec';
+    // A URL ABAIXO É A VERSÃO CORRETA E FUNCIONAL GERADA EM 09/09/2025.
+    const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxr9UXyEDoPMMDt3ansCc5nDZnr3vKdQeOLn0iGLic6qjcpDed4dPzVBsHdMgkcKPrC/exec';
+    
     // =======================================================================
-
-    // =======================================================================
-    // DADOS INICIAIS (VÃO SER SUBSTITUÍDOS PELOS DADOS REAIS DA PLANILHA)
+    // VARIÁVEIS GLOBAIS
     // =======================================================================
     let dadosVendas2025 = [];
     let dadosSaidas2025 = [];
     let dadosPagamentosCrediario = [];
     let dadosCrediario = [];
-    // =======================================================================
-
     let mainChart;
+
     const formatCurrency = (value) => value != null ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00';
     const formatDate = (dateString) => {
         if (!dateString) return "N/A";
@@ -157,53 +113,40 @@
                 throw new Error(`Erro ao carregar dados: ${response.status} ${response.statusText}`);
             }
             const data = await response.json();
-
-            // *** ESTA É A LINHA DE DEBUG CRUCIAL: VERIFIQUE O CONSOLE DO SEU NAVEGADOR (F12) ***
-            // Ela mostrará exatamente quais dados estão chegando da sua API.
             console.log("Dados recebidos da API:", data);
 
-            // Agora o Apps Script envia 'vendas', e o HTML está preparado para receber 'vendas'
-            // Garante que os arrays existam, mesmo que vazios
-            dadosVendas2025 = data.vendas || []; // Recebe dados de 'vendas'
+            dadosVendas2025 = data.faturamento || [];
             dadosSaidas2025 = data.saidas || [];
             dadosPagamentosCrediario = data.pagamentosCrediario || [];
             dadosCrediario = data.crediario || [];
 
-            // Calcula o total a receber (diferente do valor recebido, que é pagamentosCrediario)
             const totalAReceber = dadosCrediario.reduce((acc, curr) => acc + (curr.SaldoDevedor || 0), 0);
             document.getElementById('kpi-a-receber').innerText = formatCurrency(totalAReceber);
-
+            
+            const currentMonthSelection = document.getElementById('geral-month-filter').value;
+            const currentView = document.querySelector('.view.active')?.id.replace('View', '');
+            
             populateMonthFilters();
-            updateDashboard('todos');
+            
+            if(currentMonthSelection) {
+                document.getElementById('geral-month-filter').value = currentMonthSelection;
+                document.getElementById('saidas-month-filter').value = currentMonthSelection;
+            }
+
+            updateDashboard(currentMonthSelection || 'todos');
             renderCrediarioView();
-            renderSaidasView('todos');
-            showView('visaoGeral');
+            renderSaidasView(currentMonthSelection || 'todos');
+            showView(currentView || 'visaoGeral');
 
         } catch (error) {
             console.error("Erro ao carregar dados da planilha:", error);
-            alert("Não foi possível carregar os dados da planilha. Verifique a URL do Apps Script e as permissões. Consulte o console do navegador (F12) para mais detalhes.");
-            
-            // Define os KPIs para zero/vazio em caso de erro
-            document.getElementById('kpi-faturamento').innerText = formatCurrency(0);
-            document.getElementById('kpi-saidas-geral').innerText = formatCurrency(0);
-            document.getElementById('kpi-lucro').innerText = formatCurrency(0);
-            document.getElementById('kpi-valor-recebido').innerText = formatCurrency(0);
-            document.getElementById('kpi-a-receber').innerText = formatCurrency(0);
-            document.getElementById('kpi-num-vendas').innerText = '0';
-
-            // Garante que o dashboard tente inicializar mesmo com erro na API para exibir estado de erro
-            populateMonthFilters(); // Popula os filtros de mês
-            updateDashboard('todos'); // Tenta atualizar o dashboard com dados vazios
-            renderCrediarioView(); // Renderiza a view de crediário (mostrará "Nenhum dado...")
-            renderSaidasView('todos'); // Renderiza a view de saídas (mostrará "Nenhuma saída...")
-            showView('visaoGeral'); // Mostra a view inicial
+            alert("Não foi possível carregar os dados da planilha. Verifique a URL do Apps Script e as permissões. Consulte o console (F12) para mais detalhes.");
         }
     }
     
     function populateMonthFilters() {
         const allDates = [...dadosVendas2025.map(d => d.Data), ...dadosSaidas2025.map(d => d.Data), ...dadosPagamentosCrediario.map(d => d.Data)];
-        // Filtrar datas inválidas antes de mapear
-        const validDates = allDates.filter(d => d); // Remove null, undefined, empty string
+        const validDates = allDates.filter(d => d);
         const months = [...new Set(validDates.map(d => d.substring(0, 7)))].sort();
         
         const filters = document.querySelectorAll('.month-filter-select');
@@ -215,7 +158,7 @@
                 const monthName = new Date(parseInt(year), parseInt(monthNum) - 1, 1).toLocaleString('pt-BR', { month: 'long' });
                 filter.innerHTML += `<option value="${month}">${monthName.charAt(0).toUpperCase() + monthName.slice(1)}</option>`;
             });
-            filter.value = currentVal || 'todos';
+            if(currentVal) filter.value = currentVal;
         });
     }
 
@@ -242,14 +185,14 @@
         let graphData = {};
         if (selectedMonth === 'todos') {
             dadosVendas2025.forEach(venda => {
-                if (venda.Data) { // Adicionado check para Data
+                if (venda.Data) {
                     const key = venda.Data.substring(0, 7);
                     if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
                     graphData[key].Faturamento += (venda.Valor || 0);
                 }
             });
             dadosSaidas2025.forEach(saida => {
-                if (saida.Data) { // Adicionado check para Data
+                if (saida.Data) {
                     const key = saida.Data.substring(0, 7);
                     if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
                     graphData[key].Saidas += (saida.Valor || 0);
@@ -257,13 +200,13 @@
             });
         } else {
              filteredVendas.forEach(venda => {
-                if (venda.Data) { // Adicionado check para Data
+                if (venda.Data) {
                     const key = venda.Data;
                     if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
                     graphData[key].Faturamento += (venda.Valor || 0);
                 }
             });
-            dadosSaidas2025.filter(s => s.Data && s.Data.startsWith(selectedMonth)).forEach(saida => { // Adicionado check para Data
+            dadosSaidas2025.filter(s => s.Data && s.Data.startsWith(selectedMonth)).forEach(saida => {
                  const key = saida.Data;
                 if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
                 graphData[key].Saidas += (saida.Valor || 0);
@@ -275,9 +218,8 @@
         const saidasData = labels.map(key => graphData[key].Saidas || 0);
 
         if (mainChart) mainChart.destroy();
-        const chartContainer = document.getElementById('chart-container-geral');
-        chartContainer.innerHTML = '<canvas id="mainChart"></canvas>';
-        mainChart = new Chart(document.getElementById('mainChart'), { type: 'bar', data: { labels: labels.map(l => selectedMonth === 'todos' ? new Date(l+'-02').toLocaleString('default',{month:'short',year:'2-digit'}) : formatDate(l)), datasets: [ { label: 'Faturamento', data: faturamentoData, backgroundColor: '#af4261' }, { label: 'Saídas', data: saidasData, backgroundColor: '#6c757d' } ] }, options: { responsive: true, maintainAspectRatio: false, color: '#f0f0f0', scales: { y: { ticks: { color: '#aaa' }, grid: { color: '#222' } }, x: { ticks: { color: '#aaa' }, grid: { display: false } } } }});
+        const chartCtx = document.getElementById('mainChart').getContext('2d');
+        mainChart = new Chart(chartCtx, { type: 'bar', data: { labels: labels.map(l => selectedMonth === 'todos' ? new Date(l+'-02').toLocaleString('default',{month:'short',year:'2-digit'}) : formatDate(l)), datasets: [ { label: 'Faturamento', data: faturamentoData, backgroundColor: '#af4261' }, { label: 'Saídas', data: saidasData, backgroundColor: '#6c757d' } ] }, options: { responsive: true, maintainAspectRatio: false, color: '#f0f0f0', scales: { y: { ticks: { color: '#aaa' }, grid: { color: '#222' } }, x: { ticks: { color: '#aaa' }, grid: { display: false } } } }});
     }
     
     function renderSaidasView(selectedMonth) {
@@ -293,9 +235,9 @@
                 tableHTML += `<tr><td>${formatDate(saida.Data)}</td><td>${saida.Descricao}</td><td style="text-align:right;">${formatCurrency(saida.Valor)}</td></tr>`;
             });
         } else {
-            tableHTML += `<tr><td colspan="3" style="text-align:center;">Nenhuma saída encontrada.</td></tr>`;
+            tableHTML += `<tr><td colspan="3" style="text-align:center;">Nenhuma saída encontrada para este período.</td></tr>`;
         }
-        tableHTML += `</tbody><tfoot><tr><td colspan="2" style="text-align:right;">Total do Mês:</td><td style="text-align:right;">${formatCurrency(totalSaidasMes)}</td></tr></tfoot></table>`;
+        tableHTML += `</tbody><tfoot><tr><td colspan="2" style="text-align:right;">Total do Período:</td><td style="text-align:right;">${formatCurrency(totalSaidasMes)}</td></tr></tfoot></table>`;
         container.innerHTML = tableHTML;
     }
 
@@ -304,13 +246,10 @@
         container.innerHTML = '';
         const sortedData = dadosCrediario.filter(d => (d.SaldoDevedor || 0) > 0).sort((a, b) => (b.SaldoDevedor || 0) - (a.SaldoDevedor || 0));
         
-        // **OBSERVAÇÃO IMPORTANTE:** O script do Google Apps Script atual NÃO busca detalhes de 'Compras' para cada cliente.
-        // A função 'readCrediarioResumoData' no Apps Script retorna apenas Cliente, VendasTotais e SaldoDevedor.
-        // Para que o clique em cada cliente exiba detalhes de compras (Data da Compra, Valor),
-        // seria necessário modificar o script do Google Apps Script para buscar e incluir essas informações
-        // no array 'crediario' antes de enviá-lo para o dashboard.
-        // Por enquanto, a seção de detalhes de compra (quando você clica no cliente) mostrará "Nenhum detalhe de compra."
-        // Se precisar dessa funcionalidade, me avise para ajustarmos o Apps Script.
+        if (sortedData.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#888;">Nenhum cliente com saldo devedor.</p>';
+            return;
+        }
 
         sortedData.forEach((item, index) => {
             const itemId = `crediario-details-${index}`;
@@ -323,13 +262,12 @@
             detailsRow.className = 'details-row';
             detailsRow.id = itemId;
             let detailsTable = `<table><thead><tr><th>Data da Compra</th><th style="text-align:right;">Valor</th></tr></thead><tbody>`;
-            // A condição abaixo dependerá do Apps Script fornecer 'item.Compras'
             if (item.Compras && item.Compras.length > 0) { 
                 item.Compras.sort((a, b) => new Date(b.Data) - new Date(a.Data)).forEach(detail => {
                     detailsTable += `<tr><td>${formatDate(detail.Data)}</td><td style="text-align:right;">${formatCurrency(detail.Valor)}</td></tr>`;
                 });
             } else {
-                detailsTable += `<tr><td colspan="2" style="text-align:center;">Nenhum detalhe de compra.</td></tr>`;
+                detailsTable += `<tr><td colspan="2" style="text-align:center;">Nenhum detalhe de compra disponível.</td></tr>`;
             }
             detailsTable += '</tbody></table>';
             detailsRow.innerHTML = detailsTable;
@@ -347,15 +285,12 @@
         document.querySelector(`.filters button[onclick="showView('${viewName}')"]`).classList.add('active');
     }
 
-    // Inicializa o dashboard carregando os dados do Google Apps Script quando a página carrega
+    // Inicializa o dashboard
     window.onload = loadDataFromGoogleSheet;
 
-    // =======================================================================
-    // *** CÓDIGO PARA ATUALIZAÇÃO AUTOMÁTICA DOS DADOS (POLLING) ***
-    // Define um intervalo para carregar os dados novamente a cada 60 segundos (60000 milissegundos)
+    // Atualização automática
     const INTERVALO_ATUALIZACAO_MS = 60 * 1000; // 1 minuto
     setInterval(loadDataFromGoogleSheet, INTERVALO_ATUALIZACAO_MS);
-    // =======================================================================
 </script>
 </body>
 </html>
