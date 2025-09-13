@@ -1,276 +1,298 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Financeiro</title>
+    <title>Dashboard Final 2025 - Visage de Vogue</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Estilos CSS para o dashboard */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-        h1 {
-            color: #0056b3;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .dashboard-container {
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: #f0f0f0; margin: 0; padding: 20px; }
+        .container { max-width: 1400px; margin: auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        header h1 { background-image: linear-gradient(45deg, #f3ec78, #af4261); background-clip: text; -webkit-background-clip: text; color: transparent; margin: 0; font-size: 2.8em; font-weight: 700; }
+        .filters { margin-bottom: 20px; text-align: center; border-bottom: 1px solid #222; padding-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px; }
+        .filters button { background-color: #1a1a1a; border: 1px solid #444; color: #ddd; padding: 12px 25px; margin: 5px; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; font-size: 1em; }
+        .filters button.active, .filters button:hover { background-color: #af4261; color: #fff; border-color: #af4261; }
+        .month-filter-container { display: flex; align-items: center; gap: 10px; }
+        .month-filter-select { background-color: #1a1a1a; border: 1px solid #444; color: #ddd; padding: 12px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1em; }
+        .view { display: none; }
+        .view.active { display: block; }
+        
+        /* AJUSTE COMPLETO DO LAYOUT DOS CARDS */
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
+            /* Define 6 colunas, dando menos espaço para a última (Nº de Vendas) */
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 0.7fr; 
         }
         .card {
-            background-color: #fff;
+            background-color: #161616;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            border: 1px solid #222;
+            display: flex; /* USA FLEXBOX PARA ALINHAMENTO INTERNO */
+            flex-direction: column;
+            justify-content: space-between; /* ALINHA TÍTULO NO TOPO E NÚMERO NA BASE */
+            min-height: 100px; /* GARANTE ALTURA MÍNIMA IGUAL PARA TODOS */
         }
-        .card h2 {
-            margin-top: 0;
-            color: #0056b3;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-        .error-message {
-            color: red;
-            font-weight: bold;
-            margin-top: 20px;
+        .card h3 {
+            margin: 0;
+            color: #888;
+            text-transform: uppercase;
+            font-size: 0.8em;
+            font-weight: 500;
             text-align: center;
-            padding: 10px;
-            border: 1px solid red;
-            background-color: #ffe0e0;
-            border-radius: 5px;
         }
-        #loading-message {
-            text-align: center;
-            font-size: 1.2em;
-            color: #0056b3;
-        }
-        /* Estilos específicos para a tabela de crediário */
-        .crediario-table table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        .crediario-table th, .crediario-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        .crediario-table th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-        .crediario-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .crediario-table tbody tr:hover {
-            background-color: #e9e9e9;
-        }
-        /* Novos estilos para os KPIs */
         .kpi-value {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 10px;
-            display: block;
+            margin: 10px 0 0 0;
+            font-weight: 600;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap; /* IMPEDE A QUEBRA DE LINHA */
+            overflow: hidden; /* Garante que não vai vazar */
+            text-overflow: ellipsis; /* Adiciona '...' se for absurdamente grande */
+            font-size: clamp(1.1em, 2.5vw, 1.9em); /* Ajuste fino da fonte */
         }
-        .kpi-positive {
-            color: #4CAF50; /* Verde */
-        }
-        .kpi-negative {
-            color: #F44336; /* Vermelho */
-        }
-        /* Ajuste para o card combinado ocupar a largura total */
-        #faturamento-saidas-card {
-            grid-column: 1 / -1; /* Ocupa a largura total do grid */
+        /* FIM DO AJUSTE DOS CARDS */
+
+        .table-container { background-color: #161616; padding: 20px; border-radius: 12px; margin-top: 20px; border: 1px solid #222; overflow-x: auto; }
+        h2 { color: #f0f0f0; text-align: center; font-weight: 600; }
+        .item-row { background-color: #1e1e1e; margin-top: 10px; padding: 15px; border-radius: 8px; cursor: pointer; display: grid; grid-template-columns: 2fr 1fr 1fr; align-items: center; transition: background-color 0.2s ease; gap: 10px;}
+        .item-row:hover { background-color: #2a2a2a; }
+        .item-name { font-weight: 600; font-size: 1.1em; word-break: break-word; }
+        .item-total-compra { color: #a29bfe; text-align: right; }
+        .item-total-value { font-weight: bold; color: #ff7675; font-size: 1.1em; text-align: right; }
+        .details-row, .static-table { background-color: #111; padding: 20px; margin-top: -5px; border-radius: 0 0 8px 8px; }
+        .details-row { display: none; }
+        .details-row.visible { display: block; }
+        .details-row table, .static-table table { width: 100%; border-collapse: collapse;}
+        .details-row th, .details-row td, .static-table th, .static-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #2a2a2a; }
+        .details-row th, .static-table th { color: #aaa; font-weight: 500; }
+        .static-table tfoot td { font-weight: bold; color: #f0f0f0; background-color: #2a2a2a;}
+
+        /* Media Query para telas menores (celulares) */
+        @media (max-width: 768px) {
+            .grid {
+                /* Em telas menores, volta a ter 2 colunas iguais */
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
         }
     </style>
-    <!-- Alterado para usar uma versão específica e mais recente do Plotly.js -->
-    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js" charset="utf-8"></script>
 </head>
 <body>
-    <h1>📊 Meu Dashboard Financeiro 📈</h1>
-    
-    <div id="loading-message" class="card">Carregando dados... Por favor, aguarde.</div>
-    <div id="error-display" class="error-message" style="display: none;"></div>
+    <div class="container">
+        <header><h1>Dashboard de Gestão 2025 | Visage de Vogue</h1></header>
+        <main>
+            <div class="filters">
+                <button onclick="showView('visaoGeral')" class="active">Visão Geral</button>
+                <button onclick="showView('crediario')">Crediário</button>
+                <button onclick="showView('saidas')">Saídas</button>
+            </div>
+            
+            <div id="visaoGeralView" class="view active">
+                <div class="month-filter-container" style="justify-content: center; margin-bottom: 20px;">
+                    <select id="geral-month-filter" class="month-filter-select" onchange="updateDashboard(this.value)"></select>
+                </div>
+                <div class="grid">
+                    <div class="card"><h3>💰 Faturamento</h3><p class="kpi-value" id="kpi-faturamento">R$ 0,00</p></div>
+                    <div class="card"><h3>💸 Saídas</h3><p class="kpi-value" id="kpi-saidas-geral">R$ 0,00</p></div>
+                    <div class="card"><h3>📈 Lucro Bruto</h3><p class="kpi-value" id="kpi-lucro">R$ 0,00</p></div>
+                    <div class="card"><h3>📥 Recebido (Cred.)</h3><p class="kpi-value" id="kpi-valor-recebido">R$ 0,00</p></div>
+                    <div class="card"><h3>💳 A Receber (Cred.)</h3><p class="kpi-value" id="kpi-a-receber">R$ 0,00</p></div>
+                    <div class="card"><h3>📊 Nº de Vendas</h3><p class="kpi-value" id="kpi-num-vendas">0</p></div>
+                </div>
+                <div class="chart-container" id="chart-container-geral" style="margin-top: 20px; height: 40vh;"><canvas id="mainChart"></canvas></div>
+            </div>
 
-    <div id="dashboard-content" style="display: none;" class="dashboard-container">
-        <!-- Card de Resumo de KPIs -->
-        <div class="card" id="kpi-summary">
-            <h2>💰 Resumo Financeiro do Período</h2>
-            <h3>Faturamento Total: <span id="total-faturamento" class="kpi-value">R$ 0,00</span></h3>
-            <h3>Saídas Totais: <span id="total-saidas" class="kpi-value">R$ 0,00</span></h3>
-            <h3>Saldo: <span id="saldo-periodo" class="kpi-value">R$ 0,00</span></h3>
-        </div>
+            <div id="crediarioView" class="view">
+                <div class="table-container">
+                    <h2>Análise de Clientes <span style="font-size: 0.7em; color: #888;">(Clique para ver detalhes)</span></h2>
+                    <div id="crediarioContainer"></div>
+                </div>
+            </div>
 
-        <!-- Gráfico Combinado de Faturamento e Saídas -->
-        <div class="card" id="faturamento-saidas-card">
-            <h2>📈 Faturamento vs. Saídas Diárias</h2>
-            <div id="faturamento-saidas-chart"></div>
-        </div>
-
-        <div class="card" id="pagamentos-card">
-            <h2>💲 Pagamentos de Crediário</h2>
-            <div id="pagamentos-chart"></div>
-        </div>
-        <div class="card crediario-table" id="crediario-card">
-            <h2>📝 Situação do Crediário</h2>
-            <div id="crediario-table"></div>
-        </div>
+            <div id="saidasView" class="view">
+                <div class="month-filter-container" style="justify-content: center; margin-bottom: 20px;">
+                    <select id="saidas-month-filter" class="month-filter-select" onchange="renderSaidasView(this.value)"></select>
+                </div>
+                <div class="table-container">
+                    <h2>Detalhamento de Saídas por Mês</h2>
+                    <div id="saidasContainer" class="static-table"></div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <script>
-        // =======================================================================
-        // SUA URL DO GOOGLE APPS SCRIPT WEB APP - JÁ INSERIDA DIRETAMENTE AQUI.
-        // =======================================================================
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzaBwFKtmP5gF_68DblxZnJjs4K3gdtURtqeLoDa22__N6jKOFiMgWEe2wLbsadz8A/exec'; 
+<script>
+    // =======================================================================
+    // DADOS COMPLETOS DE 2025 EXTRAÍDOS E ATUALIZADOS.
+    // =======================================================================
+    const dadosVendas2025 = [{"Data":"2025-01-09","Valor":488.9},{"Data":"2025-01-14","Valor":316},{"Data":"2025-01-16","Valor":189},{"Data":"2025-01-17","Valor":1406},{"Data":"2025-01-18","Valor":1047},{"Data":"2025-01-20","Valor":538},{"Data":"2025-01-22","Valor":89.9},{"Data":"2025-01-23","Valor":269},{"Data":"2025-01-29","Valor":996},{"Data":"2025-02-01","Valor":827.73},{"Data":"2025-02-04","Valor":170.05},{"Data":"2025-02-05","Valor":1576.1},{"Data":"2025-02-06","Valor":421},{"Data":"2025-02-08","Valor":509.8},{"Data":"2025-02-11","Valor":373.5},{"Data":"2025-02-12","Valor":459},{"Data":"2025-02-13","Valor":1486},{"Data":"2025-02-14","Valor":538.3},{"Data":"2025-02-18","Valor":600},{"Data":"2025-02-19","Valor":1470.3},{"Data":"2025-02-20","Valor":921.6},{"Data":"2025-02-21","Valor":584.3},{"Data":"2025-02-22","Valor":209.3},{"Data":"2025-02-24","Valor":423.3},{"Data":"2025-02-25","Valor":89.9},{"Data":"2025-03-01","Valor":199},{"Data":"2025-03-04","Valor":658},{"Data":"2025-03-06","Valor":89.9},{"Data":"2025-03-07","Valor":459},{"Data":"2025-03-08","Valor":891.4},{"Data":"2025-03-11","Valor":188.3},{"Data":"2025-03-15","Valor":1766},{"Data":"2025-03-19","Valor":269},{"Data":"2025-03-20","Valor":987},{"Data":"2025-03-21","Valor":537},{"Data":"2025-03-26","Valor":414.5},{"Data":"2025-03-27","Valor":1538.6},{"Data":"2025-03-29","Valor":499},{"Data":"2025-04-03","Valor":114.5},{"Data":"2025-04-09","Valor":823.3},{"Data":"2025-04-12","Valor":89.9},{"Data":"2025-04-15","Valor":647.9},{"Data":"2025-04-19","Valor":399},{"Data":"2025-04-24","Valor":6069.7},{"Data":"2025-04-25","Valor":279},{"Data":"2025-04-28","Valor":575},{"Data":"2025-04-30","Valor":229},{"Data":"2025-05-12","Valor":537.05},{"Data":"2025-05-14","Valor":1729},{"Data":"2025-05-20","Valor":1986.8},{"Data":"2025-05-22","Valor":3214},{"Data":"2025-05-23","Valor":2070.65},{"Data":"2025-05-24","Valor":1128},{"Data":"2025-05-26","Valor":498},{"Data":"2025-05-27","Valor":1298},{"Data":"2025-05-28","Valor":796.1},{"Data":"2025-05-29","Valor":971.7},{"Data":"2025-05-30","Valor":569},{"Data":"2025-05-31","Valor":640.8},{"Data":"2025-06-04","Valor":885},{"Data":"2025-06-09","Valor":2501.5},{"Data":"2025-06-10","Valor":374},{"Data":"2025-06-11","Valor":1821.4},{"Data":"2025-06-12","Valor":1489},{"Data":"2025-06-13","Valor":3376.7},{"Data":"2025-06-14","Valor":886.5},{"Data":"2025-06-16","Valor":1619},{"Data":"2025-06-18","Valor":699},{"Data":"2025-06-20","Valor":655.6},{"Data":"2025-06-23","Valor":1324},{"Data":"2025-06-24","Valor":1824},{"Data":"2025-06-25","Valor":1389.5},{"Data":"2025-06-26","Valor":278},{"Data":"2025-06-27","Valor":937},{"Data":"2025-06-28","Valor":1046},{"Data":"2025-06-30","Valor":1456},{"Data":"2025-07-02","Valor":338},{"Data":"2025-07-03","Valor":639.2},{"Data":"2025-07-08","Valor":2950},{"Data":"2025-07-12","Valor":548},{"Data":"2025-07-16","Valor":869},{"Data":"2025-07-19","Valor":9657.08},{"Data":"2025-07-22","Valor":3073.6},{"Data":"2025-07-23","Valor":3213.3},{"Data":"2025-07-24","Valor":2155.5},{"Data":"2025-07-29","Valor":6036.4},{"Data":"2025-07-30","Valor":3801.2},{"Data":"2025-07-31","Valor":3086.5},{"Data":"2025-08-02","Valor":1075},{"Data":"2025-08-06","Valor":1214.2},{"Data":"2025-08-07","Valor":808},{"Data":"2025-08-08","Valor":837},{"Data":"2025-08-11","Valor":2853},{"Data":"2025-08-12","Valor":199},{"Data":"2025-08-13","Valor":1204.6},{"Data":"2025-08-16","Valor":448},{"Data":"2025-08-18","Valor":3221.2},{"Data":"2025-08-19","Valor":280},{"Data":"2025-08-21","Valor":2944},{"Data":"2025-08-23","Valor":159.5},{"Data":"2025-08-25","Valor":1125},{"Data":"2025-08-26","Valor":498},{"Data":"2025-08-27","Valor":498},{"Data":"2025-08-29","Valor":1550},{"Data":"2025-08-30","Valor":227},{"Data":"2025-09-02","Valor":1130},{"Data":"2025-09-03","Valor":448},{"Data":"2025-09-06","Valor":928}];
+    const dadosSaidas2025 = [{"Data":"2025-01-05","Descricao":"Hidropan","Valor":261.59},{"Data":"2025-01-06","Descricao":"Alarme","Valor":199},{"Data":"2025-01-07","Descricao":"Sistema","Valor":150},{"Data":"2025-01-07","Descricao":"Internet","Valor":99.9},{"Data":"2025-01-07","Descricao":"Simples","Valor":76.6},{"Data":"2025-01-07","Descricao":"Aluguel e água","Valor":975},{"Data":"2025-01-07","Descricao":"ACI","Valor":64.42},{"Data":"2025-01-07","Descricao":"escritorio","Valor":220},{"Data":"2025-01-07","Descricao":"E-Social","Valor":364.96},{"Data":"2025-01-07","Descricao":"salario Laiza","Valor":3600},{"Data":"2025-01-08","Descricao":"Marketing - João","Valor":1300},{"Data":"2025-01-16","Descricao":"Rodopan","Valor":160.6},{"Data":"2025-01-25","Descricao":"radio","Valor":440},{"Data":"2025-01-28","Descricao":"correio","Valor":128.95},{"Data":"2025-01-31","Descricao":"Perfect Way","Valor":2079},{"Data":"2025-01-20","Descricao":"Marketing - João","Valor":1300},{"Data":"2025-02-05","Descricao":"Hidropan","Valor":276.21},{"Data":"2025-02-05","Descricao":"Alarme","Valor":199},{"Data":"2025-02-05","Descricao":"Sistema","Valor":150},{"Data":"2025-02-05","Descricao":"Internet","Valor":99.9},{"Data":"2025-02-05","Descricao":"Aluguel e água","Valor":900},{"Data":"2025-02-05","Descricao":"ACI","Valor":67.8},{"Data":"2025-02-05","Descricao":"salario Laiza","Valor":2000},{"Data":"2025-03-05","Descricao":"Hidropan","Valor":303.46},{"Data":"2025-03-06","Descricao":"Alarme","Valor":199},{"Data":"2025-03-07","Descricao":"Sistema","Valor":150},{"Data":"2025-03-08","Descricao":"Internet","Valor":99},{"Data":"2025-03-09","Descricao":"Simples","Valor":168.68},{"Data":"2025-03-10","Descricao":"Aluguel e água","Valor":1800},{"Data":"2025-03-11","Descricao":"ACI","Valor":83.4},{"Data":"2025-03-12","Descricao":"escritorio","Valor":420},{"Data":"2025-03-13","Descricao":"E-Social","Valor":347.36},{"Data":"2025-03-14","Descricao":"salario Laiza","Valor":2200},{"Data":"2025-03-17","Descricao":"radio","Valor":440},{"Data":"2025-03-18","Descricao":"Perfect Way","Valor":5203.56},{"Data":"2025-03-19","Descricao":"Puramania","Valor":529.86},{"Data":"2025-04-05","Descricao":"Hidropan","Valor":305.1},{"Data":"2025-04-06","Descricao":"Alarme","Valor":199},{"Data":"2025-04-07","Descricao":"Sistema","Valor":150},{"Data":"2025-04-08","Descricao":"Internet","Valor":99.9},{"Data":"2025-04-10","Descricao":"Aluguel e água","Valor":1800},{"Data":"2025-04-11","Descricao":"ACI","Valor":67.8},{"Data":"2025-04-14","Descricao":"salario Laiza","Valor":2400},{"Data":"2025-04-16","Descricao":"etiquetas - grafica","Valor":280},{"Data":"2025-04-27","Descricao":"Puramania","Valor":888.4},{"Data":"2025-04-02","Descricao":"Puramania","Valor":749.14},{"Data":"2025-04-12","Descricao":"Puramania","Valor":868.88},{"Data":"2025-04-15","Descricao":"Puramania","Valor":529.86},{"Data":"2025-04-18","Descricao":"Puramania","Valor":871.6},{"Data":"2025-04-25","Descricao":"Puramania","Valor":732.5},{"Data":"2025-04-22","Descricao":"Puramania","Valor":871.6},{"Data":"2025-04-22","Descricao":"Farm","Valor":1317},{"Data":"2025-04-22","Descricao":"radio","Valor":288},{"Data":"2025-04-24","Descricao":"FARM","Valor":2232},{"Data":"2025-05-01","Descricao":"Hidropan","Valor":167.58},{"Data":"2025-05-02","Descricao":"Alarme","Valor":199},{"Data":"2025-05-03","Descricao":"Sistema","Valor":150},{"Data":"2025-05-04","Descricao":"Internet","Valor":99.9},{"Data":"2025-05-06","Descricao":"Aluguel e água","Valor":1800},{"Data":"2025-05-07","Descricao":"ACI","Valor":67.8},{"Data":"2025-05-08","Descricao":"etiquetas - grafica","Valor":61.75},{"Data":"2025-05-10","Descricao":"salario Laiza","Valor":2400},{"Data":"2025-05-11","Descricao":"Puramania","Valor":987.96},{"Data":"2025-05-12","Descricao":"Puramania","Valor":888.4},{"Data":"2025-05-13","Descricao":"Puramania","Valor":779.46},{"Data":"2025-05-14","Descricao":"Puramania","Valor":749.14},{"Data":"2025-05-15","Descricao":"Puramania","Valor":999.07},{"Data":"2025-05-16","Descricao":"Puramania","Valor":919.52},{"Data":"2025-05-17","Descricao":"Puramania","Valor":871.6},{"Data":"2025-05-18","Descricao":"Puramania","Valor":604.38},{"Data":"2025-05-19","Descricao":"Puramania","Valor":868.88},{"Data":"2025-05-20","Descricao":"Puramania","Valor":529.86},{"Data":"2025-05-21","Descricao":"Puramania","Valor":732.5},{"Data":"2025-05-22","Descricao":"Puramania","Valor":733.5},{"Data":"2025-05-23","Descricao":"Puramania","Valor":550},{"Data":"2025-05-24","Descricao":"Farm","Valor":1317},{"Data":"2025-05-25","Descricao":"Farm","Valor":731},{"Data":"2025-05-26","Descricao":"Farm","Valor":373},{"Data":"2025-05-27","Descricao":"Farm","Valor":2232},{"Data":"2025-05-28","Descricao":"Farm","Valor":550},{"Data":"2025-05-29","Descricao":"Farm","Valor":436},{"Data":"2025-06-05","Descricao":"Hidropan","Valor":174.3},{"Data":"2025-06-06","Descricao":"Alarme","Valor":199},{"Data":"2025-06-07","Descricao":"Sistema","Valor":159},{"Data":"2025-06-08","Descricao":"Internet","Valor":99.9},{"Data":"2025-06-09","Descricao":"Aluguel e agua ","Valor":1800},{"Data":"2025-06-10","Descricao":"Salário Laiza","Valor":2200},{"Data":"2025-06-11","Descricao":"ACI","Valor":67.8},{"Data":"2025-06-12","Descricao":"E-Social","Valor":264},{"Data":"2025-06-13","Descricao":"Puramania","Valor":749.14},{"Data":"2025-06-14","Descricao":"Puramania","Valor":899.14},{"Data":"2025-06-15","Descricao":"Puramania","Valor":963.42},{"Data":"2025-06-16","Descricao":"Puramania","Valor":966.66},{"Data":"2025-06-17","Descricao":"Puramania","Valor":554.32},{"Data":"2025-06-18","Descricao":"Puramania","Valor":604.38},{"Data":"2025-06-19","Descricao":"Puramania","Valor":868.88},{"Data":"2025-06-20","Descricao":"Puramania","Valor":529.86},{"Data":"2025-06-21","Descricao":"Puramania","Valor":733.5},{"Data":"2025-06-22","Descricao":"Puramania","Valor":779.46},{"Data":"2025-06-23","Descricao":"Puramania","Valor":871.6},{"Data":"2025-06-24","Descricao":"Puramania","Valor":727.76},{"Data":"2025-06-25","Descricao":"Puramania","Valor":987.96},{"Data":"2025-06-26","Descricao":"Puramania","Valor":732.5},{"Data":"2025-06-27","Descricao":"Puramania","Valor":942.66},{"Data":"2025-06-28","Descricao":"Puramania","Valor":888.4},{"Data":"2025-06-29","Descricao":"Puramania","Valor":666.64},{"Data":"2025-06-30","Descricao":"Farm","Valor":550},{"Data":"2025-07-01","Descricao":"Farm","Valor":485},{"Data":"2025-07-02","Descricao":"Farm","Valor":436},{"Data":"2025-07-03","Descricao":"Farm","Valor":1319},{"Data":"2025-07-04","Descricao":"Farm","Valor":510},{"Data":"2025-07-05","Descricao":"Farm","Valor":2755},{"Data":"2025-07-06","Descricao":"Farm","Valor":2235.5},{"Data":"2025-07-07","Descricao":"Farm","Valor":373},{"Data":"2025-07-08","Descricao":"Farm","Valor":731.5},{"Data":"2025-07-05","Descricao":"Hidropan","Valor":174.3},{"Data":"2025-07-06","Descricao":"Alarme","Valor":199},{"Data":"2025-07-07","Descricao":"Sistema","Valor":159},{"Data":"2025-07-08","Descricao":"Internet","Valor":99.9},{"Data":"2025-07-09","Descricao":"Aluguel e agua ","Valor":1800},{"Data":"2025-07-10","Descricao":"Salário Laiza","Valor":3200},{"Data":"2025-07-11","Descricao":"ACI","Valor":67.8},{"Data":"2025-07-12","Descricao":"E-Social","Valor":400},{"Data":"2025-08-05","Descricao":"Hidropan","Valor":174.3},{"Data":"2025-08-06","Descricao":"Alarme","Valor":199},{"Data":"2025-08-07","Descricao":"Sistema","Valor":159},{"Data":"2025-08-08","Descricao":"Internet","Valor":99.9},{"Data":"2025-08-09","Descricao":"Aluguel e agua ","Valor":1800},{"Data":"2025-08-10","Descricao":"Salário Laiza","Valor":3200},{"Data":"2025-08-11","Descricao":"ACI","Valor":67.8},{"Data":"2025-08-12","Descricao":"E-Social","Valor":400},{"Data":"2025-08-30","Descricao":"boleto","Valor":39833.94},{"Data":"2025-09-05","Descricao":"Hidropan","Valor":204.91},{"Data":"2025-09-06","Descricao":"Alarme","Valor":199},{"Data":"2025-09-07","Descricao":"Sistema","Valor":159},{"Data":"2025-09-08","Descricao":"Internet","Valor":99.9},{"Data":"2025-09-09","Descricao":"Aluguel e agua ","Valor":1800},{"Data":"2025-09-10","Descricao":"Salário Laiza","Valor":3000},{"Data":"2025-09-11","Descricao":"ACI","Valor":67.8},{"Data":"2025-09-12","Descricao":"E-Social","Valor":400},{"Data":"2025-09-13","Descricao":"boleto","Valor":412.58},{"Data":"2025-09-14","Descricao":"boleto","Valor":832},{"Data":"2025-09-15","Descricao":"boleto","Valor":59},{"Data":"2025-09-16","Descricao":"boleto","Valor":1218},{"Data":"2025-09-17","Descricao":"boleto","Valor":604.38},{"Data":"2025-09-18","Descricao":"boleto","Valor":554.32},{"Data":"2025-09-19","Descricao":"boleto","Valor":795.14},{"Data":"2025-09-20","Descricao":"boleto","Valor":955.3},{"Data":"2025-09-21","Descricao":"boleto","Valor":526},{"Data":"2025-09-22","Descricao":"boleto","Valor":697},{"Data":"2025-09-23","Descricao":"boleto","Valor":733.5},{"Data":"2025-09-24","Descricao":"boleto","Valor":770.5},{"Data":"2025-09-25","Descricao":"boleto","Valor":1406},{"Data":"2025-09-26","Descricao":"boleto","Valor":833},{"Data":"2025-09-27","Descricao":"boleto","Valor":753},{"Data":"2025-09-28","Descricao":"boleto","Valor":779.46},{"Data":"2025-09-29","Descricao":"boleto","Valor":1327},{"Data":"2025-09-30","Descricao":"boleto","Valor":1230}];
+    const dadosPagamentosCrediario = [{"Data":"2025-02-03","Valor":162.97},{"Data":"2025-01-06","Valor":150},{"Data":"2025-01-06","Valor":100},{"Data":"2025-01-07","Valor":62.33},{"Data":"2025-01-08","Valor":135.5},{"Data":"2025-01-11","Valor":331.58},{"Data":"2025-01-10","Valor":426},{"Data":"2025-01-14","Valor":120},{"Data":"2025-01-14","Valor":270.51},{"Data":"2025-01-13","Valor":500},{"Data":"2025-01-17","Valor":457},{"Data":"2025-01-28","Valor":150},{"Data":"2025-01-30","Valor":137.25},{"Data":"2025-01-31","Valor":500},{"Data":"2025-02-04","Valor":400},{"Data":"2025-02-05","Valor":122.25},{"Data":"2025-02-06","Valor":250},{"Data":"2025-02-07","Valor":237},{"Data":"2025-02-08","Valor":200},{"Data":"2025-02-09","Valor":100},{"Data":"2025-02-10","Valor":200},{"Data":"2025-02-11","Valor":200},{"Data":"2025-02-12","Valor":100},{"Data":"2025-03-01","Valor":1028},{"Data":"2025-03-02","Valor":9},{"Data":"2025-03-03","Valor":200},{"Data":"2025-03-04","Valor":200},{"Data":"2025-03-05","Valor":200},{"Data":"2025-03-06","Valor":137.25},{"Data":"2025-03-07","Valor":200},{"Data":"2025-03-08","Valor":300},{"Data":"2025-04-02","Valor":140},{"Data":"2025-04-02","Valor":300},{"Data":"2025-04-03","Valor":300},{"Data":"2025-04-11","Valor":220},{"Data":"2025-04-05","Valor":330},{"Data":"2025-04-06","Valor":179},{"Data":"2025-04-07","Valor":150},{"Data":"2025-04-08","Valor":200},{"Data":"2025-04-09","Valor":328},{"Data":"2025-05-02","Valor":600},{"Data":"2025-05-02","Valor":2300},{"Data":"2025-05-03","Valor":260},{"Data":"2025-05-11","Valor":330},{"Data":"2025-05-05","Valor":300},{"Data":"2025-05-06","Valor":330},{"Data":"2025-05-07","Valor":214},{"Data":"2025-06-02","Valor":200},{"Data":"2025-06-02","Valor":313},{"Data":"2025-06-03","Valor":100},{"Data":"2025-06-11","Valor":200},{"Data":"2025-06-05","Valor":170},{"Data":"2025-06-06","Valor":130},{"Data":"2025-06-07","Valor":200},{"Data":"2025-06-08","Valor":300},{"Data":"2025-07-02","Valor":150},{"Data":"2025-07-02","Valor":290},{"Data":"2025-07-03","Valor":242.5},{"Data":"2025-07-11","Valor":400},{"Data":"2025-07-05","Valor":299},{"Data":"2025-07-06","Valor":250},{"Data":"2025-07-07","Valor":538.66},{"Data":"2025-07-08","Valor":130},{"Data":"2025-07-09","Valor":40},{"Data":"2025-08-02","Valor":555},{"Data":"2025-08-02","Valor":164.5},{"Data":"2025-08-03","Valor":200},{"Data":"2025-08-11","Valor":242.5},{"Data":"2025-08-05","Valor":175},{"Data":"2025-08-06","Valor":302},{"Data":"2025-08-07","Valor":555},{"Data":"2025-08-08","Valor":529},{"Data":"2025-08-09","Valor":80},{"Data":"2025-08-10","Valor":800},{"Data":"2025-08-11","Valor":124},{"Data":"2025-08-12","Valor":112},{"Data":"2025-08-13","Valor":538},{"Data":"2025-09-02","Valor":398},{"Data":"2025-09-03","Valor":175},{"Data":"2025-09-04","Valor":169},{"Data":"2025-09-05","Valor":180},{"Data":"2025-09-06","Valor":124.5},{"Data":"2025-09-07","Valor":122.67}];
+    const dadosCrediario = [{"Cliente":"ANGELA MACIEL","VendasTotais":9573.4,"SaldoDevedor":4963.4,"Compras":[{"Data":"2025-08-23","Valor":663},{"Data":"2025-09-13","Valor":749},{"Data":"2025-10-04","Valor":1026},{"Data":"2025-11-16","Valor":289},{"Data":"2025-12-13","Valor":1214.9},{"Data":"2025-12-13","Valor":229},{"Data":"2025-12-26","Valor":949},{"Data":"2025-02-13","Valor":798},{"Data":"2025-03-15","Valor":329},{"Data":"2025-05-23","Valor":1066.5},{"Data":"2025-06-13","Valor":499}]},{"Cliente":"JAMILA HUSSEIN","VendasTotais":5517.7,"SaldoDevedor":3483.05,"Compras":[{"Data":"2025-06-20","Valor":359},{"Data":"2025-01-18","Valor":1047}]},{"Cliente":"DEBORA LORENZ","VendasTotais":4485,"SaldoDevedor":2912,"Compras":[{"Data":"2025-02-13","Valor":389},{"Data":"2025-02-13","Valor":448},{"Data":"2025-03-27","Valor":442}]},{"Cliente":"ELENA HEUSNER","VendasTotais":3432.2,"SaldoDevedor":2354.2,"Compras":[{"Data":"2025-10-16","Valor":428}]},{"Cliente":"DAIA DEFANTE","VendasTotais":8305.1,"SaldoDevedor":2246.1,"Compras":[{"Data":"2025-02-13","Valor":299},{"Data":"2025-05-20","Valor":411.3},{"Data":"2025-06-13","Valor":748.8},{"Data":"2025-06-23","Valor":469},{"Data":"2025-07-08","Valor":498}]},{"Cliente":"THAIS GOMES","VendasTotais":6005,"SaldoDevedor":1944,"Compras":[{"Data":"2025-08-07","Valor":159}]},{"Cliente":"FABIANA FENSKE","VendasTotais":2381,"SaldoDevedor":1542.42,"Compras":[]},{"Cliente":"ALIEZE","VendasTotais":2367,"SaldoDevedor":1220,"Compras":[{"Data":"2025-08-16","Valor":1220}]},{"Cliente":"CARI AMARAL","VendasTotais":5592.2,"SaldoDevedor":1153.2,"Compras":[{"Data":"2025-08-31","Valor":399},{"Data":"2025-08-05","Valor":539},{"Data":"2025-10-22","Valor":718},{"Data":"2025-03-15","Valor":439.2},{"Data":"2025-04-24","Valor":568},{"Data":"2025-06-09","Valor":927},{"Data":"2025-07-23","Valor":930}]},{"Cliente":"KELLIN OLIVEIRA","VendasTotais":1616,"SaldoDevedor":1077.34,"Compras":[{"Data":"2025-07-08","Valor":1616}]},{"Cliente":"LUCIANDREA MOURA","VendasTotais":7141,"SaldoDevedor":1029,"Compras":[{"Data":"2025-07-26","Valor":1047}]},{"Cliente":"SIMONE GOLDHARDT","VendasTotais":1146,"SaldoDevedor":955,"Compras":[{"Data":"2025-06-09","Valor":1146}]},{"Cliente":"CATIANE NUNES","VendasTotais":2774.9,"SaldoDevedor":872.9,"Compras":[{"Data":"2025-01-20","Valor":1394}]},{"Cliente":"LAIZA BONINI","VendasTotais":2736,"SaldoDevedor":771.6,"Compras":[{"Data":"2025-09-26","Valor":1257}]},{"Cliente":"PATRICIA BONINI","VendasTotais":3587,"SaldoDevedor":637.91,"Compras":[{"Data":"2025-06-30","Valor":338}]},{"Cliente":"RAQUEL LUTZ","VendasTotais":676,"SaldoDevedor":563.34,"Compras":[]},{"Cliente":"SHEILA GIRARDI","VendasTotais":3208,"SaldoDevedor":470,"Compras":[{"Data":"2025-02-08","Valor":299}]},{"Cliente":"MARISA KERSTING","VendasTotais":529,"SaldoDevedor":354,"Compras":[]},{"Cliente":"RAQUEL GARCIA","VendasTotais":967,"SaldoDevedor":338,"Compras":[]},{"Cliente":"LARISSA BONINI","VendasTotais":1205.9,"SaldoDevedor":330.89,"Compras":[{"Data":"2025-09-23","Valor":707}]},{"Cliente":"VERA CASTRO","VendasTotais":888,"SaldoDevedor":319,"Compras":[{"Data":"2025-11-30","Valor":319}]},{"Cliente":"MARISA SIMON","VendasTotais":678,"SaldoDevedor":228,"Compras":[]},{"Cliente":"CATIA ROTH","VendasTotais":898,"SaldoDevedor":0,"Compras":[{"Data":"2025-04-24","Valor":199},{"Data":"2025-06-18","Valor":699}]}];
+    // =======================================================================
+    // FIM DA ÁREA DE DADOS
+    // =======================================================================
 
-        document.addEventListener('DOMContentLoaded', fetchData);
-
-        async function fetchData() {
-            const loadingMessage = document.getElementById('loading-message');
-            const dashboardContent = document.getElementById('dashboard-content');
-            const errorDisplay = document.getElementById('error-display');
-
-            loadingMessage.style.display = 'block';
-            dashboardContent.style.display = 'none';
-            errorDisplay.style.display = 'none';
-
-            try {
-                const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL);
-                
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}. Verifique se a URL do Apps Script está correta e a implantação está ativa.`);
-                }
-                
-                const data = await response.json();
-                console.log('Dados recebidos:', data);
-
-                // Verifica se o JSON retornado pelo Apps Script contém uma mensagem de erro
-                if (data.error) {
-                    throw new Error(`Erro no servidor Apps Script: ${data.error}. Verifique os logs do seu projeto no Google Apps Script.`);
-                }
-
-                renderKPIs(data);
-                renderCombinedFaturamentoSaidasChart(data);
-                renderPagamentosCrediarioChart(data);
-                renderCrediarioTable(data.crediario);
-
-                loadingMessage.style.display = 'none';
-                dashboardContent.style.display = 'grid';
-            } catch (error) {
-                console.error('Erro ao buscar ou processar dados:', error);
-                loadingMessage.style.display = 'none';
-                errorDisplay.textContent = `🚨 Erro ao carregar dados: ${error.message}. Verifique sua conexão ou a configuração do Apps Script.`;
-                errorDisplay.style.display = 'block';
-            }
-        }
-
-        // --- Função para renderizar os cards de KPI ---
-        function renderKPIs(data) {
-            // Garante que faturamento e saidas são arrays e seus itens têm a propriedade Valor
-            const totalFaturamento = (data.faturamento || []).reduce((sum, item) => sum + (item.Valor || 0), 0);
-            const totalSaidas = (data.saidas || []).reduce((sum, item) => sum + (item.Valor || 0), 0);
-            const saldo = totalFaturamento - totalSaidas;
-
-            document.getElementById('total-faturamento').textContent = `R$ ${totalFaturamento.toFixed(2).replace('.', ',')}`; // Formato BR
-            document.getElementById('total-saidas').textContent = `R$ ${totalSaidas.toFixed(2).replace('.', ',')}`; // Formato BR
-            
-            const saldoEl = document.getElementById('saldo-periodo');
-            saldoEl.textContent = `R$ ${saldo.toFixed(2).replace('.', ',')}`; // Formato BR
-            saldoEl.className = `kpi-value ${saldo >= 0 ? 'kpi-positive' : 'kpi-negative'}`; // Cor condicional
-        }
-
-        // --- Função auxiliar para criar layouts de gráficos com estilo consistente ---
-        function createChartLayout(title) {
-            return {
-                title: {
-                    text: title,
-                    font: { size: 18, color: '#0056b3' } // Estilo para o título do gráfico
-                },
-                xaxis: { title: 'Data', type: 'date', tickangle: -45, automargin: true },
-                yaxis: { title: 'Valor (R$)', automargin: true, fixedrange: false }, // fixedrange: false permite zoom no y-axis
-                margin: { t: 60, b: 100, l: 60, r: 30 }, // Ajusta as margens para melhor visualização
-                paper_bgcolor: 'rgba(0,0,0,0)', // Transparente
-                plot_bgcolor: 'rgba(0,0,0,0)', // Transparente
-                hovermode: 'x unified' // Mostra todos os valores na mesma data ao passar o mouse
-            };
-        }
-
-        // Renderiza o gráfico combinado de Faturamento e Saídas
-        function renderCombinedFaturamentoSaidasChart(data) {
-            const faturamentoTrace = {
-                x: (data.faturamento || []).map(item => item.Data),
-                y: (data.faturamento || []).map(item => item.Valor),
-                mode: 'lines+markers',
-                type: 'scatter',
-                name: 'Faturamento',
-                marker: { color: '#4CAF50', size: 6 }, // Verde para faturamento
-                line: { width: 2, shape: 'spline' }, // Linha suave
-                hovertemplate: '<b>Faturamento:</b> R$ %{y:,.2f}<br><b>Data:</b> %{x}<extra></extra>' // Tooltip formatado
-            };
-
-            const saidasTrace = {
-                x: (data.saidas || []).map(item => item.Data),
-                y: (data.saidas || []).map(item => item.Valor),
-                mode: 'lines+markers',
-                type: 'scatter',
-                name: 'Saídas',
-                marker: { color: '#F44336', size: 6 }, // Vermelho para saídas
-                line: { width: 2, shape: 'spline' }, // Linha suave
-                hovertemplate: '<b>Saídas:</b> R$ %{y:,.2f}<br><b>Data:</b> %{x}<extra></extra>' // Tooltip formatado
-            };
-
-            // O hovermode 'x unified' é definido no createChartLayout
-            const combinedLayout = createChartLayout('Faturamento vs. Saídas Diárias');
-            Plotly.newPlot('faturamento-saidas-chart', [faturamentoTrace, saidasTrace], combinedLayout);
-        }
-
-        // Função para o gráfico de Pagamentos de Crediário
-        function renderPagamentosCrediarioChart(data) {
-            const pagamentosTrace = {
-                x: (data.pagamentosCrediario || []).map(item => item.Data),
-                y: (data.pagamentosCrediario || []).map(item => item.Valor),
-                mode: 'lines+markers',
-                type: 'scatter',
-                name: 'Pagamentos Crediário',
-                marker: { color: '#2196F3', size: 6 }, // Azul para pagamentos
-                line: { width: 2, shape: 'spline' }, // Linha suave
-                hovertemplate: '<b>Pagamento:</b> R$ %{y:,.2f}<br><b>Data:</b> %{x}<extra></extra>' // Tooltip formatado
-            };
-
-            Plotly.newPlot('pagamentos-chart', [pagamentosTrace], createChartLayout('Pagamentos de Crediário'));
-        }
-
-        function renderCrediarioTable(crediarioData) {
-            const crediarioTableDiv = document.getElementById('crediario-table');
-            if (!crediarioData || crediarioData.length === 0) {
-                crediarioTableDiv.innerHTML = '<p>Nenhum dado de crediário individual detalhado disponível com a estrutura atual da planilha. Para exibir informações como Cliente, Vendas Totais e Saldo Devedor, seria necessário uma aba ou uma seção específica na planilha com essa estrutura clara.</p>';
-                return;
-            }
-
-            let tableHTML = '<table>';
-            tableHTML += '<thead><tr><th>Cliente</th><th>Vendas Totais (R$)</th><th>Saldo Devedor (R$)</th></tr></thead>';
-            tableHTML += '<tbody>';
-
-            crediarioData.forEach(item => {
-                tableHTML += `
-                    <tr>
-                        <td>${item.Cliente}</td>
-                        <td>${item.VendasTotais !== undefined ? item.VendasTotais.toFixed(2).replace('.', ',') : 'N/A'}</td>
-                        <td>${item.SaldoDevedor !== undefined ? item.SaldoDevedor.toFixed(2).replace('.', ',') : 'N/A'}</td>
-                    </tr>
-                `;
+    let mainChart;
+    const formatCurrency = (value) => value != null ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00';
+    const formatDate = (dateString) => {
+        if (!dateString) return "N/A";
+        const [year, month, day] = dateString.split('-');
+        return `${day}/${month}/${year.slice(-2)}`;
+    };
+    
+    function populateMonthFilters() {
+        const filters = document.querySelectorAll('.month-filter-select');
+        const months = [...new Set(dadosVendas2025.map(d => d.Data.substring(0, 7)))].sort();
+        filters.forEach(filter => {
+            const currentVal = filter.value;
+            filter.innerHTML = '<option value="todos">Ano Inteiro (2025)</option>';
+            months.forEach(month => {
+                const [year, monthNum] = month.split('-');
+                const monthName = new Date(year, monthNum - 1, 1).toLocaleString('pt-BR', { month: 'long' });
+                filter.innerHTML += `<option value="${month}">${monthName.charAt(0).toUpperCase() + monthName.slice(1)}</option>`;
             });
+            filter.value = currentVal || 'todos';
+        });
+    }
 
-            tableHTML += '</tbody></table>';
-            crediarioTableDiv.innerHTML = tableHTML;
+    function updateDashboard(selectedMonth) {
+        let filteredVendas = dadosVendas2025;
+        if (selectedMonth && selectedMonth !== 'todos') {
+            filteredVendas = dadosVendas2025.filter(d => d.Data.startsWith(selectedMonth));
         }
-    </script>
+
+        const faturamento = filteredVendas.reduce((acc, curr) => acc + curr.Valor, 0);
+        const saidas = dadosSaidas2025.filter(s => selectedMonth === 'todos' || s.Data.startsWith(selectedMonth)).reduce((acc, curr) => acc + curr.Valor, 0);
+        const recebido = dadosPagamentosCrediario.filter(p => selectedMonth === 'todos' || p.Data.startsWith(selectedMonth)).reduce((acc, curr) => acc + curr.Valor, 0);
+        
+        const lucro = faturamento - saidas;
+        const numVendas = filteredVendas.length;
+        
+        document.getElementById('kpi-faturamento').innerText = formatCurrency(faturamento);
+        document.getElementById('kpi-saidas-geral').innerText = formatCurrency(saidas);
+        document.getElementById('kpi-lucro').innerText = formatCurrency(lucro);
+        document.getElementById('kpi-lucro').style.color = lucro >= 0 ? '#20c997' : '#ff7675';
+        document.getElementById('kpi-valor-recebido').innerText = formatCurrency(recebido);
+        document.getElementById('kpi-num-vendas').innerText = numVendas;
+        
+        let graphData = {};
+        if (selectedMonth === 'todos') {
+            dadosVendas2025.forEach(venda => {
+                const key = venda.Data.substring(0, 7);
+                if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
+                graphData[key].Faturamento += venda.Valor;
+            });
+            dadosSaidas2025.forEach(saida => {
+                const key = saida.Data.substring(0, 7);
+                if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
+                graphData[key].Saidas += saida.Valor;
+            });
+        } else {
+             filteredVendas.forEach(venda => {
+                const key = venda.Data;
+                if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
+                graphData[key].Faturamento += venda.Valor;
+            });
+            dadosSaidas2025.filter(s => s.Data.startsWith(selectedMonth)).forEach(saida => {
+                 const key = saida.Data;
+                if (!graphData[key]) graphData[key] = { Faturamento: 0, Saidas: 0 };
+                graphData[key].Saidas += saida.Valor;
+            });
+        }
+        
+        const labels = Object.keys(graphData).sort();
+        const faturamentoData = labels.map(key => graphData[key].Faturamento || 0);
+        const saidasData = labels.map(key => graphData[key].Saidas || 0);
+
+        if (mainChart) mainChart.destroy();
+        const chartContainer = document.getElementById('chart-container-geral');
+        chartContainer.innerHTML = '<canvas id="mainChart"></canvas>';
+        mainChart = new Chart(document.getElementById('mainChart'), { type: 'bar', data: { labels: labels.map(l => selectedMonth === 'todos' ? new Date(l+'-02').toLocaleString('default',{month:'short',year:'2-digit'}) : formatDate(l)), datasets: [ { label: 'Faturamento', data: faturamentoData, backgroundColor: '#af4261' }, { label: 'Saídas', data: saidasData, backgroundColor: '#6c757d' } ] }, options: { responsive: true, maintainAspectRatio: false, color: '#f0f0f0', scales: { y: { ticks: { color: '#aaa' }, grid: { color: '#222' } }, x: { ticks: { color: '#aaa' }, grid: { display: false } } } }});
+    }
+    
+    function renderSaidasView(selectedMonth) {
+        let filteredSaidas = dadosSaidas2025;
+        if (selectedMonth && selectedMonth !== 'todos') {
+            filteredSaidas = dadosSaidas2025.filter(s => s.Data.startsWith(selectedMonth));
+        }
+        const totalSaidasMes = filteredSaidas.reduce((sum, item) => sum + item.Valor, 0);
+
+        const container = document.getElementById('saidasContainer');
+        let tableHTML = `<table><thead><tr><th>Data</th><th>Descrição da Saída</th><th style="text-align:right;">Valor</th></tr></thead><tbody>`;
+        if (filteredSaidas.length > 0) {
+            filteredSaidas.sort((a,b) => new Date(b.Data) - new Date(a.Data)).forEach(saida => {
+                tableHTML += `<tr><td>${formatDate(saida.Data)}</td><td>${saida.Descricao}</td><td style="text-align:right;">${formatCurrency(saida.Valor)}</td></tr>`;
+            });
+        } else {
+            tableHTML += `<tr><td colspan="3" style="text-align:center;">Nenhuma saída encontrada.</td></tr>`;
+        }
+        tableHTML += `</tbody><tfoot><tr><td colspan="2" style="text-align:right;">Total do Mês:</td><td style="text-align:right;">${formatCurrency(totalSaidasMes)}</td></tr></tfoot></table>`;
+        container.innerHTML = tableHTML;
+    }
+
+    function renderCrediarioView() {
+        const container = document.getElementById('crediarioContainer');
+        container.innerHTML = '';
+        const sortedData = dadosCrediario.filter(d => d.SaldoDevedor > 0).sort((a, b) => b.SaldoDevedor - a.SaldoDevedor);
+        sortedData.forEach((item, index) => {
+            const itemId = `crediario-details-${index}`;
+            const itemRow = document.createElement('div');
+            itemRow.className = 'item-row';
+            itemRow.setAttribute('onclick', `toggleDetails('${itemId}')`);
+            itemRow.innerHTML = `<span class="item-name">${item.Cliente}</span><span class="item-total-compra">Total: ${formatCurrency(item.VendasTotais)}</span><span class="item-total-value">Devido: ${formatCurrency(item.SaldoDevedor)}</span>`;
+            
+            const detailsRow = document.createElement('div');
+            detailsRow.className = 'details-row';
+            detailsRow.id = itemId;
+            let detailsTable = `<table><thead><tr><th>Data da Compra</th><th style="text-align:right;">Valor</th></tr></thead><tbody>`;
+            if (item.Compras && item.Compras.length > 0) {
+                item.Compras.sort((a, b) => new Date(b.Data) - new Date(a.Data)).forEach(detail => {
+                    detailsTable += `<tr><td>${formatDate(detail.Data)}</td><td style="text-align:right;">${formatCurrency(detail.Valor)}</td></tr>`;
+                });
+            } else {
+                detailsTable += `<tr><td colspan="2" style="text-align:center;">Nenhum detalhe de compra.</td></tr>`;
+            }
+            detailsTable += '</tbody></table>';
+            detailsRow.innerHTML = detailsTable;
+            
+            container.appendChild(itemRow);
+            container.appendChild(detailsRow);
+        });
+    }
+
+    function toggleDetails(elementId) { document.getElementById(elementId).classList.toggle('visible'); }
+    function showView(viewName) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(viewName + 'View').classList.add('active');
+        document.querySelectorAll('.filters button').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.filters button[onclick="showView('${viewName}')"]`).classList.add('active');
+    }
+
+    window.onload = () => {
+        const totalAReceber = dadosCrediario.reduce((acc, curr) => acc + curr.SaldoDevedor, 0);
+        document.getElementById('kpi-a-receber').innerText = formatCurrency(totalAReceber);
+        populateMonthFilters();
+        updateDashboard('todos');
+        renderCrediarioView();
+        renderSaidasView('todos');
+        showView('visaoGeral');
+    };
+</script>
+function carregarDados() {
+  google.script.run
+    .withSuccessHandler(onDadosCarregados)
+    .withFailureHandler(function(e) {
+      console.error('Erro getDados:', e);
+      const el = document.getElementById('ultimaAtualizacao');
+      if (el) el.textContent = 'Falha ao atualizar: ' + (e && e.message ? e.message : e);
+      alert('Erro ao buscar dados da planilha. Veja o console para detalhes.');
+    })
+    .getDados();
+}
+</script>
 </body>
 </html>
