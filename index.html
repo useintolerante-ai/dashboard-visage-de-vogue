@@ -72,6 +72,23 @@
         .crediario-table tbody tr:hover {
             background-color: #e9e9e9;
         }
+        /* Novos estilos para os KPIs */
+        .kpi-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .kpi-positive {
+            color: #4CAF50; /* Verde */
+        }
+        .kpi-negative {
+            color: #F44336; /* Vermelho */
+        }
+        /* Ajuste para o card combinado ocupar a largura total */
+        #faturamento-saidas-card {
+            grid-column: 1 / -1; /* Ocupa a largura total do grid */
+        }
     </style>
     <!-- Incluindo Plotly.js para gráficos -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
@@ -83,14 +100,20 @@
     <div id="error-display" class="error-message" style="display: none;"></div>
 
     <div id="dashboard-content" style="display: none;" class="dashboard-container">
-        <div class="card" id="faturamento-card">
-            <h2>💰 Faturamento Diário</h2>
-            <div id="faturamento-chart"></div>
+        <!-- NOVO: Card de Resumo de KPIs -->
+        <div class="card" id="kpi-summary">
+            <h2>💰 Resumo Financeiro do Período</h2>
+            <h3>Faturamento Total: <span id="total-faturamento" class="kpi-value">R$ 0,00</span></h3>
+            <h3>Saídas Totais: <span id="total-saidas" class="kpi-value">R$ 0,00</span></h3>
+            <h3>Saldo: <span id="saldo-periodo" class="kpi-value">R$ 0,00</span></h3>
         </div>
-        <div class="card" id="saidas-card">
-            <h2>💸 Saídas Diárias</h2>
-            <div id="saidas-chart"></div>
+
+        <!-- NOVO: Gráfico Combinado de Faturamento e Saídas. Substitui os cards individuais de faturamento e saídas. -->
+        <div class="card" id="faturamento-saidas-card">
+            <h2>📈 Faturamento vs. Saídas Diárias</h2>
+            <div id="faturamento-saidas-chart"></div>
         </div>
+
         <div class="card" id="pagamentos-card">
             <h2>💲 Pagamentos de Crediário</h2>
             <div id="pagamentos-chart"></div>
@@ -103,11 +126,10 @@
 
     <script>
         // =======================================================================
-        // ESTA URL É A CHAVE! COLE A URL EXATA QUE RETORNOU O JSON NO NAVEGADOR
+        // ESTA URL É A CHAVE! COLE A URL EXATA QUE RETORNOU O JSON DO GOOGLE APPS SCRIPT AQUI
         // =======================================================================
         const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'COLE_A_SUA_URL_DO_GOOGLE_APPS_SCRIPT_WEB_APP_AQUI'; 
 
-        // Garante que o script só roda depois que o HTML estiver completamente carregado
         document.addEventListener('DOMContentLoaded', fetchData);
 
         async function fetchData() {
@@ -115,112 +137,120 @@
             const dashboardContent = document.getElementById('dashboard-content');
             const errorDisplay = document.getElementById('error-display');
 
-            // Mostra mensagem de carregamento e esconde o conteúdo e erros anteriores
             loadingMessage.style.display = 'block';
             dashboardContent.style.display = 'none';
             errorDisplay.style.display = 'none';
 
             try {
-                // Tenta buscar os dados da URL do Apps Script
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL);
                 
-                // Verifica se a resposta HTTP foi bem-sucedida (status 200-299)
                 if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}. Por favor, verifique se a URL do Apps Script está correta e a implantação está ativa.`);
+                    throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}. Verifique se a URL do Apps Script está correta e a implantação está ativa.`);
                 }
                 
-                // Converte a resposta para JSON
                 const data = await response.json();
-                console.log('Dados recebidos:', data); // Útil para depuração no console do navegador
+                console.log('Dados recebidos:', data);
 
-                // Verifica se o JSON retornado pelo Apps Script contém uma mensagem de erro
                 if (data.error) {
-                    throw new Error(`Erro no servidor Apps Script: ${data.error}. Por favor, verifique os logs do seu projeto no Google Apps Script.`);
+                    throw new Error(`Erro no servidor Apps Script: ${data.error}. Verifique os logs do seu projeto no Google Apps Script.`);
                 }
 
-                // Renderiza os gráficos e a tabela com os dados recebidos
-                renderCharts(data);
+                // Chame as novas funções de renderização
+                renderKPIs(data);
+                renderCombinedFaturamentoSaidasChart(data);
+                renderPagamentosCrediarioChart(data);
                 renderCrediarioTable(data.crediario);
 
-                // Esconde a mensagem de carregamento e mostra o dashboard
                 loadingMessage.style.display = 'none';
-                dashboardContent.style.display = 'grid'; // Altere para 'block' se o grid não for o ideal para o seu layout
+                dashboardContent.style.display = 'grid';
             } catch (error) {
-                // Captura e exibe qualquer erro que ocorra durante o processo
                 console.error('Erro ao buscar ou processar dados:', error);
                 loadingMessage.style.display = 'none';
-                errorDisplay.textContent = `🚨 Erro ao carregar dados: ${error.message}. Por favor, verifique sua conexão ou a configuração do Apps Script.`;
+                errorDisplay.textContent = `🚨 Erro ao carregar dados: ${error.message}. Verifique sua conexão ou a configuração do Apps Script.`;
                 errorDisplay.style.display = 'block';
             }
         }
 
-        function renderCharts(data) {
-            // --- Gráfico de Faturamento Diário ---
-            const faturamentoDates = data.faturamento.map(item => item.Data);
-            const faturamentoValues = data.faturamento.map(item => item.Valor);
+        // --- Função para renderizar os cards de KPI ---
+        function renderKPIs(data) {
+            // Garante que faturamento e saidas são arrays e seus itens têm a propriedade Valor
+            const totalFaturamento = (data.faturamento || []).reduce((sum, item) => sum + (item.Valor || 0), 0);
+            const totalSaidas = (data.saidas || []).reduce((sum, item) => sum + (item.Valor || 0), 0);
+            const saldo = totalFaturamento - totalSaidas;
 
+            document.getElementById('total-faturamento').textContent = `R$ ${totalFaturamento.toFixed(2).replace('.', ',')}`; // Formato BR
+            document.getElementById('total-saidas').textContent = `R$ ${totalSaidas.toFixed(2).replace('.', ',')}`; // Formato BR
+            
+            const saldoEl = document.getElementById('saldo-periodo');
+            saldoEl.textContent = `R$ ${saldo.toFixed(2).replace('.', ',')}`; // Formato BR
+            saldoEl.className = `kpi-value ${saldo >= 0 ? 'kpi-positive' : 'kpi-negative'}`; // Cor condicional
+        }
+
+        // --- Função auxiliar para criar layouts de gráficos com estilo consistente ---
+        function createChartLayout(title) {
+            return {
+                title: {
+                    text: title,
+                    font: { size: 18, color: '#0056b3' } // Estilo para o título do gráfico
+                },
+                xaxis: { title: 'Data', type: 'date', tickangle: -45, automargin: true },
+                yaxis: { title: 'Valor (R$)', automargin: true, fixedrange: false }, // fixedrange: false permite zoom no y-axis
+                margin: { t: 60, b: 100, l: 60, r: 30 }, // Ajusta as margens para melhor visualização
+                paper_bgcolor: 'rgba(0,0,0,0)', // Transparente
+                plot_bgcolor: 'rgba(0,0,0,0)', // Transparente
+                hovermode: 'x unified' // Mostra todos os valores na mesma data ao passar o mouse
+            };
+        }
+
+        // NOVO: Renderiza o gráfico combinado de Faturamento e Saídas
+        function renderCombinedFaturamentoSaidasChart(data) {
             const faturamentoTrace = {
-                x: faturamentoDates,
-                y: faturamentoValues,
+                x: (data.faturamento || []).map(item => item.Data),
+                y: (data.faturamento || []).map(item => item.Valor),
                 mode: 'lines+markers',
                 type: 'scatter',
-                name: 'Faturamento Diário',
-                marker: { color: '#4CAF50' } // Verde para faturamento
+                name: 'Faturamento',
+                marker: { color: '#4CAF50', size: 6 }, // Verde para faturamento
+                line: { width: 2, shape: 'spline' }, // Linha suave
+                hovertemplate: '<b>Faturamento:</b> R$ %{y:,.2f}<br><b>Data:</b> %{x}<extra></extra>' // Tooltip formatado
             };
-
-            const faturamentoLayout = {
-                title: 'Faturamento Diário',
-                xaxis: { title: 'Data', type: 'date', tickangle: 45 },
-                yaxis: { title: 'Valor (R$)' }
-            };
-            Plotly.newPlot('faturamento-chart', [faturamentoTrace], faturamentoLayout);
-
-            // --- Gráfico de Saídas Diárias ---
-            const saidasDates = data.saidas.map(item => item.Data);
-            const saidasValues = data.saidas.map(item => item.Valor);
 
             const saidasTrace = {
-                x: saidasDates,
-                y: saidasValues,
+                x: (data.saidas || []).map(item => item.Data),
+                y: (data.saidas || []).map(item => item.Valor),
                 mode: 'lines+markers',
                 type: 'scatter',
-                name: 'Saídas Diárias',
-                marker: { color: '#F44336' } // Vermelho para saídas
+                name: 'Saídas',
+                marker: { color: '#F44336', size: 6 }, // Vermelho para saídas
+                line: { width: 2, shape: 'spline' }, // Linha suave
+                hovertemplate: '<b>Saídas:</b> R$ %{y:,.2f}<br><b>Data:</b> %{x}<extra></extra>' // Tooltip formatado
             };
 
-            const saidasLayout = {
-                title: 'Saídas Diárias',
-                xaxis: { title: 'Data', type: 'date', tickangle: 45 },
-                yaxis: { title: 'Valor (R$)' }
-            };
-            Plotly.newPlot('saidas-chart', [saidasTrace], saidasLayout);
+            // O hovermode 'x unified' é definido no createChartLayout
+            const combinedLayout = createChartLayout('Faturamento vs. Saídas Diárias');
+            Plotly.newPlot('faturamento-saidas-chart', [faturamentoTrace, saidasTrace], combinedLayout);
+        }
 
-            // --- Gráfico de Pagamentos de Crediário ---
-            const pagamentosDates = data.pagamentosCrediario.map(item => item.Data);
-            const pagamentosValues = data.pagamentosCrediario.map(item => item.Valor);
-
+        // Função para o gráfico de Pagamentos de Crediário
+        function renderPagamentosCrediarioChart(data) {
             const pagamentosTrace = {
-                x: pagamentosDates,
-                y: pagamentosValues,
+                x: (data.pagamentosCrediario || []).map(item => item.Data),
+                y: (data.pagamentosCrediario || []).map(item => item.Valor),
                 mode: 'lines+markers',
                 type: 'scatter',
                 name: 'Pagamentos Crediário',
-                marker: { color: '#2196F3' } // Azul para pagamentos
+                marker: { color: '#2196F3', size: 6 }, // Azul para pagamentos
+                line: { width: 2, shape: 'spline' }, // Linha suave
+                hovertemplate: '<b>Pagamento:</b> R$ %{y:,.2f}<br><b>Data:</b> %{x}<extra></extra>' // Tooltip formatado
             };
 
-            const pagamentosLayout = {
-                title: 'Pagamentos de Crediário',
-                xaxis: { title: 'Data', type: 'date', tickangle: 45 },
-                yaxis: { title: 'Valor (R$)' }
-            };
-            Plotly.newPlot('pagamentos-chart', [pagamentosTrace], pagamentosLayout);
+            Plotly.newPlot('pagamentos-chart', [pagamentosTrace], createChartLayout('Pagamentos de Crediário'));
         }
 
         function renderCrediarioTable(crediarioData) {
             const crediarioTableDiv = document.getElementById('crediario-table');
-            // Se não houver dados de crediário ou a lista estiver vazia
             if (!crediarioData || crediarioData.length === 0) {
-                crediarioTableDiv.innerHTML = '<p>Nenhum dado de crediário disponível para exibição.</p>';
+                crediarioTableDiv.innerHTML = '<p>Nenhum dado de crediário individual detalhado disponível com a estrutura atual da planilha. Para exibir informações como Cliente, Vendas Totais e Saldo Devedor, seria necessário uma aba ou uma seção específica na planilha com essa estrutura clara.</p>';
                 return;
             }
 
@@ -228,13 +258,12 @@
             tableHTML += '<thead><tr><th>Cliente</th><th>Vendas Totais (R$)</th><th>Saldo Devedor (R$)</th></tr></thead>';
             tableHTML += '<tbody>';
 
-            // Preenche a tabela com os dados do crediário
             crediarioData.forEach(item => {
                 tableHTML += `
                     <tr>
                         <td>${item.Cliente}</td>
-                        <td>${item.VendasTotais !== undefined ? item.VendasTotais.toFixed(2) : 'N/A'}</td>
-                        <td>${item.SaldoDevedor !== undefined ? item.SaldoDevedor.toFixed(2) : 'N/A'}</td>
+                        <td>${item.VendasTotais !== undefined ? item.VendasTotais.toFixed(2).replace('.', ',') : 'N/A'}</td>
+                        <td>${item.SaldoDevedor !== undefined ? item.SaldoDevedor.toFixed(2).replace('.', ',') : 'N/A'}</td>
                     </tr>
                 `;
             });
