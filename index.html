@@ -90,17 +90,17 @@
             grid-column: 1 / -1; /* Ocupa a largura total do grid */
         }
     </style>
-    <!-- Incluindo Plotly.js para gráficos -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Alterado para usar uma versão específica e mais recente do Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js" charset="utf-8"></script>
 </head>
 <body>
-    <h1>📊 Meu Dashboard Financeiro 📈</h1>
+    <h1>📊 Meu Dashboard Financeiro ��</h1>
     
     <div id="loading-message" class="card">Carregando dados... Por favor, aguarde.</div>
     <div id="error-display" class="error-message" style="display: none;"></div>
 
     <div id="dashboard-content" style="display: none;" class="dashboard-container">
-        <!-- NOVO: Card de Resumo de KPIs -->
+        <!-- Card de Resumo de KPIs -->
         <div class="card" id="kpi-summary">
             <h2>💰 Resumo Financeiro do Período</h2>
             <h3>Faturamento Total: <span id="total-faturamento" class="kpi-value">R$ 0,00</span></h3>
@@ -108,7 +108,7 @@
             <h3>Saldo: <span id="saldo-periodo" class="kpi-value">R$ 0,00</span></h3>
         </div>
 
-        <!-- NOVO: Gráfico Combinado de Faturamento e Saídas. Substitui os cards individuais de faturamento e saídas. -->
+        <!-- Gráfico Combinado de Faturamento e Saídas -->
         <div class="card" id="faturamento-saidas-card">
             <h2>📈 Faturamento vs. Saídas Diárias</h2>
             <div id="faturamento-saidas-chart"></div>
@@ -126,9 +126,9 @@
 
     <script>
         // =======================================================================
-        // ESTA URL É A CHAVE! COLE A URL EXATA QUE RETORNOU O JSON DO GOOGLE APPS SCRIPT AQUI
+        // ESTA URL É A CHAVE! A URL EXATA QUE RETORNA O JSON DO GOOGLE APPS SCRIPT FOI INSERIDA AQUI.
         // =======================================================================
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'COLE_A_SUA_URL_DO_GOOGLE_APPS_SCRIPT_WEB_APP_AQUI'; 
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzaBwFKtmP5gF_68DblxZnJjs4K3gdtURtqeLoDa22__N6jKOFiMgWEe2wLbsadz8A/exec'; 
 
         document.addEventListener('DOMContentLoaded', fetchData);
 
@@ -155,7 +155,6 @@
                     throw new Error(`Erro no servidor Apps Script: ${data.error}. Verifique os logs do seu projeto no Google Apps Script.`);
                 }
 
-                // Chame as novas funções de renderização
                 renderKPIs(data);
                 renderCombinedFaturamentoSaidasChart(data);
                 renderPagamentosCrediarioChart(data);
@@ -202,7 +201,7 @@
             };
         }
 
-        // NOVO: Renderiza o gráfico combinado de Faturamento e Saídas
+        // Renderiza o gráfico combinado de Faturamento e Saídas
         function renderCombinedFaturamentoSaidasChart(data) {
             const faturamentoTrace = {
                 x: (data.faturamento || []).map(item => item.Data),
