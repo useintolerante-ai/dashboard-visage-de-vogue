@@ -110,7 +110,7 @@
 
         <!-- Gráfico Combinado de Faturamento e Saídas -->
         <div class="card" id="faturamento-saidas-card">
-            <h2>📈 Faturamento vs. Saídas Diárias</h2>
+            <h2>�� Faturamento vs. Saídas Diárias</h2>
             <div id="faturamento-saidas-chart"></div>
         </div>
 
@@ -126,7 +126,7 @@
 
     <script>
         // =======================================================================
-        // ESTA URL É A CHAVE! A URL EXATA QUE RETORNA O JSON DO GOOGLE APPS SCRIPT FOI INSERIDA AQUI.
+        // ESTA É A SUA URL DO GOOGLE APPS SCRIPT WEB APP - JÁ INSERIDA CORRETAMENTE.
         // =======================================================================
         const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzaBwFKtmP5gF_68DblxZnJjs4K3gdtURtqeLoDa22__N6jKOFiMgWEe2wLbsadz8A/exec'; 
 
@@ -151,6 +151,7 @@
                 const data = await response.json();
                 console.log('Dados recebidos:', data);
 
+                // Verifica se o JSON retornado pelo Apps Script contém uma mensagem de erro
                 if (data.error) {
                     throw new Error(`Erro no servidor Apps Script: ${data.error}. Verifique os logs do seu projeto no Google Apps Script.`);
                 }
