@@ -96,8 +96,15 @@ async def upload_excel(file: UploadFile = File(...)):
         sales_records = []
         for index, row in df.iterrows():
             try:
+                # Extract department number from strings like "2 - MAGAZINE" or just "2"
+                dept_value = str(row['Departamento']).strip()
+                if '-' in dept_value:
+                    dept_number = int(dept_value.split('-')[0].strip())
+                else:
+                    dept_number = int(float(dept_value))  # Handle floats like 2.0
+                
                 sales_record = SalesData(
-                    departamento=int(row['Departamento']),
+                    departamento=dept_number,
                     custo_medio=float(row['Custo Médio']),
                     d_estoque=float(row['D. Estoque']),
                     pmp=float(row['PMP']),
