@@ -5,7 +5,7 @@ import { useDropzone } from "react-dropzone";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
 import { Button } from "./components/ui/button";
 import { Badge } from "./components/ui/badge";
-import { Upload, TrendingUp, TrendingDown, BarChart3, FileSpreadsheet } from "lucide-react";
+import { Upload, TrendingUp, TrendingDown, BarChart3, FileSpreadsheet, RefreshCw, Cloud, CloudOff } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -14,7 +14,9 @@ const API = `${BACKEND_URL}/api`;
 function App() {
   const [dashboardData, setDashboardData] = useState(null);
   const [chartData, setChartData] = useState(null);
+  const [sheetsStatus, setSheetsStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -53,6 +55,25 @@ function App() {
     }
   }
 
+  async function syncGoogleSheets() {
+    setIsSyncing(true);
+    try {
+      const response = await axios.get(`${API}/sync-sheets`);
+      console.log('Sincronização iniciada:', response.data);
+      
+      // Wait a bit then reload data
+      setTimeout(async () => {
+        await loadDashboardData();
+        await loadSheetsStatus();
+        setIsSyncing(false);
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Erro na sincronização:', error);
+      setIsSyncing(false);
+    }
+  }
+
   async function loadDashboardData() {
     try {
       const [summaryResponse, chartResponse] = await Promise.all([
@@ -67,8 +88,26 @@ function App() {
     }
   }
 
+  async function loadSheetsStatus() {
+    try {
+      const response = await axios.get(`${API}/sheets-status`);
+      setSheetsStatus(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar status do Google Sheets:', error);
+    }
+  }
+
   useEffect(() => {
     loadDashboardData();
+    loadSheetsStatus();
+    
+    // Auto refresh every 5 minutes
+    const interval = setInterval(() => {
+      loadDashboardData();
+      loadSheetsStatus();
+    }, 300000); // 5 minutes
+    
+    return () => clearInterval(interval);
   }, []);
 
   const COLORS = ['#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
@@ -84,49 +123,124 @@ function App() {
     return `${(value * 100).toFixed(2)}%`;
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "Nunca";
+    try {
+      return new Date(dateString).toLocaleString('pt-BR');
+    } catch {
+      return "Inválido";
+    }
+  };
+
+  const getDataSourceBadge = (source) => {
+    switch (source) {
+      case 'sheets':
+        return <Badge className="bg-green-100 text-green-800"><Cloud className="h-3 w-3 mr-1" />Google Sheets</Badge>;
+      case 'upload':
+        return <Badge className="bg-blue-100 text-blue-800"><Upload className="h-3 w-3 mr-1" />Upload Manual</Badge>;
+      case 'mixed':
+        return <Badge className="bg-yellow-100 text-yellow-800"><FileSpreadsheet className="h-3 w-3 mr-1" />Misto</Badge>;
+      default:
+        return <Badge variant="secondary"><CloudOff className="h-3 w-3 mr-1" />Sem dados</Badge>;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-800 mb-2">Dashboard de Vendas</h1>
-          <p className="text-slate-600">Análise completa de performance por departamento</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-slate-800 mb-2">Dashboard de Vendas</h1>
+              <p className="text-slate-600">Análise completa de performance por departamento</p>
+            </div>
+            <div className="flex items-center gap-4">
+              {sheetsStatus && (
+                <div className="text-right">
+                  <p className="text-sm text-slate-600">
+                    Google Sheets: {sheetsStatus.api_key_set ? 
+                      <span className="text-green-600 font-semibold">Conectado</span> : 
+                      <span className="text-red-600 font-semibold">Desconectado</span>
+                    }
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Última sync: {formatDate(sheetsStatus.last_sync)}
+                  </p>
+                </div>
+              )}
+              <Button 
+                onClick={syncGoogleSheets} 
+                disabled={isSyncing}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+                {isSyncing ? 'Sincronizando...' : 'Sync Google Sheets'}
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Upload Area */}
-        <Card className="mb-8 border-dashed border-2 border-slate-300 hover:border-violet-400 transition-colors">
-          <CardContent className="p-8">
-            <div {...getRootProps()} className="cursor-pointer text-center">
-              <input {...getInputProps()} />
-              <div className="flex flex-col items-center gap-4">
-                <div className="p-4 bg-violet-100 rounded-full">
-                  <Upload className="h-8 w-8 text-violet-600" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-slate-700">
-                    {isDragActive
-                      ? "Solte a planilha aqui..."
-                      : "Clique ou arraste sua planilha Excel (.xlsx)"}
-                  </p>
-                  <p className="text-sm text-slate-500 mt-1">
-                    Formatos suportados: .xlsx, .xls
-                  </p>
-                </div>
-                {isLoading && (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-violet-600"></div>
-                    <span className="text-sm text-slate-600">Processando...</span>
+        {/* Data Source Status */}
+        {dashboardData && (
+          <div className="mb-6">
+            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm font-medium text-slate-700">Fonte dos dados:</span>
+                    {getDataSourceBadge(dashboardData.data_source)}
+                    {dashboardData.last_sync && (
+                      <span className="text-xs text-slate-500">
+                        Última atualização: {formatDate(dashboardData.last_sync)}
+                      </span>
+                    )}
                   </div>
-                )}
-                {uploadStatus && (
-                  <Badge variant={uploadStatus.includes("✅") ? "default" : "destructive"}>
-                    {uploadStatus}
-                  </Badge>
-                )}
+                  <div className="text-sm text-slate-600">
+                    {dashboardData.departamentos_count} departamentos carregados
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Upload Area - Only show if no Google Sheets data */}
+        {(!dashboardData || dashboardData.data_source === 'none' || dashboardData.data_source === 'upload') && (
+          <Card className="mb-8 border-dashed border-2 border-slate-300 hover:border-violet-400 transition-colors">
+            <CardContent className="p-8">
+              <div {...getRootProps()} className="cursor-pointer text-center">
+                <input {...getInputProps()} />
+                <div className="flex flex-col items-center gap-4">
+                  <div className="p-4 bg-violet-100 rounded-full">
+                    <Upload className="h-8 w-8 text-violet-600" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold text-slate-700">
+                      {isDragActive
+                        ? "Solte a planilha aqui..."
+                        : "Upload manual de planilha Excel (.xlsx)"}
+                    </p>
+                    <p className="text-sm text-slate-500 mt-1">
+                      Use este método apenas se o Google Sheets não estiver funcionando
+                    </p>
+                  </div>
+                  {isLoading && (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-violet-600"></div>
+                      <span className="text-sm text-slate-600">Processando...</span>
+                    </div>
+                  )}
+                  {uploadStatus && (
+                    <Badge variant={uploadStatus.includes("✅") ? "default" : "destructive"}>
+                      {uploadStatus}
+                    </Badge>
+                  )}
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Dashboard Content */}
         {dashboardData && chartData && (
@@ -298,8 +412,10 @@ function App() {
                   <FileSpreadsheet className="h-12 w-12 text-slate-400" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-slate-700 mb-2">Nenhum dado carregado</h3>
-                  <p className="text-slate-500">Faça o upload da sua planilha Excel para visualizar o dashboard</p>
+                  <h3 className="text-xl font-semibold text-slate-700 mb-2">Dashboard carregando...</h3>
+                  <p className="text-slate-500">
+                    Aguarde enquanto sincronizamos com o Google Sheets ou faça upload de uma planilha
+                  </p>
                 </div>
               </div>
             </CardContent>
