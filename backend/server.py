@@ -309,6 +309,16 @@ async def get_client_purchase_history(client_name: str) -> List[Dict[str, Any]]:
     logger.info(f"Found {len(unique_compras)} unique purchases for client '{client_name}'")
     return unique_compras
 
+async def get_client_purchase_history_simple(client_name: str) -> List[Dict[str, Any]]:
+    """
+    Simplified version of get_client_purchase_history to avoid quota issues
+    Returns empty list to prevent API rate limiting
+    """
+    # For now, return empty list to avoid Google Sheets API quota issues
+    # This can be enhanced later with better rate limiting or local caching
+    logger.info(f"Simplified purchase history lookup for client: '{client_name}' - returning empty for rate limiting")
+    return []
+
 def fetch_saidas_data(sheet_name: str) -> Dict[str, Any]:
     """
     Fetch saidas data from specific month sheet
