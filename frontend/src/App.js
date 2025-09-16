@@ -247,6 +247,9 @@ function App() {
       } else if (type === 'currency') {
         aVal = typeof aVal === 'number' ? aVal : parseFloat(aVal) || 0;
         bVal = typeof bVal === 'number' ? bVal : parseFloat(bVal) || 0;
+      } else if (type === 'boolean') {
+        aVal = Boolean(aVal);
+        bVal = Boolean(bVal);
       } else {
         aVal = String(aVal).toLowerCase();
         bVal = String(bVal).toLowerCase();
