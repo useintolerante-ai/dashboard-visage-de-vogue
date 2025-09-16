@@ -634,17 +634,11 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
                     else:
                         valor_saida = temp_valor_saida
             
-            # Crediario - read ALL valid payments, only exclude TOTAL lines
+            # Crediario - capture ALL payments since user removed total lines from sheet
             if crediario_value and 'R$' in crediario_value and 'R$  -' not in crediario_value:
                 temp_valor_crediario = extract_currency_value(crediario_value)
                 if temp_valor_crediario > 0:
-                    # Only exclude rows that explicitly contain TOTAL keywords, no value thresholds
-                    full_row_text = ' '.join([str(cell).upper() for cell in row if cell]).strip()
-                    if ('TOTAL' in full_row_text or 'SOMA' in full_row_text or 
-                        'SUBTOTAL' in full_row_text or 'SALDO' in full_row_text):
-                        pass  # Skip total lines
-                    else:
-                        valor_crediario = temp_valor_crediario
+                    valor_crediario = temp_valor_crediario
             
             # Create record if we have any meaningful data
             if valor_venda > 0 or valor_saida > 0 or valor_crediario > 0:
