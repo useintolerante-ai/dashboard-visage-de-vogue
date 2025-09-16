@@ -1,8 +1,6 @@
 import requests
 import sys
 import json
-import io
-import pandas as pd
 from datetime import datetime
 
 class SalesDashboardTester:
@@ -11,27 +9,24 @@ class SalesDashboardTester:
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
         self.tests_passed = 0
+        self.critical_failures = []
 
-    def run_test(self, name, method, endpoint, expected_status, data=None, files=None):
+    def run_test(self, name, method, endpoint, expected_status, params=None):
         """Run a single API test"""
         url = f"{self.api_url}/{endpoint}"
-        headers = {}
-        
-        if files is None:
-            headers['Content-Type'] = 'application/json'
+        headers = {'Content-Type': 'application/json'}
 
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
         print(f"   URL: {url}")
+        if params:
+            print(f"   Params: {params}")
         
         try:
             if method == 'GET':
-                response = requests.get(url, headers=headers, timeout=10)
+                response = requests.get(url, headers=headers, params=params, timeout=15)
             elif method == 'POST':
-                if files:
-                    response = requests.post(url, files=files, timeout=30)
-                else:
-                    response = requests.post(url, json=data, headers=headers, timeout=10)
+                response = requests.post(url, headers=headers, timeout=15)
 
             print(f"   Status Code: {response.status_code}")
             
@@ -50,129 +45,204 @@ class SalesDashboardTester:
                 try:
                     error_detail = response.json()
                     print(f"   Error: {error_detail}")
+                    self.critical_failures.append(f"{name}: {error_detail}")
                 except:
                     print(f"   Error: {response.text}")
+                    self.critical_failures.append(f"{name}: {response.text}")
                 return False, {}
 
         except requests.exceptions.Timeout:
             print(f"❌ Failed - Request timeout")
+            self.critical_failures.append(f"{name}: Request timeout")
             return False, {}
         except Exception as e:
             print(f"❌ Failed - Error: {str(e)}")
+            self.critical_failures.append(f"{name}: {str(e)}")
             return False, {}
 
     def test_root_endpoint(self):
         """Test the root API endpoint"""
         return self.run_test("Root API Endpoint", "GET", "", 200)
 
-    def test_dashboard_summary_empty(self):
-        """Test dashboard summary with no data"""
-        success, response = self.run_test("Dashboard Summary (Empty)", "GET", "dashboard-summary", 200)
+    def test_dashboard_summary_janeiro(self):
+        """Test dashboard summary for Janeiro"""
+        success, response = self.run_test("Dashboard Summary - Janeiro", "GET", "dashboard-summary", 200, {"mes": "janeiro"})
         if success and isinstance(response, dict):
-            expected_keys = ['total_vendas', 'margem_media_24', 'margem_media_25', 'variacao_total', 'departamentos_count', 'top_departamentos']
+            expected_keys = ['faturamento', 'saidas', 'lucro_bruto', 'recebido_crediario', 'a_receber_crediario', 'num_vendas']
             missing_keys = [key for key in expected_keys if key not in response]
             if missing_keys:
                 print(f"   ⚠️  Missing keys in response: {missing_keys}")
+                return False, response
             else:
                 print(f"   ✅ All expected keys present")
-                print(f"   📊 Empty state values: vendas={response.get('total_vendas')}, deps={response.get('departamentos_count')}")
+                print(f"   📊 KPIs - Faturamento: R$ {response.get('faturamento', 0):,.2f}")
+                print(f"   📊 KPIs - Saídas: R$ {response.get('saidas', 0):,.2f}")
+                print(f"   📊 KPIs - Lucro Bruto: R$ {response.get('lucro_bruto', 0):,.2f}")
+                print(f"   📊 KPIs - Recebido Crediário: R$ {response.get('recebido_crediario', 0):,.2f}")
+                print(f"   📊 KPIs - Num Vendas: {response.get('num_vendas', 0)}")
         return success, response
 
-    def test_chart_data_empty(self):
-        """Test chart data with no data"""
-        success, response = self.run_test("Chart Data (Empty)", "GET", "chart-data", 200)
+    def test_dashboard_summary_marco(self):
+        """Test dashboard summary for Marco"""
+        success, response = self.run_test("Dashboard Summary - Marco", "GET", "dashboard-summary", 200, {"mes": "marco"})
         if success and isinstance(response, dict):
-            expected_keys = ['vendas_por_departamento', 'comparativo_margens', 'variacao_departamentos']
+            expected_keys = ['faturamento', 'saidas', 'lucro_bruto', 'recebido_crediario', 'a_receber_crediario', 'num_vendas']
             missing_keys = [key for key in expected_keys if key not in response]
             if missing_keys:
                 print(f"   ⚠️  Missing keys in response: {missing_keys}")
+                return False, response
             else:
                 print(f"   ✅ All expected keys present")
+                print(f"   📊 KPIs - Faturamento: R$ {response.get('faturamento', 0):,.2f}")
+                print(f"   📊 KPIs - Saídas: R$ {response.get('saidas', 0):,.2f}")
+                print(f"   📊 KPIs - Lucro Bruto: R$ {response.get('lucro_bruto', 0):,.2f}")
+                print(f"   📊 KPIs - Recebido Crediário: R$ {response.get('recebido_crediario', 0):,.2f}")
+                print(f"   📊 KPIs - Num Vendas: {response.get('num_vendas', 0)}")
         return success, response
 
-    def test_sales_data_empty(self):
-        """Test sales data with no data"""
-        return self.run_test("Sales Data (Empty)", "GET", "sales-data", 200)
+    def test_dashboard_summary_setembro(self):
+        """Test dashboard summary for Setembro"""
+        success, response = self.run_test("Dashboard Summary - Setembro", "GET", "dashboard-summary", 200, {"mes": "setembro"})
+        if success and isinstance(response, dict):
+            expected_keys = ['faturamento', 'saidas', 'lucro_bruto', 'recebido_crediario', 'a_receber_crediario', 'num_vendas']
+            missing_keys = [key for key in expected_keys if key not in response]
+            if missing_keys:
+                print(f"   ⚠️  Missing keys in response: {missing_keys}")
+                return False, response
+            else:
+                print(f"   ✅ All expected keys present")
+                print(f"   📊 KPIs - Faturamento: R$ {response.get('faturamento', 0):,.2f}")
+                print(f"   📊 KPIs - Saídas: R$ {response.get('saidas', 0):,.2f}")
+                print(f"   📊 KPIs - Lucro Bruto: R$ {response.get('lucro_bruto', 0):,.2f}")
+                print(f"   📊 KPIs - Recebido Crediário: R$ {response.get('recebido_crediario', 0):,.2f}")
+                print(f"   📊 KPIs - Num Vendas: {response.get('num_vendas', 0)}")
+        return success, response
 
-    def create_mock_excel_file(self):
-        """Create a mock Excel file for testing"""
-        data = {
-            'Departamento': [101, 102, 103, 104, 105],
-            'Custo Médio': [50.0, 75.0, 100.0, 125.0, 150.0],
-            'D. Estoque': [30, 45, 60, 75, 90],
-            'PMP': [60.0, 90.0, 120.0, 150.0, 180.0],
-            'Meta IA': [1000, 1500, 2000, 2500, 3000],
-            'Venda R$': [5000.0, 7500.0, 10000.0, 12500.0, 15000.0],
-            'Margem 24': [0.20, 0.25, 0.30, 0.35, 0.40],
-            'Margem 25': [0.22, 0.27, 0.32, 0.37, 0.42],
-            '% Variação': [0.10, 0.08, 0.067, 0.057, 0.05]
-        }
-        
-        df = pd.DataFrame(data)
-        
-        # Create Excel file in memory
-        excel_buffer = io.BytesIO()
-        df.to_excel(excel_buffer, index=False, engine='openpyxl')
-        excel_buffer.seek(0)
-        
-        return excel_buffer
+    def test_dashboard_summary_anointeiro(self):
+        """Test dashboard summary for Ano Inteiro"""
+        success, response = self.run_test("Dashboard Summary - Ano Inteiro", "GET", "dashboard-summary", 200, {"mes": "anointeiro"})
+        if success and isinstance(response, dict):
+            expected_keys = ['faturamento', 'saidas', 'lucro_bruto', 'recebido_crediario', 'a_receber_crediario', 'num_vendas']
+            missing_keys = [key for key in expected_keys if key not in response]
+            if missing_keys:
+                print(f"   ⚠️  Missing keys in response: {missing_keys}")
+                return False, response
+            else:
+                print(f"   ✅ All expected keys present")
+                print(f"   📊 KPIs - Faturamento: R$ {response.get('faturamento', 0):,.2f}")
+                print(f"   📊 KPIs - Saídas: R$ {response.get('saidas', 0):,.2f}")
+                print(f"   📊 KPIs - Lucro Bruto: R$ {response.get('lucro_bruto', 0):,.2f}")
+                print(f"   📊 KPIs - Recebido Crediário: R$ {response.get('recebido_crediario', 0):,.2f}")
+                print(f"   📊 KPIs - Num Vendas: {response.get('num_vendas', 0)}")
+        return success, response
 
-    def test_excel_upload(self):
-        """Test Excel file upload"""
-        try:
-            excel_file = self.create_mock_excel_file()
-            files = {'file': ('test_sales.xlsx', excel_file, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
-            
-            success, response = self.run_test("Excel Upload", "POST", "upload-excel", 200, files=files)
-            
-            if success and isinstance(response, dict):
-                records_count = response.get('records_count', 0)
-                print(f"   📊 Processed {records_count} records")
-                if records_count > 0:
-                    print(f"   ✅ Upload successful with data")
-                    return True, response
+    def test_crediario_data(self):
+        """Test crediario data endpoint - should show purchase history, not payments"""
+        success, response = self.run_test("Crediario Data", "GET", "crediario-data", 200)
+        if success and isinstance(response, dict):
+            expected_keys = ['clientes', 'total_clientes']
+            missing_keys = [key for key in expected_keys if key not in response]
+            if missing_keys:
+                print(f"   ⚠️  Missing keys in response: {missing_keys}")
+                return False, response
+            else:
+                print(f"   ✅ All expected keys present")
+                clientes = response.get('clientes', [])
+                total_clientes = response.get('total_clientes', 0)
+                print(f"   📊 Total clientes: {total_clientes}")
+                
+                if clientes and len(clientes) > 0:
+                    # Check first client structure
+                    first_client = clientes[0]
+                    client_keys = ['nome', 'vendas_totais', 'saldo_devedor', 'compras']
+                    missing_client_keys = [key for key in client_keys if key not in first_client]
+                    if missing_client_keys:
+                        print(f"   ⚠️  Missing client keys: {missing_client_keys}")
+                        return False, response
+                    
+                    print(f"   📊 First client: {first_client.get('nome', 'N/A')}")
+                    print(f"   📊 Vendas totais: R$ {first_client.get('vendas_totais', 0):,.2f}")
+                    print(f"   📊 Saldo devedor: R$ {first_client.get('saldo_devedor', 0):,.2f}")
+                    
+                    compras = first_client.get('compras', [])
+                    print(f"   📊 Purchase history entries: {len(compras)}")
+                    
+                    if compras and len(compras) > 0:
+                        first_purchase = compras[0]
+                        if 'data' in first_purchase and 'valor' in first_purchase:
+                            print(f"   ✅ Purchase history structure correct: data + valor")
+                            print(f"   📊 First purchase: {first_purchase.get('data')} - R$ {first_purchase.get('valor', 0):,.2f}")
+                        else:
+                            print(f"   ❌ Purchase history missing 'data' or 'valor' fields")
+                            return False, response
+                    else:
+                        print(f"   ⚠️  No purchase history found for first client")
                 else:
-                    print(f"   ⚠️  Upload successful but no records processed")
-                    return False, response
-            return success, response
-            
-        except Exception as e:
-            print(f"❌ Failed to create or upload Excel file: {str(e)}")
-            return False, {}
-
-    def test_dashboard_summary_with_data(self):
-        """Test dashboard summary after uploading data"""
-        success, response = self.run_test("Dashboard Summary (With Data)", "GET", "dashboard-summary", 200)
-        if success and isinstance(response, dict):
-            total_vendas = response.get('total_vendas', 0)
-            departamentos_count = response.get('departamentos_count', 0)
-            print(f"   📊 Total vendas: R$ {total_vendas:,.2f}")
-            print(f"   📊 Departamentos: {departamentos_count}")
-            print(f"   📊 Margem 2024: {response.get('margem_media_24', 0):.2%}")
-            print(f"   📊 Margem 2025: {response.get('margem_media_25', 0):.2%}")
-            
-            if total_vendas > 0 and departamentos_count > 0:
-                print(f"   ✅ Dashboard populated with data")
-            else:
-                print(f"   ⚠️  Dashboard may not be properly populated")
+                    print(f"   ⚠️  No clients found in crediario data")
         return success, response
 
-    def test_chart_data_with_data(self):
-        """Test chart data after uploading data"""
-        success, response = self.run_test("Chart Data (With Data)", "GET", "chart-data", 200)
+    def test_saidas_data_anointeiro(self):
+        """Test saidas data for ano inteiro"""
+        success, response = self.run_test("Saidas Data - Ano Inteiro", "GET", "saidas-data/anointeiro", 200)
         if success and isinstance(response, dict):
-            vendas_count = len(response.get('vendas_por_departamento', []))
-            margens_count = len(response.get('comparativo_margens', []))
-            variacao_count = len(response.get('variacao_departamentos', []))
-            
-            print(f"   📊 Vendas data points: {vendas_count}")
-            print(f"   📊 Margens data points: {margens_count}")
-            print(f"   📊 Variação data points: {variacao_count}")
-            
-            if vendas_count > 0 and margens_count > 0 and variacao_count > 0:
-                print(f"   ✅ Chart data populated")
+            expected_keys = ['saidas', 'total_saidas', 'total_valor', 'mes']
+            missing_keys = [key for key in expected_keys if key not in response]
+            if missing_keys:
+                print(f"   ⚠️  Missing keys in response: {missing_keys}")
+                return False, response
             else:
-                print(f"   ⚠️  Chart data may be incomplete")
+                print(f"   ✅ All expected keys present")
+                print(f"   📊 Total saídas: {response.get('total_saidas', 0)}")
+                print(f"   📊 Total valor: R$ {response.get('total_valor', 0):,.2f}")
+                print(f"   📊 Período: {response.get('mes', 'N/A')}")
+        return success, response
+
+    def test_faturamento_diario_anointeiro(self):
+        """Test faturamento diario for ano inteiro"""
+        success, response = self.run_test("Faturamento Diário - Ano Inteiro", "GET", "faturamento-diario/anointeiro", 200)
+        if success and isinstance(response, dict):
+            expected_keys = ['vendas_diarias', 'total_vendas', 'total_valor', 'mes']
+            missing_keys = [key for key in expected_keys if key not in response]
+            if missing_keys:
+                print(f"   ⚠️  Missing keys in response: {missing_keys}")
+                return False, response
+            else:
+                print(f"   ✅ All expected keys present")
+                print(f"   📊 Total vendas: {response.get('total_vendas', 0)}")
+                print(f"   📊 Total valor: R$ {response.get('total_valor', 0):,.2f}")
+                print(f"   📊 Período: {response.get('mes', 'N/A')}")
+        return success, response
+
+    def test_meses_disponiveis(self):
+        """Test available months endpoint"""
+        success, response = self.run_test("Meses Disponíveis", "GET", "meses-disponiveis", 200)
+        if success and isinstance(response, dict):
+            expected_keys = ['meses']
+            missing_keys = [key for key in expected_keys if key not in response]
+            if missing_keys:
+                print(f"   ⚠️  Missing keys in response: {missing_keys}")
+                return False, response
+            else:
+                print(f"   ✅ All expected keys present")
+                meses = response.get('meses', [])
+                print(f"   📊 Available months: {len(meses)}")
+                if meses and len(meses) > 0:
+                    print(f"   📊 First month: {meses[0]}")
+        return success, response
+
+    def test_sync_sheets(self):
+        """Test Google Sheets sync functionality"""
+        success, response = self.run_test("Sync Google Sheets", "GET", "sync-sheets", 200)
+        if success and isinstance(response, dict):
+            expected_keys = ['message', 'timestamp']
+            missing_keys = [key for key in expected_keys if key not in response]
+            if missing_keys:
+                print(f"   ⚠️  Missing keys in response: {missing_keys}")
+                return False, response
+            else:
+                print(f"   ✅ All expected keys present")
+                print(f"   📊 Message: {response.get('message', 'N/A')}")
+                print(f"   📊 Timestamp: {response.get('timestamp', 'N/A')}")
         return success, response
 
 def main():
