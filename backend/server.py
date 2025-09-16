@@ -356,9 +356,20 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                 logger.warning(f"Error processing crediario row {row_index}: {e}")
                 continue
         
-        # Convert dict to list and sort purchases by date
+        # Convert dict to list and sort purchases by date, avoiding duplicates
         clientes_list = []
+        nomes_processados = set()  # Track processed names to avoid duplicates
+        
         for cliente_data in clientes.values():
+            nome_cliente = cliente_data["nome"].strip().upper()
+            
+            # Skip if we already processed this client name
+            if nome_cliente in nomes_processados:
+                logger.warning(f"Skipping duplicate client: {nome_cliente}")
+                continue
+            
+            nomes_processados.add(nome_cliente)
+            
             # Sort purchases by date (newest first)
             try:
                 cliente_data["compras"].sort(key=lambda x: x['data'], reverse=True)
@@ -367,8 +378,8 @@ async def fetch_crediario_data() -> Dict[str, Any]:
             
             # Get payment history for this client
             try:
-                nome_cliente = cliente_data["nome"]
-                pagamentos = await get_client_payment_history(nome_cliente)
+                nome_cliente_original = cliente_data["nome"]
+                pagamentos = await get_client_payment_history(nome_cliente_original)
                 cliente_data["pagamentos"] = pagamentos
                 
                 # Calculate days since last payment and overdue status
@@ -376,7 +387,7 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                 cliente_data["dias_sem_pagamento"] = dias_sem_pagamento
                 cliente_data["atrasado_60_dias"] = atrasado_60_dias
                 
-                logger.info(f"Added {len(pagamentos)} payments for client {nome_cliente} - {dias_sem_pagamento} days since last payment, overdue: {atrasado_60_dias}")
+                logger.info(f"Added {len(pagamentos)} payments for client {nome_cliente_original} - {dias_sem_pagamento} days since last payment, overdue: {atrasado_60_dias}")
             except Exception as e:
                 logger.warning(f"Error fetching payments for {cliente_data['nome']}: {e}")
                 cliente_data["pagamentos"] = []
