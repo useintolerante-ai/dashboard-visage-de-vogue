@@ -112,7 +112,7 @@ def extract_currency_value(value_str):
     except:
         return 0.0
 
-def fetch_google_sheets_data(sheet_name: str = "SETEMBRO25") -> Dict[str, Any]:
+def fetch_google_sheets_data(sheet_name: str = "MARÇO25") -> Dict[str, Any]:
     """
     Fetch data from Google Sheets using the Sheets API
     """
