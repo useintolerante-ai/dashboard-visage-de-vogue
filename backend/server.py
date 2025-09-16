@@ -94,7 +94,7 @@ def parse_from_mongo(item):
                     pass
     return item
 
-def fetch_google_sheets_data(sheet_name: str = "Sheet1") -> Dict[str, Any]:
+def fetch_google_sheets_data(sheet_name: str = "SETEMBRO25") -> Dict[str, Any]:
     """
     Fetch data from Google Sheets using the Sheets API
     """
