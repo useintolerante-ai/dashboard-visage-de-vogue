@@ -587,16 +587,37 @@ function App() {
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="border-b border-gray-700">
-                          <th className="text-left p-3 text-gray-300 font-medium">Data</th>
-                          <th className="text-left p-3 text-gray-300 font-medium">Descrição</th>
-                          <th className="text-right p-3 text-gray-300 font-medium">Valor</th>
+                          <th 
+                            className="text-left p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                            onClick={() => handleSort('data', 'string')}
+                          >
+                            Data {getSortIcon('data')}
+                          </th>
+                          <th 
+                            className="text-left p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                            onClick={() => handleSort('descricao', 'string')}
+                          >
+                            Descrição {getSortIcon('descricao')}
+                          </th>
+                          <th 
+                            className="text-right p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                            onClick={() => handleSort('valor', 'currency')}
+                          >
+                            Valor {getSortIcon('valor')}
+                          </th>
                           {selectedMonth === 'anointeiro' && (
-                            <th className="text-left p-3 text-gray-300 font-medium">Mês</th>
+                            <th 
+                              className="text-left p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                              onClick={() => handleSort('mes_nome', 'string')}
+                            >
+                              Mês {getSortIcon('mes_nome')}
+                            </th>
                           )}
                         </tr>
                       </thead>
                       <tbody>
-                        {saidasData.saidas.map((saida, index) => (
+                        {sortData(saidasData.saidas, sortConfig.key, sortConfig.key === 'valor' ? 'currency' : 'string')
+                          .map((saida, index) => (
                           <tr key={saida.id || index} className="border-b border-gray-800 hover:bg-gray-800 transition-colors">
                             <td className="p-3 text-white">{saida.data}</td>
                             <td className="p-3 text-white">{saida.descricao}</td>
