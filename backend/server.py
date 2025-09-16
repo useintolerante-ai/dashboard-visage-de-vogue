@@ -852,24 +852,14 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                 # Use the same logic as saidas-data endpoint for consistency
                 # Skip individual row processing for saidas - will be calculated once after the loop
                 
-                # Column 16: PAGAMENTOS CREDIÁRIO - smarter total detection
+                # Column 16: PAGAMENTOS CREDIÁRIO - capture ALL individual payments (total line removed from sheet)
                 crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
                 if crediario_str and 'R$' in crediario_str and 'R$  -' not in crediario_str:
                     valor_crediario = extract_currency_value(crediario_str)
                     if valor_crediario > 0:
-                        # More specific check: only exclude if TOTAL appears near the crediario value
-                        # Check columns around the crediario column (15, 16, 17) for TOTAL keywords
-                        nearby_text = ''
-                        for col_idx in [15, 17]:  # Check columns adjacent to crediario column
-                            if len(row) > col_idx and row[col_idx]:
-                                nearby_text += str(row[col_idx]).upper() + ' '
-                        
-                        if ('TOTAL' in nearby_text or 'SOMA' in nearby_text or 
-                            'SUBTOTAL' in nearby_text):
-                            logger.debug(f"Skipped crediario with nearby TOTAL: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
-                        else:
-                            total_recebido_crediario += valor_crediario
-                            logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                        # Since user removed total lines from sheet, include all valid payments
+                        total_recebido_crediario += valor_crediario
+                        logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
                         
             except Exception as e:
                 logger.warning(f"Error processing row {row_index} in {sheet_name}: {e}")
