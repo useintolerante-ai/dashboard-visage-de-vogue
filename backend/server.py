@@ -620,6 +620,18 @@ async def get_meses_disponiveis():
     
     return {"meses": meses}
 
+@api_router.get("/sheets-status")
+async def get_sheets_status():
+    """Get Google Sheets integration status"""
+    return {
+        "sheets_id": GOOGLE_SHEETS_ID,
+        "api_key_set": bool(GOOGLE_SHEETS_API_KEY),
+        "last_sync": sheets_cache["last_updated"].isoformat() if sheets_cache["last_updated"] else None,
+        "sync_interval": sheets_cache["update_interval"],
+        "is_syncing": sheets_cache["is_syncing"],
+        "should_sync": should_sync_sheets()
+    }
+
 # Legacy routes
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
