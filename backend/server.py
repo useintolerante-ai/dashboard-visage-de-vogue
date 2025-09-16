@@ -519,7 +519,87 @@ async def trigger_sheets_sync(background_tasks: BackgroundTasks):
         "last_sync": sheets_cache["last_updated"].isoformat() if sheets_cache["last_updated"] else None
     }
 
-@api_router.get("/dashboard-summary", response_model=DashboardSummary)
+def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
+    """
+    Extract and calculate KPIs from a specific month's sheet
+    """
+    try:
+        sheets_result = fetch_google_sheets_data(sheet_name)
+        
+        if not sheets_result["success"]:
+            return {
+                "faturamento": 0,
+                "saidas": 0,
+                "recebido_crediario": 0,
+                "num_vendas": 0,
+                "error": sheets_result["error"]
+            }
+        
+        rows = sheets_result["data"]
+        
+        if not rows:
+            return {
+                "faturamento": 0,
+                "saidas": 0,
+                "recebido_crediario": 0,
+                "num_vendas": 0
+            }
+        
+        # Initialize totals
+        total_faturamento = 0
+        total_saidas = 0
+        total_recebido_crediario = 0
+        num_vendas = 0
+        
+        # Process each row
+        for row_index, row in enumerate(rows):
+            if row_index == 0 or not row:  # Skip header
+                continue
+                
+            try:
+                # Extract values from standard positions
+                # Column 1: VENDAS (faturamento)
+                vendas_str = str(row[1]).strip() if len(row) > 1 and row[1] else ''
+                if vendas_str and 'R$' in vendas_str:
+                    valor_venda = extract_currency_value(vendas_str)
+                    if valor_venda > 0:
+                        total_faturamento += valor_venda
+                        num_vendas += 1
+                
+                # Column 11: SAÍDA R$ (saídas)
+                saidas_str = str(row[11]).strip() if len(row) > 11 and row[11] else ''
+                if saidas_str and 'R$' in saidas_str:
+                    valor_saida = extract_currency_value(saidas_str)
+                    if valor_saida > 0:
+                        total_saidas += valor_saida
+                
+                # Column 16: PAGAMENTOS CREDIÁRIO (recebido crediário)
+                crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
+                if crediario_str and 'R$' in crediario_str:
+                    valor_crediario = extract_currency_value(crediario_str)
+                    if valor_crediario > 0:
+                        total_recebido_crediario += valor_crediario
+                        
+            except Exception as e:
+                logger.warning(f"Error processing row {row_index} in {sheet_name}: {e}")
+                continue
+        
+        return {
+            "faturamento": total_faturamento,
+            "saidas": total_saidas,
+            "recebido_crediario": total_recebido_crediario,
+            "num_vendas": num_vendas
+        }
+        
+    except Exception as e:
+        logger.error(f"Error extracting data from {sheet_name}: {e}")
+        return {
+            "faturamento": 0,
+            "saidas": 0,
+            "recebido_crediario": 0,
+            "num_vendas": 0,
+            "error": str(e)
+        }
 async def get_dashboard_summary(mes: str = "marco", background_tasks: BackgroundTasks = None, auto_sync: bool = True):
     """Get dashboard summary statistics for specific month or year"""
     try:
