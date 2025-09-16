@@ -373,6 +373,74 @@ function App() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Faturamento Diário Table */}
+            {faturamentoDiario && faturamentoDiario.vendas_diarias && faturamentoDiario.vendas_diarias.length > 0 && (
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white text-xl">
+                    Faturamento Diário - {faturamentoDiario.mes === "Ano Inteiro (2025)" ? faturamentoDiario.mes : mesesDisponiveis.find(m => m.value === selectedMonth)?.label || selectedMonth}
+                  </CardTitle>
+                  <CardDescription className="text-gray-400">
+                    Detalhamento do faturamento por dia
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4 p-4 bg-gray-800 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300">Total do Faturamento:</span>
+                      <span className="text-green-400 font-bold text-xl">
+                        {formatCurrency(faturamentoDiario.total_valor)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-gray-300">Dias com Vendas:</span>
+                      <span className="text-white font-semibold">
+                        {faturamentoDiario.total_vendas}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto max-h-96">
+                    <table className="w-full border-collapse">
+                      <thead className="sticky top-0 bg-gray-900">
+                        <tr className="border-b border-gray-700">
+                          <th className="text-left p-3 text-gray-300 font-medium">Data</th>
+                          <th className="text-right p-3 text-gray-300 font-medium">Faturamento</th>
+                          {faturamentoDiario.mes === "Ano Inteiro (2025)" && (
+                            <th className="text-left p-3 text-gray-300 font-medium">Mês</th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {faturamentoDiario.vendas_diarias.map((venda, index) => (
+                          <tr key={index} className="border-b border-gray-800 hover:bg-gray-800 transition-colors">
+                            <td className="p-3 text-white">{venda.data}</td>
+                            <td className="p-3 text-right text-green-400 font-semibold">
+                              {formatCurrency(venda.valor)}
+                            </td>
+                            {faturamentoDiario.mes === "Ano Inteiro (2025)" && (
+                              <td className="p-3 text-cyan-400">{venda.mes}</td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="border-t-2 border-gray-600 bg-gray-800">
+                          <td className="p-3 text-white font-bold">TOTAL</td>
+                          <td className="p-3 text-right text-green-400 font-bold text-lg">
+                            {formatCurrency(faturamentoDiario.total_valor)}
+                          </td>
+                          {faturamentoDiario.mes === "Ano Inteiro (2025)" && (
+                            <td className="p-3"></td>
+                          )}
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
 
