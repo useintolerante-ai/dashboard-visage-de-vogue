@@ -217,13 +217,30 @@ function App() {
     setSortConfig({ key, direction });
   };
 
-  const getSortIcon = (key) => {
-    if (sortConfig.key !== key) {
-      return <span className="text-gray-500 ml-1">↕</span>;
-    }
-    return sortConfig.direction === 'asc' ? 
-      <span className="text-white ml-1">↑</span> : 
-      <span className="text-white ml-1">↓</span>;
+  const sortCrediarioData = (data, key, type = 'string') => {
+    if (!data || !key) return data;
+    
+    return [...data].sort((a, b) => {
+      let aVal = a[key];
+      let bVal = b[key];
+      
+      if (type === 'number') {
+        aVal = parseFloat(aVal) || 0;
+        bVal = parseFloat(bVal) || 0;
+      } else if (type === 'currency') {
+        aVal = typeof aVal === 'number' ? aVal : parseFloat(aVal) || 0;
+        bVal = typeof bVal === 'number' ? bVal : parseFloat(bVal) || 0;
+      } else {
+        aVal = String(aVal).toLowerCase();
+        bVal = String(bVal).toLowerCase();
+      }
+      
+      if (sortConfig.direction === 'asc') {
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      } else {
+        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+      }
+    });
   };
 
   return (
