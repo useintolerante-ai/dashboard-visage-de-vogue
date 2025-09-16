@@ -685,6 +685,11 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                 continue
                 
             try:
+                # Skip total rows and other aggregate rows
+                row_data = ' '.join([str(cell) for cell in row if cell]).upper()
+                if any(keyword in row_data for keyword in ['TOTAL', 'SOMA', 'SUBTOTAL', 'SALDO']):
+                    continue
+                
                 # Extract values from standard positions
                 # Column 1: VENDAS (faturamento) - only count non-empty values
                 vendas_str = str(row[1]).strip() if len(row) > 1 and row[1] else ''
