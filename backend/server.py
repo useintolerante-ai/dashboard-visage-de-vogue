@@ -109,6 +109,7 @@ class ClienteCrediario(BaseModel):
     vendas_totais: float = 0.0
     saldo_devedor: float = 0.0
     compras: List[Dict[str, Any]] = []
+    pagamentos: List[Dict[str, Any]] = []
 
 class SaidaData(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
