@@ -868,6 +868,17 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                 logger.warning(f"Error processing row {row_index} in {sheet_name}: {e}")
                 continue
         
+        # Get saidas from the saidas endpoint to ensure consistency
+        try:
+            saidas_result = fetch_saidas_data(sheet_name)
+            if saidas_result.get("success"):
+                total_saidas = saidas_result.get("total_valor", 0)
+            else:
+                total_saidas = 0
+        except Exception as e:
+            logger.warning(f"Error fetching saidas from endpoint for {sheet_name}: {e}")
+            total_saidas = 0
+        
         logger.info(f"Sheet {sheet_name} totals: Faturamento={total_faturamento}, Saidas={total_saidas}, Crediario={total_recebido_crediario}, Vendas={num_vendas}")
         
         return {
