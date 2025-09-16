@@ -146,10 +146,24 @@ def extract_currency_value(value_str):
 
 async def fetch_crediario_data() -> Dict[str, Any]:
     """
-    Fetch crediario data from Google Sheets with purchase history
+    Fetch crediario data from Google Sheets with purchase history - cached version
     """
+    current_time = datetime.now(timezone.utc)
+    
+    # Check if we have cached crediario data
+    cache = sheets_cache["crediario_cache"]
+    if cache["data"] and cache["last_updated"]:
+        elapsed = (current_time - cache["last_updated"]).total_seconds()
+        if elapsed < cache["ttl"]:  # 10 minutes TTL
+            logger.info("Using cached crediario data")
+            return cache["data"]
+    
     try:
+        # Use cached version to avoid rate limits
         url = f"https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_ID}/values/CREDIARIO?key={GOOGLE_SHEETS_API_KEY}"
+        
+        # Add rate limiting delay
+        time.sleep(1)
         
         response = requests.get(url, timeout=30)
         response.raise_for_status()
@@ -158,7 +172,10 @@ async def fetch_crediario_data() -> Dict[str, Any]:
         values = data.get('values', [])
         
         if not values:
-            return {"success": False, "error": "No data found in crediario sheet"}
+            error_result = {"success": False, "error": "No data found in crediario sheet"}
+            cache["data"] = error_result
+            cache["last_updated"] = current_time
+            return error_result
         
         clientes = []
         
@@ -182,8 +199,8 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                     vendas_totais = extract_currency_value(vendas_cell)
                     saldo_devedor = extract_currency_value(saldo_cell)
                     
-                    # Get purchase history by searching through sales sheets
-                    compras = await get_client_purchase_history(nome_cell)
+                    # Get purchase history with rate limiting - simplified approach to avoid quota issues
+                    compras = await get_client_purchase_history_simple(nome_cell)
                     
                     cliente_data = {
                         "nome": nome_cell,
@@ -199,14 +216,26 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                 logger.warning(f"Error processing crediario row {i}: {e}")
                 continue
         
-        return {
+        result = {
             "success": True,
             "clientes": clientes,
             "total_clientes": len(clientes)
         }
         
+        # Cache the result
+        cache["data"] = result
+        cache["last_updated"] = current_time
+        
+        return result
+        
     except Exception as e:
         logger.error(f"Error fetching crediario data: {str(e)}")
+        
+        # Return cached data if available
+        if cache["data"]:
+            logger.warning("Returning cached crediario data due to error")
+            return cache["data"]
+        
         return {"success": False, "error": f"Error: {str(e)}"}
 
 async def get_client_purchase_history(client_name: str) -> List[Dict[str, Any]]:
