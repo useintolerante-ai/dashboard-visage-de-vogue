@@ -560,7 +560,7 @@ function App() {
                   </div>
                   
                   <div className="space-y-3">
-                    {sortCrediarioData(crediarioData.clientes, sortConfig.key, sortConfig.key === 'vendas_totais' || sortConfig.key === 'saldo_devedor' ? 'currency' : sortConfig.key === 'compras' ? 'number' : sortConfig.key === 'atrasado_60_dias' ? 'boolean' : 'string')
+                    {sortCrediarioData(crediarioData.clientes, sortConfig.key, sortConfig.key === 'vendas_totais' || sortConfig.key === 'saldo_devedor' ? 'currency' : sortConfig.key === 'compras' ? 'number' : 'string')
                       .map((cliente) => (
                       <div key={cliente.id} className="bg-gray-800 rounded-lg border border-gray-700">
                         {/* Client Header */}
