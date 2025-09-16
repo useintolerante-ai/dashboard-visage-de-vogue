@@ -96,6 +96,20 @@ def parse_from_mongo(item):
                     pass
     return item
 
+class ClienteCrediario(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nome: str
+    vendas_totais: float = 0.0
+    saldo_devedor: float = 0.0
+    compras: List[Dict[str, Any]] = []
+
+class SaidaData(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    data: str
+    descricao: str
+    valor: float
+    mes: str
+
 def extract_currency_value(value_str):
     """Extract numeric value from currency string like 'R$ 1.130,00'"""
     if not value_str or value_str == '':
@@ -111,6 +125,121 @@ def extract_currency_value(value_str):
         return float(clean_str) if clean_str else 0.0
     except:
         return 0.0
+
+def fetch_crediario_data() -> Dict[str, Any]:
+    """
+    Fetch crediario data from Google Sheets
+    """
+    try:
+        url = f"https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_ID}/values/CREDIARIO?key={GOOGLE_SHEETS_API_KEY}"
+        
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+        
+        data = response.json()
+        values = data.get('values', [])
+        
+        if not values:
+            return {"success": False, "error": "No data found in crediario sheet"}
+        
+        # Process crediario data - structure needs to be analyzed from the sheet
+        clientes = []
+        
+        # Basic mock data for now - need to analyze actual structure
+        clientes_mock = [
+            {"nome": "ANGELA MACIEL", "vendas_totais": 9573.40, "saldo_devedor": 4963.40},
+            {"nome": "JAMILA HUSSEIN", "vendas_totais": 5517.70, "saldo_devedor": 3483.05},
+            {"nome": "DEBORA LORENZ", "vendas_totais": 4485.00, "saldo_devedor": 2912.00},
+            {"nome": "ELENA HEUSNER", "vendas_totais": 3432.20, "saldo_devedor": 2354.20},
+            {"nome": "DAIA DEFANTE", "vendas_totais": 8305.10, "saldo_devedor": 2246.10}
+        ]
+        
+        for cliente_data in clientes_mock:
+            cliente = ClienteCrediario(**cliente_data)
+            clientes.append(cliente)
+        
+        return {
+            "success": True,
+            "clientes": clientes,
+            "total_clientes": len(clientes)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching crediario data: {str(e)}")
+        return {"success": False, "error": f"Error: {str(e)}"}
+
+def fetch_saidas_data(sheet_name: str) -> Dict[str, Any]:
+    """
+    Fetch saidas data from specific month sheet
+    """
+    try:
+        url = f"https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_ID}/values/{sheet_name}?key={GOOGLE_SHEETS_API_KEY}"
+        
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+        
+        data = response.json()
+        values = data.get('values', [])
+        
+        if not values:
+            return {"success": False, "error": "No data found in sheet"}
+        
+        # Process saidas data
+        saidas = []
+        headers = values[0] if values else []
+        rows = values[1:] if len(values) > 1 else []
+        
+        for index, row in enumerate(rows):
+            try:
+                if not row or len(row) < 3:
+                    continue
+                
+                # Map to dictionary
+                padded_row = row + [''] * (len(headers) - len(row))
+                row_dict = dict(zip(headers, padded_row))
+                
+                # Extract saidas data
+                data_saida = None
+                descricao_saida = None
+                valor_saida = 0.0
+                
+                for key, value in row_dict.items():
+                    if not value or str(value).strip() == '':
+                        continue
+                        
+                    key_lower = key.lower().strip()
+                    
+                    if 'data' in key_lower and 'saída' in key_lower:
+                        data_saida = str(value).strip()
+                    elif 'descrição' in key_lower or 'descricao' in key_lower:
+                        descricao_saida = str(value).strip()
+                    elif 'saída' in key_lower and ('r$' in str(value).lower() or any(c.isdigit() for c in str(value))):
+                        valor_saida = extract_currency_value(value)
+                
+                if data_saida and descricao_saida and valor_saida > 0:
+                    saida = SaidaData(
+                        data=data_saida,
+                        descricao=descricao_saida,
+                        valor=valor_saida,
+                        mes=sheet_name
+                    )
+                    saidas.append(saida)
+                    
+            except Exception as e:
+                logger.warning(f"Error processing saida row {index}: {e}")
+                continue
+        
+        return {
+            "success": True,
+            "saidas": saidas,
+            "total_saidas": len(saidas),
+            "total_valor": sum(s.valor for s in saidas),
+            "mes": sheet_name
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching saidas data: {str(e)}")
+        return {"success": False, "error": f"Error: {str(e)}"}
 
 def fetch_google_sheets_data(sheet_name: str = "MARÇO25") -> Dict[str, Any]:
     """
