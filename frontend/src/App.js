@@ -472,82 +472,105 @@ function App() {
         {activeView === 'crediario' && (
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader>
-              <CardTitle className="text-white text-xl">Análise de Crediário</CardTitle>
+              <CardTitle className="text-white text-xl">Clientes Crediário</CardTitle>
               <CardDescription className="text-gray-400">
-                Controle de pagamentos e recebimentos do crediário <span className="text-sm">(Clique para ver detalhes)</span>
+                Gestão de clientes e histórico de compras
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {crediarioData && crediarioData.clientes ? (
+              {crediarioData ? (
                 <div className="space-y-4">
-                  {crediarioData.clientes.map((cliente, index) => (
-                    <div key={cliente.id || index}>
-                      <div 
-                        className="flex items-center justify-between p-4 bg-gray-800 hover:bg-gray-700 rounded-lg cursor-pointer transition-colors"
-                        onClick={() => toggleClienteDetails(index)}
-                      >
-                        <div className="flex-1">
-                          <p className="font-semibold text-white text-base">{cliente.nome}</p>
+                  <div className="text-gray-300 mb-4">
+                    Total de clientes: <span className="text-white font-semibold">{crediarioData.total_clientes}</span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {crediarioData.clientes.map((cliente) => (
+                      <div key={cliente.id} className="bg-gray-800 rounded-lg border border-gray-700">
+                        {/* Client Header */}
+                        <div 
+                          className="p-4 hover:bg-gray-700 cursor-pointer transition-colors"
+                          onClick={() => setExpandedCliente(expandedCliente === cliente.id ? null : cliente.id)}
+                        >
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                            {/* Client Name */}
+                            <div className="md:col-span-1">
+                              <h3 className="text-white font-semibold text-lg">{cliente.nome}</h3>
+                            </div>
+                            
+                            {/* Total Sales */}
+                            <div className="md:col-span-1 text-center">
+                              <div className="text-gray-400 text-sm">Total Vendas</div>
+                              <div className="text-green-400 font-bold text-lg">
+                                {formatCurrency(cliente.vendas_totais)}
+                              </div>
+                            </div>
+                            
+                            {/* Purchases Count */}
+                            <div className="md:col-span-1 text-center">
+                              <div className="text-gray-400 text-sm">Nº Compras</div>
+                              <div className="text-blue-400 font-bold text-lg">
+                                {cliente.compras.length}
+                              </div>
+                            </div>
+                            
+                            {/* Outstanding Balance */}
+                            <div className="md:col-span-1 text-center">
+                              <div className="text-gray-400 text-sm">Saldo Devedor</div>
+                              <div className="text-red-400 font-bold text-lg">
+                                {formatCurrency(cliente.saldo_devedor)}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-cyan-400">{formatCurrency(cliente.vendas_totais)}</p>
-                        </div>
-                        <div className="text-right ml-8">
-                          <p className="text-red-400 font-bold">{formatCurrency(cliente.saldo_devedor)}</p>
-                        </div>
-                      </div>
-                      
-                      {expandedCliente === index && (
-                        <div className="mt-2 p-4 bg-gray-800 rounded-lg">
-                          {cliente.compras && cliente.compras.length > 0 ? (
-                            <div>
-                              <h4 className="text-white font-semibold mb-3">Histórico de Compras:</h4>
+                        
+                        {/* Expanded Purchase History */}
+                        {expandedCliente === cliente.id && (
+                          <div className="border-t border-gray-700 p-4 bg-gray-850">
+                            <h4 className="text-white font-semibold mb-3">Histórico de Compras:</h4>
+                            {cliente.compras && cliente.compras.length > 0 ? (
                               <div className="overflow-x-auto">
                                 <table className="w-full border-collapse">
                                   <thead>
                                     <tr className="border-b border-gray-600">
-                                      <th className="text-left p-2 text-gray-300 font-medium">Data</th>
-                                      <th className="text-right p-2 text-gray-300 font-medium">Valor</th>
+                                      <th className="text-left p-3 text-gray-300 font-medium">Data</th>
+                                      <th className="text-right p-3 text-gray-300 font-medium">Valor</th>
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {cliente.compras.map((compra, compraIndex) => (
-                                      <tr key={compraIndex} className="border-b border-gray-700">
-                                        <td className="p-2 text-white">{compra.data}</td>
-                                        <td className="p-2 text-right text-green-400 font-semibold">
+                                    {cliente.compras.map((compra, index) => (
+                                      <tr key={index} className="border-b border-gray-700 last:border-b-0">
+                                        <td className="p-3 text-white">{compra.data}</td>
+                                        <td className="p-3 text-right text-green-400 font-semibold">
                                           {formatCurrency(compra.valor)}
                                         </td>
                                       </tr>
                                     ))}
                                   </tbody>
                                   <tfoot>
-                                    <tr className="border-t border-gray-600">
-                                      <td className="p-2 text-white font-bold">TOTAL COMPRAS</td>
-                                      <td className="p-2 text-right text-green-400 font-bold">
+                                    <tr className="border-t-2 border-gray-600 bg-gray-800">
+                                      <td className="p-3 text-white font-bold">TOTAL COMPRAS</td>
+                                      <td className="p-3 text-right text-green-400 font-bold text-lg">
                                         {formatCurrency(cliente.compras.reduce((sum, compra) => sum + compra.valor, 0))}
                                       </td>
                                     </tr>
                                   </tfoot>
                                 </table>
                               </div>
-                            </div>
-                          ) : (
-                            <div className="text-center py-8">
-                              <p className="text-gray-400">
+                            ) : (
+                              <div className="text-gray-400 text-center py-4">
                                 Nenhuma compra registrada para este cliente.
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <p className="text-gray-400">
-                    {crediarioData === null ? 'Carregando dados do crediário...' : 'Nenhum dado de crediário encontrado'}
-                  </p>
+                <div className="text-center py-8">
+                  <div className="text-gray-400">Carregando dados do crediário...</div>
                 </div>
               )}
             </CardContent>
