@@ -218,38 +218,43 @@ async def get_client_purchase_history(client_name: str) -> List[Dict[str, Any]]:
             if sheets_result["success"]:
                 rows = sheets_result["data"]
                 
-                for row in rows:
-                    if len(row) > 4:
-                        # Check if this row contains a sale for this client
-                        # Look for client name in the row and extract sale data
-                        if any(client_name.upper() in str(cell).upper() for cell in row if cell):
-                            # This is a simplified approach - in reality would need more complex parsing
-                            # For now, create some mock purchase data based on the client's total sales
-                            pass
+                for row_index, row in enumerate(rows):
+                    if len(row) < 2 or row_index == 0:  # Skip header and short rows
+                        continue
+                    
+                    try:
+                        # Look for sales rows that contain this client's name
+                        # Check various columns for client identification
+                        row_text = ' '.join([str(cell).strip().upper() for cell in row if cell])
+                        
+                        if client_name.upper() in row_text:
+                            # Extract sale data: DATA DE VENDAS (col 0) and VENDAS (col 1)
+                            data_venda = str(row[0]).strip() if len(row) > 0 and row[0] else ''
+                            valor_venda_str = str(row[1]).strip() if len(row) > 1 and row[1] else ''
+                            
+                            # Only process if we have valid date and value
+                            if data_venda and valor_venda_str and 'R$' in valor_venda_str:
+                                valor_venda = extract_currency_value(valor_venda_str)
+                                
+                                if valor_venda > 0:
+                                    compras.append({
+                                        "data": data_venda,
+                                        "valor": valor_venda
+                                    })
+                            
+                    except Exception as e:
+                        logger.warning(f"Error processing row {row_index} in {month_sheet} for {client_name}: {e}")
+                        continue
                             
         except Exception as e:
             logger.warning(f"Error searching {month_sheet} for {client_name}: {e}")
             continue
     
-    # For now, return mock purchase data based on the client name
-    # This should be replaced with actual purchase history extraction
-    if "ANGELA" in client_name.upper():
-        compras = [
-            {"data": "15/01/2025", "valor": 1500.00},
-            {"data": "20/02/2025", "valor": 2000.00},
-            {"data": "10/03/2025", "valor": 1200.00}
-        ]
-    elif "ALIEZE" in client_name.upper():
-        compras = [
-            {"data": "05/01/2025", "valor": 800.00},
-            {"data": "12/02/2025", "valor": 1200.00}
-        ]
-    else:
-        # Generic purchase history for other clients
-        compras = [
-            {"data": "10/01/2025", "valor": 500.00},
-            {"data": "15/02/2025", "valor": 750.00}
-        ]
+    # Sort purchases by date (newest first)
+    try:
+        compras.sort(key=lambda x: x['data'], reverse=True)
+    except:
+        pass  # If date sorting fails, keep original order
     
     return compras
 
