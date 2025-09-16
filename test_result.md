@@ -170,11 +170,13 @@ Concluir o dashboard, corrigir crediário para mostrar compras (data + valor) ao
 ## test_plan:
   current_focus:
     - "Fix crediario purchase history extraction"
-    - "Improve KPI calculations in dashboard summary"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Fix crediario purchase history extraction"
   test_all: false
   test_priority: "high_first"
 
 ## agent_communication:
     - agent: "main"
     - message: "Implemented major fixes: 1) Corrected crediario to show actual purchase history from sheets instead of mock data, 2) Improved KPI calculations with new extract_current_month_data function, 3) Removed faturamento vs saidas chart as requested, 4) Updated UI text from payments to purchases. Backend needs testing to verify crediario data extraction works correctly."
+    - agent: "testing"
+    - message: "BACKEND TESTING COMPLETED. KPI calculations are working perfectly - all dashboard-summary endpoints return accurate data for individual months and full year. CRITICAL ISSUE: Crediario purchase history extraction is failing - all clients have empty 'compras' arrays. The client name matching logic between CREDIARIO sheet and monthly sales sheets needs fixing. Google Sheets API quota limits (429 errors) are also affecting some endpoints. Main agent should focus on fixing the client name matching in get_client_purchase_history function."
