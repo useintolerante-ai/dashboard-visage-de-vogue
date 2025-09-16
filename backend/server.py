@@ -235,7 +235,7 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                     valor_total = extract_currency_value(valor_total_cell)
                     
                     if valor_total > 0:
-                        # Look for saldo devedor in CREDIARIO sheet with more flexible matching
+                        # Look for saldo devedor in CREDIARIO sheet with improved fuzzy matching
                         nome_upper = nome_cell.upper()
                         saldo_info = None
                         
@@ -243,24 +243,34 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                         if nome_upper in saldos_devedores:
                             saldo_info = saldos_devedores[nome_upper]
                         else:
-                            # Try fuzzy matching for names like "DAIANE DEFANTE"
-                            for stored_name, stored_data in saldos_devedores.items():
-                                # Check if names are similar (partial match)
-                                if nome_upper in stored_name or stored_name in nome_upper:
-                                    saldo_info = stored_data
-                                    logger.info(f"Fuzzy matched '{nome_cell}' with '{stored_name}'")
-                                    break
-                                
-                                # Check word-by-word matching
-                                nome_words = nome_upper.split()
-                                stored_words = stored_name.split()
-                                if len(nome_words) >= 2 and len(stored_words) >= 2:
-                                    # Check if first and last words match
-                                    if (nome_words[0] == stored_words[0] and 
-                                        nome_words[-1] == stored_words[-1]):
-                                        saldo_info = stored_data
-                                        logger.info(f"Word-based matched '{nome_cell}' with '{stored_name}'")
-                                        break
+                            # Use rapidfuzz for better fuzzy matching
+                            stored_names = list(saldos_devedores.keys())
+                            if stored_names:
+                                # Get the best match using rapidfuzz
+                                best_match = process.extractOne(nome_upper, stored_names, scorer=fuzz.ratio)
+                                if best_match and best_match[1] > 75:  # 75% similarity threshold
+                                    matched_name = best_match[0]
+                                    saldo_info = saldos_devedores[matched_name]
+                                    logger.info(f"Rapidfuzz matched '{nome_cell}' with '{matched_name}' (similarity: {best_match[1]}%)")
+                                else:
+                                    # Try partial matching as fallback
+                                    for stored_name, stored_data in saldos_devedores.items():
+                                        # Check if names are similar (partial match)
+                                        if nome_upper in stored_name or stored_name in nome_upper:
+                                            saldo_info = stored_data
+                                            logger.info(f"Partial matched '{nome_cell}' with '{stored_name}'")
+                                            break
+                                        
+                                        # Check word-by-word matching
+                                        nome_words = nome_upper.split()
+                                        stored_words = stored_name.split()
+                                        if len(nome_words) >= 2 and len(stored_words) >= 2:
+                                            # Check if first and last words match
+                                            if (nome_words[0] == stored_words[0] and 
+                                                nome_words[-1] == stored_words[-1]):
+                                                saldo_info = stored_data
+                                                logger.info(f"Word-based matched '{nome_cell}' with '{stored_name}'")
+                                                break
                         
                         # Fallback to original values if no match found
                         if not saldo_info:
