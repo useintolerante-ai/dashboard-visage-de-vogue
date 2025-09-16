@@ -44,6 +44,16 @@ function App() {
     }
   }
 
+  async function loadClientesAtrasados() {
+    try {
+      const response = await axios.get(`${API}/clientes-atrasados`);
+      setClientesAtrasados(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar clientes atrasados:', error);
+      setClientesAtrasados({ clientes: [] });
+    }
+  }
+
   async function loadDashboardData(mes = selectedMonth) {
     try {
       const summaryResponse = await axios.get(`${API}/dashboard-summary?mes=${mes}`);
