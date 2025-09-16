@@ -600,6 +600,7 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
             "num_vendas": 0,
             "error": str(e)
         }
+@api_router.get("/dashboard-summary", response_model=DashboardSummary)
 async def get_dashboard_summary(mes: str = "marco", background_tasks: BackgroundTasks = None, auto_sync: bool = True):
     """Get dashboard summary statistics for specific month or year"""
     try:
@@ -619,16 +620,11 @@ async def get_dashboard_summary(mes: str = "marco", background_tasks: Background
             
             for month_sheet in all_months:
                 try:
-                    sheets_result = fetch_google_sheets_data(month_sheet)
-                    if sheets_result["success"]:
-                        cashflow_records = process_sheets_data_to_cashflow_records(sheets_result["data"])
-                        
-                        if cashflow_records:
-                            df = pd.DataFrame([record.dict() for record in cashflow_records])
-                            total_faturamento += df['valor_venda'].sum()
-                            total_saidas += df['valor_saida'].sum()
-                            total_recebido_crediario += df['valor_crediario'].sum()
-                            total_num_vendas += len(df[df['valor_venda'] > 0])
+                    month_data = extract_current_month_data(month_sheet)
+                    total_faturamento += month_data["faturamento"]
+                    total_saidas += month_data["saidas"]
+                    total_recebido_crediario += month_data["recebido_crediario"]
+                    total_num_vendas += month_data["num_vendas"]
                 except Exception as e:
                     logger.warning(f"Error processing {month_sheet}: {e}")
                     continue
@@ -660,42 +656,23 @@ async def get_dashboard_summary(mes: str = "marco", background_tasks: Background
             
             sheet_name = month_mapping.get(mes.lower(), "MARÇO25")
             
-            # Fetch specific month data
-            sheets_result = fetch_google_sheets_data(sheet_name)
+            # Extract month data using improved function
+            month_data = extract_current_month_data(sheet_name)
             
-            if not sheets_result["success"]:
-                logger.error(f"Failed to fetch sheets data for {mes}: {sheets_result['error']}")
+            if "error" in month_data:
+                logger.error(f"Failed to extract data for {mes}: {month_data['error']}")
                 return DashboardSummary(
                     faturamento=0, saidas=0, lucro_bruto=0, recebido_crediario=0,
                     a_receber_crediario=0, num_vendas=0, data_source="none", last_sync=None
                 )
             
-            # Process data into cashflow records
-            cashflow_records = process_sheets_data_to_cashflow_records(sheets_result["data"])
-            
-            if not cashflow_records:
-                return DashboardSummary(
-                    faturamento=0, saidas=0, lucro_bruto=0, recebido_crediario=0,
-                    a_receber_crediario=0, num_vendas=0, data_source="sheets", last_sync=None
-                )
-            
-            # Calculate summary statistics
-            df = pd.DataFrame([record.dict() for record in cashflow_records])
-            
-            faturamento = df['valor_venda'].sum()
-            saidas = df['valor_saida'].sum()
-            lucro_bruto = faturamento - saidas
-            recebido_crediario = df['valor_crediario'].sum()
-            a_receber_crediario = 0  # Will implement proper calculation later
-            num_vendas = len(df[df['valor_venda'] > 0])
-            
             return DashboardSummary(
-                faturamento=faturamento,
-                saidas=saidas,
-                lucro_bruto=lucro_bruto,
-                recebido_crediario=recebido_crediario,
-                a_receber_crediario=a_receber_crediario,
-                num_vendas=num_vendas,
+                faturamento=month_data["faturamento"],
+                saidas=month_data["saidas"],
+                lucro_bruto=month_data["faturamento"] - month_data["saidas"],
+                recebido_crediario=month_data["recebido_crediario"],
+                a_receber_crediario=0,  # Will implement proper calculation later
+                num_vendas=month_data["num_vendas"],
                 data_source="sheets",
                 last_sync=sheets_cache["last_updated"].isoformat() if sheets_cache["last_updated"] else None
             )
