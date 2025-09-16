@@ -205,13 +205,18 @@ async def fetch_crediario_data() -> Dict[str, Any]:
 
 async def get_client_purchase_history(client_name: str) -> List[Dict[str, Any]]:
     """
-    Get purchase history for a specific client from sales sheets
+    Get purchase history for a specific client from sales sheets using fuzzy matching
     """
     compras = []
+    
+    # Normalize client name for better matching
+    client_name_normalized = client_name.strip().casefold()
     
     # Search through all monthly sheets for this client's purchases
     months = ["JANEIRO25", "FEVEREIRO25", "MARÇO25", "ABRIL25", "MAIO25", 
               "JUNHO25", "JULHO25", "AGOSTO25", "SETEMBRO25"]
+    
+    logger.info(f"Searching for purchases for client: '{client_name}' (normalized: '{client_name_normalized}')")
     
     for month_sheet in months:
         try:
@@ -220,28 +225,57 @@ async def get_client_purchase_history(client_name: str) -> List[Dict[str, Any]]:
                 rows = sheets_result["data"]
                 
                 for row_index, row in enumerate(rows):
-                    if len(row) < 2 or row_index == 0:  # Skip header and short rows
+                    if row_index == 0 or len(row) < 17:  # Skip header and incomplete rows
                         continue
                     
                     try:
-                        # Look for sales rows that contain this client's name
-                        # Check various columns for client identification
-                        row_text = ' '.join([str(cell).strip().upper() for cell in row if cell])
+                        # Check for sales rows with actual data
+                        data_venda = str(row[0]).strip() if len(row) > 0 and row[0] else ''
+                        valor_venda_str = str(row[1]).strip() if len(row) > 1 and row[1] else ''
                         
-                        if client_name.upper() in row_text:
-                            # Extract sale data: DATA DE VENDAS (col 0) and VENDAS (col 1)
-                            data_venda = str(row[0]).strip() if len(row) > 0 and row[0] else ''
-                            valor_venda_str = str(row[1]).strip() if len(row) > 1 and row[1] else ''
-                            
-                            # Only process if we have valid date and value
-                            if data_venda and valor_venda_str and 'R$' in valor_venda_str:
-                                valor_venda = extract_currency_value(valor_venda_str)
+                        # Skip rows without valid sale data
+                        if not data_venda or not valor_venda_str or 'R$' not in valor_venda_str:
+                            continue
+                        
+                        # Look for client name in multiple columns where it might appear
+                        # Common columns that might contain client names: 2, 3, 4, 5, 6, etc.
+                        potential_client_columns = [2, 3, 4, 5, 6, 7, 8]
+                        
+                        client_found = False
+                        for col_index in potential_client_columns:
+                            if len(row) > col_index and row[col_index]:
+                                cell_value = str(row[col_index]).strip().casefold()
                                 
-                                if valor_venda > 0:
-                                    compras.append({
-                                        "data": data_venda,
-                                        "valor": valor_venda
-                                    })
+                                # Multiple matching strategies
+                                # 1. Exact match (case insensitive)
+                                if client_name_normalized == cell_value:
+                                    client_found = True
+                                    break
+                                
+                                # 2. Partial match (client name contains or is contained in cell)
+                                elif (client_name_normalized in cell_value or 
+                                      cell_value in client_name_normalized):
+                                    client_found = True
+                                    break
+                                
+                                # 3. Fuzzy match (similarity > 80%)
+                                elif len(client_name_normalized) > 3 and len(cell_value) > 3:
+                                    similarity = fuzz.ratio(client_name_normalized, cell_value)
+                                    if similarity > 80:
+                                        client_found = True
+                                        logger.info(f"Fuzzy match found: '{client_name}' ~ '{row[col_index]}' (similarity: {similarity}%)")
+                                        break
+                        
+                        if client_found:
+                            # Extract purchase value
+                            valor_venda = extract_currency_value(valor_venda_str)
+                            
+                            if valor_venda > 0:
+                                compras.append({
+                                    "data": data_venda,
+                                    "valor": valor_venda
+                                })
+                                logger.info(f"Added purchase for {client_name}: {data_venda} - R$ {valor_venda}")
                             
                     except Exception as e:
                         logger.warning(f"Error processing row {row_index} in {month_sheet} for {client_name}: {e}")
@@ -251,13 +285,23 @@ async def get_client_purchase_history(client_name: str) -> List[Dict[str, Any]]:
             logger.warning(f"Error searching {month_sheet} for {client_name}: {e}")
             continue
     
-    # Sort purchases by date (newest first)
+    # Sort purchases by date (newest first) and deduplicate
+    unique_compras = []
+    seen_purchases = set()
+    
+    for compra in compras:
+        key = f"{compra['data']}_{compra['valor']}"
+        if key not in seen_purchases:
+            seen_purchases.add(key)
+            unique_compras.append(compra)
+    
     try:
-        compras.sort(key=lambda x: x['data'], reverse=True)
+        unique_compras.sort(key=lambda x: x['data'], reverse=True)
     except:
         pass  # If date sorting fails, keep original order
     
-    return compras
+    logger.info(f"Found {len(unique_compras)} unique purchases for client '{client_name}'")
+    return unique_compras
 
 def fetch_saidas_data(sheet_name: str) -> Dict[str, Any]:
     """
