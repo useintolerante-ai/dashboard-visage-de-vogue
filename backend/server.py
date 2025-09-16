@@ -17,6 +17,7 @@ import asyncio
 import time
 import re
 from decimal import Decimal
+from rapidfuzz import fuzz, process
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
