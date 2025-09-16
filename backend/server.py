@@ -622,19 +622,29 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
                 if valor_venda <= 0:
                     valor_venda = 0.0
             
-            # Saidas - target-based thresholds (exclude >11500)
+            # Saidas - improved logic to exclude total lines by keyword detection
             if saida_value and 'R$' in saida_value and 'R$  -' not in saida_value:
                 temp_valor_saida = extract_currency_value(saida_value)
-                if temp_valor_saida > 0 and temp_valor_saida <= 11500:
-                    valor_saida = temp_valor_saida
-                # Skip large values (likely totals)
+                if temp_valor_saida > 0:
+                    # Check if this row contains "TOTAL" keywords
+                    full_row_text = ' '.join([str(cell).upper() for cell in row if cell]).strip()
+                    if ('TOTAL' in full_row_text or 'SOMA' in full_row_text or 
+                        'SUBTOTAL' in full_row_text or 'SALDO' in full_row_text):
+                        pass  # Skip total lines
+                    else:
+                        valor_saida = temp_valor_saida
             
-            # Crediario - conservative thresholds (exclude >2500)
+            # Crediario - improved logic to exclude total lines by keyword detection
             if crediario_value and 'R$' in crediario_value and 'R$  -' not in crediario_value:
                 temp_valor_crediario = extract_currency_value(crediario_value)
-                if temp_valor_crediario > 0 and temp_valor_crediario < 2500:
-                    valor_crediario = temp_valor_crediario
-                # Skip large values (likely totals)
+                if temp_valor_crediario > 0:
+                    # Check if this row contains "TOTAL" keywords
+                    full_row_text = ' '.join([str(cell).upper() for cell in row if cell]).strip()
+                    if ('TOTAL' in full_row_text or 'SOMA' in full_row_text or 
+                        'SUBTOTAL' in full_row_text or 'SALDO' in full_row_text):
+                        pass  # Skip total lines
+                    else:
+                        valor_crediario = temp_valor_crediario
             
             # Create record if we have any meaningful data
             if valor_venda > 0 or valor_saida > 0 or valor_crediario > 0:
