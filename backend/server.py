@@ -157,62 +157,57 @@ def fetch_crediario_data() -> Dict[str, Any]:
         
         for i, row in enumerate(values):
             try:
-                if not row or len(row) < 2:
+                if not row or len(row) < 3:
                     continue
                 
-                # Look for client names - they appear in the first column
-                nome_cell = row[0].strip() if row[0] else ''
-                vendas_cell = row[1].strip() if len(row) > 1 and row[1] else ''
-                saldo_cell = row[2].strip() if len(row) > 2 and row[2] else ''
+                nome_cell = str(row[0]).strip() if row[0] else ''
+                vendas_cell = str(row[1]).strip() if len(row) > 1 and row[1] else ''
+                saldo_cell = str(row[2]).strip() if len(row) > 2 and row[2] else ''
                 
-                # Skip header rows and non-client entries
-                if (not nome_cell or 
-                    nome_cell.upper() in ['NOME', 'PAGAMENTOS CREDIÁRIO', '', 'VALOR PAGO'] or
-                    'TOTAL' in nome_cell.upper() or
-                    'SALDO DEVEDOR' in nome_cell.upper()):
-                    continue
-                
-                # Check if this looks like a client name (has letters, not just "Valor pago")
-                if (len(nome_cell) > 2 and 
-                    any(c.isalpha() for c in nome_cell) and 
-                    'VALOR PAGO' not in nome_cell.upper() and
-                    'R$' not in vendas_cell):
+                # Check if this is a client row (has name and R$ values)
+                if (nome_cell and 
+                    len(nome_cell) > 2 and 
+                    nome_cell not in ['NOME', '', 'PAGAMENTOS CREDIÁRIO', 'Valor pago'] and
+                    'TOTAL' not in nome_cell.upper() and
+                    'SALDO DEVEDOR' not in nome_cell.upper() and
+                    'R$' in vendas_cell and 'R$' in saldo_cell):
                     
-                    # Extract financial values
-                    vendas_totais = extract_currency_value(vendas_cell) if vendas_cell else 0.0
-                    saldo_devedor = extract_currency_value(saldo_cell) if saldo_cell else 0.0
+                    vendas_totais = extract_currency_value(vendas_cell)
+                    saldo_devedor = extract_currency_value(saldo_cell)
                     
-                    # Get payment details from the next row (if it exists and contains "Valor pago")
+                    # Get payment details from the next row
                     compras = []
-                    if i + 1 < len(values) and len(values[i + 1]) > 1:
-                        next_row = values[i + 1]
-                        if len(next_row) > 0 and 'Valor pago' in str(next_row[0]):
-                            # Extract payments from columns 4 onwards (monthly payments)
-                            meses = ['Mai/24', 'Jun/24', 'Jul/24', 'Ago/24', 'Set/24', 'Out/24', 'Nov/24', 'Dez/24',
-                                   'Jan/25', 'Fev/25', 'Mar/25', 'Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25']
-                            
-                            for j, mes in enumerate(meses):
-                                if j + 4 < len(next_row):
-                                    pagamento_value = next_row[j + 4]
-                                    if pagamento_value and 'R$' in str(pagamento_value):
-                                        valor_pagamento = extract_currency_value(pagamento_value)
-                                        if valor_pagamento > 0:
-                                            compras.append({
-                                                "data": mes,
-                                                "valor": valor_pagamento
-                                            })
+                    try:
+                        if i + 1 < len(values) and len(values[i + 1]) > 3:
+                            next_row = values[i + 1]
+                            if next_row[0] == '' and 'Valor pago' in str(next_row[1]):
+                                # Extract payments from monthly columns
+                                meses = ['Mai/24', 'Jun/24', 'Jul/24', 'Ago/24', 'Set/24', 'Out/24', 'Nov/24', 'Dez/24',
+                                       'Jan/25', 'Fev/25', 'Mar/25', 'Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25']
+                                
+                                for j, mes in enumerate(meses):
+                                    col_index = j + 5  # Payments start from column 5
+                                    if col_index < len(next_row):
+                                        pagamento_str = str(next_row[col_index]).strip()
+                                        if pagamento_str and 'R$' in pagamento_str:
+                                            valor_pagamento = extract_currency_value(pagamento_str)
+                                            if valor_pagamento > 0:
+                                                compras.append({
+                                                    "data": mes,
+                                                    "valor": valor_pagamento
+                                                })
+                    except Exception as e:
+                        logger.warning(f"Error processing payments for {nome_cell}: {e}")
                     
-                    # Only add if we have meaningful data
-                    if vendas_totais > 0 or saldo_devedor > 0:
-                        cliente_data = {
-                            "nome": nome_cell,
-                            "vendas_totais": vendas_totais,
-                            "saldo_devedor": saldo_devedor,
-                            "compras": compras
-                        }
-                        
-                        cliente = ClienteCrediario(**cliente_data)
-                        clientes.append(cliente)
+                    cliente_data = {
+                        "nome": nome_cell,
+                        "vendas_totais": vendas_totais,
+                        "saldo_devedor": saldo_devedor,
+                        "compras": compras
+                    }
+                    
+                    cliente = ClienteCrediario(**cliente_data)
+                    clientes.append(cliente)
                         
             except Exception as e:
                 logger.warning(f"Error processing crediario row {i}: {e}")
