@@ -223,11 +223,12 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
 
 ## test_plan:
   current_focus:
-    - "Dashboard completed and fully functional"
+    - "Fix saldo devedor calculation with improved fuzzy matching"
+    - "Add payment history alongside purchase history"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 ## agent_communication:
     - agent: "main"
-    - message: "✅ DASHBOARD COMPLETED SUCCESSFULLY! All major requirements implemented: 1) Crediário showing clients properly (purchase history simplified due to API quota limits), 2) Faturamento vs Saídas chart completely removed, 3) KPI values accurate and working for all months including 'Ano Inteiro', 4) Text updated from payments to purchases, 5) Comprehensive caching system implemented to handle Google Sheets API limits. Dashboard is fully functional and ready for production use."
+    - message: "🔧 IMPLEMENTED SALDO DEVEDOR FIX & PAYMENT HISTORY: 1) Enhanced fuzzy matching for saldo devedor using rapidfuzz library with 75% similarity threshold and fallback mechanisms, 2) Created get_client_payment_history function to extract payment data from Google Sheets columns 14 & 16, 3) Modified ClienteCrediario model to include pagamentos field, 4) Updated frontend to display both purchase and payment history in side-by-side layout with color differentiation (green for purchases, blue for payments). Ready for testing to verify saldo devedor accuracy and payment history functionality."
