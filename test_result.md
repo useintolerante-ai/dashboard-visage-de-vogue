@@ -191,17 +191,17 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
         - agent: "main"
         - comment: "Successfully removed confusing '>60 dias s/ pagamento' column from Crediário tab. Created new 'Dias s/ pagamento' section in Visão Geral showing clients with >30 days without payment. Added sortable table with client name, days overdue, and outstanding balance. Color-coded indicators: orange (30-60 days), red (60-90 days), dark red (90+ days)."
 
-  - task: "Create backend endpoint for overdue clients filtering"
+  - task: "Fix client duplication and reorganize overdue clients layout"
     implemented: true
     working: true
-    file: "server.py"
+    file: "server.py, App.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
         - working: true
         - agent: "main"
-        - comment: "Created /api/clientes-atrasados endpoint that filters clients with >30 days without payment. Returns sorted list by days overdue (descending). Successfully tested with 30 clients showing 40 days without payment."
+        - comment: "Fixed 'CATIA ROTH' duplication in crediário by adding name-based deduplication logic. Total clients reduced from 30 to 29. Reorganized 'Dias s/ pagamento' section to appear side-by-side with 'Resumo Crediário' in Visão Geral. Created compact view showing top 8 overdue clients with sorting functionality."
 
   - task: "Remove faturamento vs saidas chart"
     implemented: true
