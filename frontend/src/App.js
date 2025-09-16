@@ -42,10 +42,10 @@ function App() {
     }
   }
 
-  async function loadDashboardData() {
+  async function loadDashboardData(mes = selectedMonth) {
     try {
       const [summaryResponse, chartResponse] = await Promise.all([
-        axios.get(`${API}/dashboard-summary`),
+        axios.get(`${API}/dashboard-summary?mes=${mes}`),
         axios.get(`${API}/chart-data`)
       ]);
 
