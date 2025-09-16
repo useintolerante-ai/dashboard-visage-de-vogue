@@ -179,7 +179,7 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
         - agent: "main"
         - comment: "Successfully implemented side-by-side display of purchase and payment history. Payment history shows in blue coloring to differentiate from green purchase history. Grid layout provides clear organization of both types of transactions."
 
-  - task: "Add >60 days overdue indicator column"
+  - task: "Remove confusing >60 days column from Crediário and create dedicated overdue clients section"
     implemented: true
     working: true
     file: "App.js"
@@ -189,7 +189,19 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
     status_history:
         - working: true
         - agent: "main"
-        - comment: "Added new sortable column '>60 dias s/ pagamento' with visual indicators. Clients with >60 days show 'SIM' in red, others show 'NÃO' in green. Updated grid layout from 4 to 5 columns and enhanced sorting functionality to handle boolean values."
+        - comment: "Successfully removed confusing '>60 dias s/ pagamento' column from Crediário tab. Created new 'Dias s/ pagamento' section in Visão Geral showing clients with >30 days without payment. Added sortable table with client name, days overdue, and outstanding balance. Color-coded indicators: orange (30-60 days), red (60-90 days), dark red (90+ days)."
+
+  - task: "Create backend endpoint for overdue clients filtering"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "main"
+        - comment: "Created /api/clientes-atrasados endpoint that filters clients with >30 days without payment. Returns sorted list by days overdue (descending). Successfully tested with 30 clients showing 40 days without payment."
 
   - task: "Remove faturamento vs saidas chart"
     implemented: true
