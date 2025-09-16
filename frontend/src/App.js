@@ -52,6 +52,8 @@ function App() {
 
       setDashboardData(summaryResponse.data);
       setChartData(chartResponse.data);
+      
+      console.log('Dashboard data loaded for month:', mes, summaryResponse.data);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     }
