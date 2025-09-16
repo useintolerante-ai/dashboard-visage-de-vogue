@@ -846,17 +846,35 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                 # Use the same logic as saidas-data endpoint for consistency
                 # Skip individual row processing for saidas - will be calculated once after the loop
                 
-                # Column 16: PAGAMENTOS CREDIÁRIO - exclude the total line that equals sum of individual payments
+                # Column 16: PAGAMENTOS CREDIÁRIO - exclude total lines for all months
                 crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
                 if crediario_str and 'R$' in crediario_str and 'R$  -' not in crediario_str:
                     valor_crediario = extract_currency_value(crediario_str)
                     if valor_crediario > 0:
-                        # Exclude the total line - for Janeiro it's 3503.14
-                        if abs(valor_crediario - 3503.14) < 0.01:
-                            logger.debug(f"Skipped total line: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                        # Collect all values first to detect total lines dynamically
+                        # Get data from the same column to find potential total
+                        collected_values = []
+                        for temp_row_idx, temp_row in enumerate(rows):
+                            if temp_row_idx == 0 or not temp_row or temp_row_idx == row_index:
+                                continue
+                            temp_crediario_str = str(temp_row[16]).strip() if len(temp_row) > 16 and temp_row[16] else ''
+                            if temp_crediario_str and 'R$' in temp_crediario_str and 'R$  -' not in temp_crediario_str:
+                                temp_valor = extract_currency_value(temp_crediario_str)
+                                if temp_valor > 0 and temp_valor != valor_crediario:  # Exclude self
+                                    collected_values.append(temp_valor)
+                        
+                        # Check if current value is approximately equal to sum of others (indicating it's a total)
+                        if collected_values:
+                            sum_others = sum(collected_values)
+                            if abs(valor_crediario - sum_others) < 0.50:  # Within 50 cents tolerance
+                                logger.debug(f"Skipped total line (sum={sum_others}): {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                            else:
+                                total_recebido_crediario += valor_crediario
+                                logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
                         else:
+                            # If no other values found, include this one
                             total_recebido_crediario += valor_crediario
-                            logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                            logger.debug(f"Added crediario (only value): {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
                         
             except Exception as e:
                 logger.warning(f"Error processing row {row_index} in {sheet_name}: {e}")
