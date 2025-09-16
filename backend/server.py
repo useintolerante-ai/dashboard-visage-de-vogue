@@ -372,10 +372,19 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
             data_pagamento = row[14].strip() if len(row) > 14 and row[14] else ''
             crediario_value = row[16].strip() if len(row) > 16 and row[16] else ''
             
+            # Skip lines with "TOTAL" or very high single values that look like totals
+            if ('TOTAL' in str(row).upper() or 
+                'total' in descricao_saida.lower() if descricao_saida else False):
+                continue
+            
             # Extract currency values
             valor_venda = extract_currency_value(vendas_value) if vendas_value else 0.0
             valor_saida = extract_currency_value(saida_value) if saida_value else 0.0
             valor_crediario = extract_currency_value(crediario_value) if crediario_value else 0.0
+            
+            # Skip suspiciously high single sales values (likely totals)
+            if valor_venda > 50000:  # Skip values above 50k (likely totals)
+                continue
             
             # Create record if we have any meaningful data
             if valor_venda > 0 or valor_saida > 0 or valor_crediario > 0:
