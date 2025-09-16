@@ -94,27 +94,35 @@ function App() {
     }
   };
 
-  const showView = (viewName) => {
-    setActiveView(viewName);
-  };
-
-  const getKPIColor = (value, type) => {
-    if (type === 'lucro') {
-      return value >= 0 ? 'text-emerald-500' : 'text-red-500';
+  async function loadCrediarioData() {
+    try {
+      const response = await axios.get(`${API}/crediario-data`);
+      setCrediarioData(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar dados do crediário:', error);
     }
-    return 'text-white';
-  };
+  }
 
-  const getKPIIcon = (type) => {
-    switch (type) {
-      case 'faturamento': return <DollarSign className="h-5 w-5" />;
-      case 'saidas': return <TrendingDown className="h-5 w-5" />;
-      case 'lucro': return <Target className="h-5 w-5" />;
-      case 'recebido': return <CreditCard className="h-5 w-5" />;
-      case 'areceber': return <CreditCard className="h-5 w-5" />;
-      case 'vendas': return <ShoppingCart className="h-5 w-5" />;
-      default: return <DollarSign className="h-5 w-5" />;
+  async function loadSaidasData(mes) {
+    try {
+      const response = await axios.get(`${API}/saidas-data/${mes}`);
+      setSaidasData(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar dados de saídas:', error);
     }
+  }
+
+  async function loadMesesDisponiveis() {
+    try {
+      const response = await axios.get(`${API}/meses-disponiveis`);
+      setMesesDisponiveis(response.data.meses);
+    } catch (error) {
+      console.error('Erro ao carregar meses disponíveis:', error);
+    }
+  }
+
+  const toggleClienteDetails = (clienteIndex) => {
+    setExpandedCliente(expandedCliente === clienteIndex ? null : clienteIndex);
   };
 
   return (
