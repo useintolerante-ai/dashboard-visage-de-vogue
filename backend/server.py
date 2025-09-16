@@ -171,60 +171,75 @@ async def fetch_crediario_data() -> Dict[str, Any]:
         data = response.json()
         values = data.get('values', [])
         
-        if not values:
-            error_result = {"success": False, "error": "No data found in crediario sheet"}
+        if not values or len(values) < 4:
+            error_result = {"success": False, "error": "No data found in crediario por contrato sheet"}
             cache["data"] = error_result
             cache["last_updated"] = current_time
             return error_result
         
-        clientes = []
+        clientes = {}
         
-        for i, row in enumerate(values):
+        # This sheet has a different structure:
+        # Row 3 has headers: NOME, DATA, COMPRA repeated
+        # Row 4+ have client data in groups of 3 columns
+        
+        # Start from row 4 (index 3) which has the first client data
+        for row_index in range(3, len(values)):
+            row = values[row_index]
+            
             try:
-                if not row or len(row) < 3:
-                    continue
-                
-                nome_cell = str(row[0]).strip() if row[0] else ''
-                vendas_cell = str(row[1]).strip() if len(row) > 1 and row[1] else ''
-                saldo_cell = str(row[2]).strip() if len(row) > 2 and row[2] else ''
-                
-                # Check if this is a client row
-                if (nome_cell and 
-                    len(nome_cell) > 2 and 
-                    nome_cell not in ['NOME', '', 'PAGAMENTOS CREDIÁRIO', 'Valor pago'] and
-                    'TOTAL' not in nome_cell.upper() and
-                    'SALDO DEVEDOR' not in nome_cell.upper() and
-                    'R$' in vendas_cell and 'R$' in saldo_cell):
+                # Process each group of 3 columns (NOME, DATA, COMPRA)
+                for col_group in range(0, len(row), 3):
+                    if col_group + 2 >= len(row):
+                        break
                     
-                    vendas_totais = extract_currency_value(vendas_cell)
-                    saldo_devedor = extract_currency_value(saldo_cell)
+                    nome_cell = str(row[col_group]).strip() if row[col_group] else ''
+                    data_cell = str(row[col_group + 1]).strip() if len(row) > col_group + 1 and row[col_group + 1] else ''
+                    valor_cell = str(row[col_group + 2]).strip() if len(row) > col_group + 2 and row[col_group + 2] else ''
                     
-                    # Get purchase history with rate limiting - using full version now
-                    compras = await get_client_purchase_history(nome_cell)
-                    
-                    cliente_data = {
-                        "nome": nome_cell,
-                        "vendas_totais": vendas_totais,
-                        "saldo_devedor": saldo_devedor,
-                        "compras": compras
-                    }
-                    
-                    cliente = ClienteCrediario(**cliente_data)
-                    clientes.append(cliente)
+                    # If we have a client name and value
+                    if nome_cell and valor_cell and 'R$' in valor_cell:
+                        valor_compra = extract_currency_value(valor_cell)
                         
+                        if valor_compra > 0:
+                            # Check if this is a new client or purchase detail
+                            if nome_cell not in clientes:
+                                # New client - this is their total
+                                clientes[nome_cell] = {
+                                    "nome": nome_cell,
+                                    "vendas_totais": valor_compra,
+                                    "saldo_devedor": valor_compra,  # Assuming total = saldo for now
+                                    "compras": []
+                                }
+                            else:
+                                # This is a purchase detail for existing client
+                                if data_cell:  # Only add if we have a date
+                                    clientes[nome_cell]["compras"].append({
+                                        "data": data_cell,
+                                        "valor": valor_compra
+                                    })
+                            
             except Exception as e:
-                logger.warning(f"Error processing crediario row {i}: {e}")
+                logger.warning(f"Error processing crediario row {row_index}: {e}")
                 continue
+        
+        # Convert dict to list
+        clientes_list = []
+        for cliente_data in clientes.values():
+            cliente = ClienteCrediario(**cliente_data)
+            clientes_list.append(cliente)
         
         result = {
             "success": True,
-            "clientes": clientes,
-            "total_clientes": len(clientes)
+            "clientes": clientes_list,
+            "total_clientes": len(clientes_list)
         }
         
         # Cache the result
         cache["data"] = result
         cache["last_updated"] = current_time
+        
+        logger.info(f"Found {len(clientes_list)} clients in CREDIARIO POR CONTRATO")
         
         return result
         
