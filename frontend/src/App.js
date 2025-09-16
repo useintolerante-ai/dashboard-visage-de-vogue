@@ -338,45 +338,7 @@ function App() {
               </Card>
             </div>
 
-            {/* Chart */}
-            {chartData && chartData.faturamento_vs_saidas && chartData.faturamento_vs_saidas.length > 0 && (
-              <Card className="bg-gray-900 border-gray-700">
-                <CardHeader>
-                  <CardTitle className="text-white text-xl">Faturamento vs Saídas</CardTitle>
-                  <CardDescription className="text-gray-400">
-                    Comparativo de entrada e saída por período
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={400}>
-                    <BarChart data={chartData.faturamento_vs_saidas}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis 
-                        dataKey="data" 
-                        stroke="#9CA3AF"
-                        fontSize={12}
-                      />
-                      <YAxis 
-                        stroke="#9CA3AF"
-                        fontSize={12}
-                        tickFormatter={formatCurrency}
-                      />
-                      <Tooltip 
-                        formatter={(value, name) => [formatCurrency(value), name === 'faturamento' ? 'Faturamento' : 'Saídas']}
-                        contentStyle={{
-                          backgroundColor: '#1F2937',
-                          border: '1px solid #374151',
-                          borderRadius: '8px',
-                          color: '#FFFFFF'
-                        }}
-                      />
-                      <Bar dataKey="faturamento" fill="#EC4899" name="faturamento" />
-                      <Bar dataKey="saidas" fill="#6B7280" name="saidas" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            )}
+            {/* Chart removed per user request */}
 
             {/* Faturamento Diário Table */}
             {faturamentoDiario && faturamentoDiario.vendas_diarias && faturamentoDiario.vendas_diarias.length > 0 && (
