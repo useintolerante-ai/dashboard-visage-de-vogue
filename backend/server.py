@@ -179,53 +179,74 @@ async def fetch_crediario_data() -> Dict[str, Any]:
         
         clientes = {}
         
-        # This sheet has a different structure:
-        # Row 3 has headers: NOME, DATA, COMPRA repeated
-        # Row 4+ have client data in groups of 3 columns
+        # This sheet has a specific structure:
+        # Row 4 (index 3): Client names and totals
+        # Row 5+ (index 4+): Purchase details with dates and values
         
-        # Start from row 4 (index 3) which has the first client data
-        for row_index in range(3, len(values)):
+        # First, extract client names and totals from row 4
+        if len(values) > 3:
+            client_row = values[3]  # Row 4 (index 3)
+            
+            # Process each group of 3 columns (NOME, DATA, COMPRA)
+            for col_group in range(0, len(client_row), 3):
+                if col_group + 2 >= len(client_row):
+                    break
+                
+                nome_cell = str(client_row[col_group]).strip() if client_row[col_group] else ''
+                valor_total_cell = str(client_row[col_group + 2]).strip() if len(client_row) > col_group + 2 and client_row[col_group + 2] else ''
+                
+                # If we have a client name and total value
+                if nome_cell and valor_total_cell and 'R$' in valor_total_cell:
+                    valor_total = extract_currency_value(valor_total_cell)
+                    
+                    if valor_total > 0:
+                        clientes[col_group] = {  # Use column group as key
+                            "nome": nome_cell,
+                            "vendas_totais": valor_total,
+                            "saldo_devedor": valor_total,  # Assuming total = saldo for now
+                            "compras": []
+                        }
+        
+        # Now extract purchase details from subsequent rows
+        for row_index in range(4, len(values)):  # Start from row 5 (index 4)
             row = values[row_index]
             
             try:
-                # Process each group of 3 columns (NOME, DATA, COMPRA)
+                # Process each group of 3 columns
                 for col_group in range(0, len(row), 3):
                     if col_group + 2 >= len(row):
                         break
                     
-                    nome_cell = str(row[col_group]).strip() if row[col_group] else ''
+                    # Skip if this column group doesn't have a client
+                    if col_group not in clientes:
+                        continue
+                    
                     data_cell = str(row[col_group + 1]).strip() if len(row) > col_group + 1 and row[col_group + 1] else ''
                     valor_cell = str(row[col_group + 2]).strip() if len(row) > col_group + 2 and row[col_group + 2] else ''
                     
-                    # If we have a client name and value
-                    if nome_cell and valor_cell and 'R$' in valor_cell:
+                    # If we have a date and value, this is a purchase
+                    if data_cell and valor_cell and 'R$' in valor_cell:
                         valor_compra = extract_currency_value(valor_cell)
                         
                         if valor_compra > 0:
-                            # Check if this is a new client or purchase detail
-                            if nome_cell not in clientes:
-                                # New client - this is their total
-                                clientes[nome_cell] = {
-                                    "nome": nome_cell,
-                                    "vendas_totais": valor_compra,
-                                    "saldo_devedor": valor_compra,  # Assuming total = saldo for now
-                                    "compras": []
-                                }
-                            else:
-                                # This is a purchase detail for existing client
-                                if data_cell:  # Only add if we have a date
-                                    clientes[nome_cell]["compras"].append({
-                                        "data": data_cell,
-                                        "valor": valor_compra
-                                    })
+                            clientes[col_group]["compras"].append({
+                                "data": data_cell,
+                                "valor": valor_compra
+                            })
                             
             except Exception as e:
                 logger.warning(f"Error processing crediario row {row_index}: {e}")
                 continue
         
-        # Convert dict to list
+        # Convert dict to list and sort purchases by date
         clientes_list = []
         for cliente_data in clientes.values():
+            # Sort purchases by date (newest first)
+            try:
+                cliente_data["compras"].sort(key=lambda x: x['data'], reverse=True)
+            except:
+                pass
+            
             cliente = ClienteCrediario(**cliente_data)
             clientes_list.append(cliente)
         
@@ -239,7 +260,7 @@ async def fetch_crediario_data() -> Dict[str, Any]:
         cache["data"] = result
         cache["last_updated"] = current_time
         
-        logger.info(f"Found {len(clientes_list)} clients in CREDIARIO POR CONTRATO")
+        logger.info(f"Found {len(clientes_list)} clients in CREDIARIO POR CONTRATO with purchase history")
         
         return result
         
