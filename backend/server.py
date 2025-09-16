@@ -847,19 +847,8 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                         num_vendas += 1
                         logger.debug(f"Added venda: {data_cell} - {vendas_str} -> {valor_venda} (row {row_index})")
                 
-                # Column 11: SAÍDA R$ (saídas) - BETTER logic to exclude total lines
-                saidas_str = str(row[11]).strip() if len(row) > 11 and row[11] else ''
-                if saidas_str and 'R$' in saidas_str and 'R$  -' not in saidas_str:
-                    valor_saida = extract_currency_value(saidas_str)
-                    if valor_saida > 0:
-                        # Check if this row contains "TOTAL" or similar keywords more thoroughly
-                        full_row_text = ' '.join([str(cell).upper() for cell in row if cell]).strip()
-                        if ('TOTAL' in full_row_text or 'SOMA' in full_row_text or 
-                            'SUBTOTAL' in full_row_text or 'SALDO' in full_row_text):
-                            logger.debug(f"Skipped saida with TOTAL keyword: {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
-                        else:
-                            total_saidas += valor_saida
-                            logger.debug(f"Added saida: {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
+                # Use the same logic as saidas-data endpoint for consistency
+                # Skip individual row processing for saidas - will be calculated once after the loop
                 
                 # Column 16: PAGAMENTOS CREDIÁRIO - BETTER logic to exclude total lines
                 crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
