@@ -479,11 +479,45 @@ function App() {
                       
                       {expandedCliente === index && (
                         <div className="mt-2 p-4 bg-gray-800 rounded-lg">
-                          <div className="text-center py-8">
-                            <p className="text-gray-400">
-                              Detalhes das compras em desenvolvimento...
-                            </p>
-                          </div>
+                          {cliente.compras && cliente.compras.length > 0 ? (
+                            <div>
+                              <h4 className="text-white font-semibold mb-3">Histórico de Pagamentos:</h4>
+                              <div className="overflow-x-auto">
+                                <table className="w-full border-collapse">
+                                  <thead>
+                                    <tr className="border-b border-gray-600">
+                                      <th className="text-left p-2 text-gray-300 font-medium">Data</th>
+                                      <th className="text-right p-2 text-gray-300 font-medium">Valor</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {cliente.compras.map((compra, compraIndex) => (
+                                      <tr key={compraIndex} className="border-b border-gray-700">
+                                        <td className="p-2 text-white">{compra.data}</td>
+                                        <td className="p-2 text-right text-green-400 font-semibold">
+                                          {formatCurrency(compra.valor)}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                  <tfoot>
+                                    <tr className="border-t border-gray-600">
+                                      <td className="p-2 text-white font-bold">TOTAL PAGO</td>
+                                      <td className="p-2 text-right text-green-400 font-bold">
+                                        {formatCurrency(cliente.compras.reduce((sum, compra) => sum + compra.valor, 0))}
+                                      </td>
+                                    </tr>
+                                  </tfoot>
+                                </table>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center py-8">
+                              <p className="text-gray-400">
+                                Nenhum pagamento registrado para este cliente.
+                              </p>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
