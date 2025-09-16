@@ -370,10 +370,18 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                 nome_cliente = cliente_data["nome"]
                 pagamentos = await get_client_payment_history(nome_cliente)
                 cliente_data["pagamentos"] = pagamentos
-                logger.info(f"Added {len(pagamentos)} payments for client {nome_cliente}")
+                
+                # Calculate days since last payment and overdue status
+                dias_sem_pagamento, atrasado_60_dias = calculate_days_since_last_payment(pagamentos)
+                cliente_data["dias_sem_pagamento"] = dias_sem_pagamento
+                cliente_data["atrasado_60_dias"] = atrasado_60_dias
+                
+                logger.info(f"Added {len(pagamentos)} payments for client {nome_cliente} - {dias_sem_pagamento} days since last payment, overdue: {atrasado_60_dias}")
             except Exception as e:
                 logger.warning(f"Error fetching payments for {cliente_data['nome']}: {e}")
                 cliente_data["pagamentos"] = []
+                cliente_data["dias_sem_pagamento"] = 999
+                cliente_data["atrasado_60_dias"] = True
             
             cliente = ClienteCrediario(**cliente_data)
             clientes_list.append(cliente)
