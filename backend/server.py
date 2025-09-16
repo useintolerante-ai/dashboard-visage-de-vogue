@@ -686,31 +686,36 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                 
             try:
                 # Extract values from standard positions
-                # Column 1: VENDAS (faturamento)
+                # Column 1: VENDAS (faturamento) - only count non-empty values
                 vendas_str = str(row[1]).strip() if len(row) > 1 and row[1] else ''
-                if vendas_str and 'R$' in vendas_str:
+                if vendas_str and 'R$' in vendas_str and vendas_str != '' and vendas_str != ' ':
                     valor_venda = extract_currency_value(vendas_str)
                     if valor_venda > 0:
                         total_faturamento += valor_venda
                         num_vendas += 1
+                        logger.debug(f"Added venda: {vendas_str} -> {valor_venda} (row {row_index})")
                 
-                # Column 11: SAÍDA R$ (saídas)
+                # Column 11: SAÍDA R$ (saídas) - only count non-empty values
                 saidas_str = str(row[11]).strip() if len(row) > 11 and row[11] else ''
-                if saidas_str and 'R$' in saidas_str:
+                if saidas_str and 'R$' in saidas_str and saidas_str != '' and saidas_str != ' ':
                     valor_saida = extract_currency_value(saidas_str)
                     if valor_saida > 0:
                         total_saidas += valor_saida
+                        logger.debug(f"Added saida: {saidas_str} -> {valor_saida} (row {row_index})")
                 
-                # Column 16: PAGAMENTOS CREDIÁRIO (recebido crediário)
+                # Column 16: PAGAMENTOS CREDIÁRIO (recebido crediário) - only count non-empty values
                 crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
-                if crediario_str and 'R$' in crediario_str:
+                if crediario_str and 'R$' in crediario_str and crediario_str != '' and crediario_str != ' ':
                     valor_crediario = extract_currency_value(crediario_str)
                     if valor_crediario > 0:
                         total_recebido_crediario += valor_crediario
+                        logger.debug(f"Added crediario: {crediario_str} -> {valor_crediario} (row {row_index})")
                         
             except Exception as e:
                 logger.warning(f"Error processing row {row_index} in {sheet_name}: {e}")
                 continue
+        
+        logger.info(f"Sheet {sheet_name} totals: Faturamento={total_faturamento}, Saidas={total_saidas}, Crediario={total_recebido_crediario}, Vendas={num_vendas}")
         
         return {
             "faturamento": total_faturamento,
