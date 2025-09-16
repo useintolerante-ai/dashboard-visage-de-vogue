@@ -108,27 +108,33 @@ Concluir o dashboard, corrigir crediário para mostrar compras (data + valor) ao
 ## backend:
   - task: "Fix crediario purchase history extraction"
     implemented: true
-    working: "testing"
+    working: false
     file: "server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "testing"
         - agent: "main"
         - comment: "Implemented real purchase history extraction from Google Sheets instead of mock data. Updated get_client_purchase_history function to search through monthly sheets for actual client purchases."
+        - working: false
+        - agent: "testing"
+        - comment: "CRITICAL: Crediario endpoint returns clients but all have empty 'compras' arrays. The get_client_purchase_history function is not finding client purchases in monthly sheets. Client names from CREDIARIO sheet may not match exactly with names in sales data, or the search logic needs improvement. API quota limits (429 errors) also affecting functionality."
 
   - task: "Improve KPI calculations in dashboard summary"
     implemented: true
-    working: "testing"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "testing"
         - agent: "main"
         - comment: "Created new extract_current_month_data function for accurate KPI calculations. Updated dashboard-summary endpoint to use improved data extraction."
+        - working: true
+        - agent: "testing"
+        - comment: "✅ KPI calculations working correctly. Tested all months (janeiro, marco, setembro, anointeiro). Dashboard-summary endpoint returns accurate values: faturamento, saidas, lucro_bruto, recebido_crediario, num_vendas. Marco shows R$ 16,993.40 faturamento, 14 vendas. Setembro shows R$ 5,012.00 faturamento, 4 vendas. Ano inteiro shows R$ 242,744.02 faturamento, 115 vendas total."
 
 ## frontend:
   - task: "Remove faturamento vs saidas chart"
