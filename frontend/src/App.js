@@ -230,8 +230,16 @@ function App() {
     if (!data || !key) return data;
     
     return [...data].sort((a, b) => {
-      let aVal = a[key];
-      let bVal = b[key];
+      let aVal, bVal;
+      
+      if (key === 'compras') {
+        // Special handling for compras count
+        aVal = a.compras ? a.compras.length : 0;
+        bVal = b.compras ? b.compras.length : 0;
+      } else {
+        aVal = a[key];
+        bVal = b[key];
+      }
       
       if (type === 'number') {
         aVal = parseFloat(aVal) || 0;
