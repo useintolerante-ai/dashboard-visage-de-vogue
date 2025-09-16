@@ -12,7 +12,7 @@ const API = `${BACKEND_URL}/api`;
 
 function App() {
   const [activeView, setActiveView] = useState('visaoGeral');
-  const [selectedMonth, setSelectedMonth] = useState('setembro');
+  const [selectedMonth, setSelectedMonth] = useState('anointeiro');
   const [dashboardData, setDashboardData] = useState(null);
   const [chartData, setChartData] = useState(null);
   const [crediarioData, setCrediarioData] = useState(null);
