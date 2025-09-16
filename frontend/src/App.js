@@ -467,7 +467,7 @@ function App() {
                         onClick={() => toggleClienteDetails(index)}
                       >
                         <div className="flex-1">
-                          <p className="font-semibold text-white text-lg">{cliente.nome}</p>
+                          <p className="font-semibold text-white text-base">{cliente.nome}</p>
                         </div>
                         <div className="text-right">
                           <p className="text-cyan-400">{formatCurrency(cliente.vendas_totais)}</p>
