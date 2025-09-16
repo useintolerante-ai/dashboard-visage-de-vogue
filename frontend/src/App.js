@@ -125,6 +125,43 @@ function App() {
     setExpandedCliente(expandedCliente === clienteIndex ? null : clienteIndex);
   };
 
+  const showView = (viewName) => {
+    setActiveView(viewName);
+    
+    // Load specific data for each view
+    if (viewName === 'crediario') {
+      loadCrediarioData();
+    } else if (viewName === 'saidas') {
+      loadSaidasData(selectedMonth);
+    }
+  };
+
+  const handleMonthChange = (mes) => {
+    setSelectedMonth(mes);
+    if (activeView === 'saidas') {
+      loadSaidasData(mes);
+    }
+  };
+
+  const getKPIColor = (value, type) => {
+    if (type === 'lucro') {
+      return value >= 0 ? 'text-emerald-500' : 'text-red-500';
+    }
+    return 'text-white';
+  };
+
+  const getKPIIcon = (type) => {
+    switch (type) {
+      case 'faturamento': return <DollarSign className="h-5 w-5" />;
+      case 'saidas': return <TrendingDown className="h-5 w-5" />;
+      case 'lucro': return <Target className="h-5 w-5" />;
+      case 'recebido': return <CreditCard className="h-5 w-5" />;
+      case 'areceber': return <CreditCard className="h-5 w-5" />;
+      case 'vendas': return <ShoppingCart className="h-5 w-5" />;
+      default: return <DollarSign className="h-5 w-5" />;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-6 py-8">
