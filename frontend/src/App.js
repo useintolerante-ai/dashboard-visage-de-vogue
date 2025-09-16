@@ -1,59 +1,32 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import axios from "axios";
-import { useDropzone } from "react-dropzone";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
 import { Button } from "./components/ui/button";
 import { Badge } from "./components/ui/badge";
-import { Upload, TrendingUp, TrendingDown, BarChart3, FileSpreadsheet, RefreshCw, Cloud, CloudOff } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
+import { RefreshCw, Cloud, TrendingUp, TrendingDown, DollarSign, ShoppingCart, CreditCard, Target } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 function App() {
+  const [activeView, setActiveView] = useState('visaoGeral');
+  const [selectedMonth, setSelectedMonth] = useState('setembro2025');
   const [dashboardData, setDashboardData] = useState(null);
   const [chartData, setChartData] = useState(null);
   const [sheetsStatus, setSheetsStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState("");
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: handleFileUpload,
-    accept: {
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-      'application/vnd.ms-excel': ['.xls']
-    },
-    maxFiles: 1
-  });
-
-  async function handleFileUpload(acceptedFiles) {
-    if (acceptedFiles.length === 0) return;
-
-    const file = acceptedFiles[0];
-    const formData = new FormData();
-    formData.append('file', file);
-
-    setIsLoading(true);
-    setUploadStatus("Processando planilha...");
-
-    try {
-      const response = await axios.post(`${API}/upload-excel`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      setUploadStatus(`✅ ${response.data.message}`);
-      await loadDashboardData();
-    } catch (error) {
-      console.error('Erro no upload:', error);
-      setUploadStatus("❌ Erro ao processar planilha");
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const months = [
+    { value: 'setembro2025', label: 'Setembro 2025' },
+    { value: 'agosto2025', label: 'Agosto 2025' },
+    { value: 'julho2025', label: 'Julho 2025' },
+    { value: 'junho2025', label: 'Junho 2025' },
+    { value: 'maio2025', label: 'Maio 2025' },
+    { value: 'ano2025', label: 'Ano Inteiro (2025)' }
+  ];
 
   async function syncGoogleSheets() {
     setIsSyncing(true);
@@ -110,17 +83,11 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const COLORS = ['#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
-
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     }).format(value);
-  };
-
-  const formatPercent = (value) => {
-    return `${(value * 100).toFixed(2)}%`;
   };
 
   const formatDate = (dateString) => {
@@ -132,289 +99,288 @@ function App() {
     }
   };
 
-  const getDataSourceBadge = (source) => {
-    switch (source) {
-      case 'sheets':
-        return <Badge className="bg-green-100 text-green-800"><Cloud className="h-3 w-3 mr-1" />Google Sheets</Badge>;
-      case 'upload':
-        return <Badge className="bg-blue-100 text-blue-800"><Upload className="h-3 w-3 mr-1" />Upload Manual</Badge>;
-      case 'mixed':
-        return <Badge className="bg-yellow-100 text-yellow-800"><FileSpreadsheet className="h-3 w-3 mr-1" />Misto</Badge>;
-      default:
-        return <Badge variant="secondary"><CloudOff className="h-3 w-3 mr-1" />Sem dados</Badge>;
+  const showView = (viewName) => {
+    setActiveView(viewName);
+  };
+
+  const getKPIColor = (value, type) => {
+    if (type === 'lucro') {
+      return value >= 0 ? 'text-emerald-500' : 'text-red-500';
+    }
+    return 'text-white';
+  };
+
+  const getKPIIcon = (type) => {
+    switch (type) {
+      case 'faturamento': return <DollarSign className="h-5 w-5" />;
+      case 'saidas': return <TrendingDown className="h-5 w-5" />;
+      case 'lucro': return <Target className="h-5 w-5" />;
+      case 'recebido': return <CreditCard className="h-5 w-5" />;
+      case 'areceber': return <CreditCard className="h-5 w-5" />;
+      case 'vendas': return <ShoppingCart className="h-5 w-5" />;
+      default: return <DollarSign className="h-5 w-5" />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-slate-800 mb-2">Dashboard de Vendas</h1>
-              <p className="text-slate-600">Análise completa de performance por departamento</p>
-            </div>
-            <div className="flex items-center gap-4">
-              {sheetsStatus && (
-                <div className="text-right">
-                  <p className="text-sm text-slate-600">
-                    Google Sheets: {sheetsStatus.api_key_set ? 
-                      <span className="text-green-600 font-semibold">Conectado</span> : 
-                      <span className="text-red-600 font-semibold">Desconectado</span>
-                    }
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    Última sync: {formatDate(sheetsStatus.last_sync)}
-                  </p>
-                </div>
-              )}
-              <Button 
-                onClick={syncGoogleSheets} 
-                disabled={isSyncing}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-                {isSyncing ? 'Sincronizando...' : 'Sync Google Sheets'}
-              </Button>
-            </div>
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent">
+            Dashboard de Gestão 2025 | Visage de Vogue
+          </h1>
+          
+          {/* Sync Status */}
+          <div className="flex items-center justify-center gap-4 mb-6">
+            {sheetsStatus && (
+              <div className="flex items-center gap-2">
+                <Cloud className="h-4 w-4 text-green-500" />
+                <span className="text-green-500 text-sm">Google Sheets: Conectado</span>
+                <span className="text-gray-400 text-xs">
+                  ({formatDate(sheetsStatus.last_sync)})
+                </span>
+              </div>
+            )}
+            <Button 
+              onClick={syncGoogleSheets} 
+              disabled={isSyncing}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2"
+              size="sm"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+              {isSyncing ? 'Sincronizando...' : 'Atualizar'}
+            </Button>
           </div>
         </div>
 
-        {/* Data Source Status */}
-        {dashboardData && (
-          <div className="mb-6">
-            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm font-medium text-slate-700">Fonte dos dados:</span>
-                    {getDataSourceBadge(dashboardData.data_source)}
-                    {dashboardData.last_sync && (
-                      <span className="text-xs text-slate-500">
-                        Última atualização: {formatDate(dashboardData.last_sync)}
-                      </span>
-                    )}
+        {/* Navigation Tabs */}
+        <div className="flex justify-center mb-8">
+          <div className="flex gap-2 bg-gray-800 rounded-lg p-1">
+            <button
+              onClick={() => showView('visaoGeral')}
+              className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                activeView === 'visaoGeral' 
+                  ? 'bg-pink-600 text-white' 
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}
+            >
+              Visão Geral
+            </button>
+            <button
+              onClick={() => showView('crediario')}
+              className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                activeView === 'crediario' 
+                  ? 'bg-pink-600 text-white' 
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}
+            >
+              Crediário
+            </button>
+            <button
+              onClick={() => showView('saidas')}
+              className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                activeView === 'saidas' 
+                  ? 'bg-pink-600 text-white' 
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}
+            >
+              Saídas
+            </button>
+          </div>
+        </div>
+
+        {/* Month Filter */}
+        <div className="flex justify-center mb-8">
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="bg-gray-800 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+          >
+            {months.map(month => (
+              <option key={month.value} value={month.value}>
+                {month.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Visão Geral View */}
+        {activeView === 'visaoGeral' && dashboardData && (
+          <div className="space-y-8">
+            {/* KPIs Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+              {/* Faturamento */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    {getKPIIcon('faturamento')}
+                    <span className="text-orange-400 text-sm font-medium uppercase tracking-wide">Faturamento</span>
                   </div>
-                  <div className="text-sm text-slate-600">
-                    {dashboardData.departamentos_count} departamentos carregados
+                  <div className="text-2xl font-bold text-white">
+                    {formatCurrency(dashboardData.faturamento)}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {/* Saídas */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    {getKPIIcon('saidas')}
+                    <span className="text-green-400 text-sm font-medium uppercase tracking-wide">Saídas</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">
+                    {formatCurrency(dashboardData.saidas)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Lucro Bruto */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    {getKPIIcon('lucro')}
+                    <span className="text-blue-400 text-sm font-medium uppercase tracking-wide">Lucro Bruto</span>
+                  </div>
+                  <div className={`text-2xl font-bold ${getKPIColor(dashboardData.lucro_bruto, 'lucro')}`}>
+                    {formatCurrency(dashboardData.lucro_bruto)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recebido (Cred.) */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    {getKPIIcon('recebido')}
+                    <span className="text-cyan-400 text-sm font-medium uppercase tracking-wide">Recebido (Cred.)</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">
+                    {formatCurrency(dashboardData.recebido_crediario)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* A Receber (Cred.) */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    {getKPIIcon('areceber')}
+                    <span className="text-blue-400 text-sm font-medium uppercase tracking-wide">A Receber (Cred.)</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">
+                    {formatCurrency(dashboardData.a_receber_crediario)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Nº de Vendas */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    {getKPIIcon('vendas')}
+                    <span className="text-purple-400 text-sm font-medium uppercase tracking-wide">Nº de Vendas</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">
+                    {dashboardData.num_vendas}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Chart */}
+            {chartData && chartData.faturamento_vs_saidas && chartData.faturamento_vs_saidas.length > 0 && (
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white text-xl">Faturamento vs Saídas</CardTitle>
+                  <CardDescription className="text-gray-400">
+                    Comparativo de entrada e saída por período
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={400}>
+                    <BarChart data={chartData.faturamento_vs_saidas}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                      <XAxis 
+                        dataKey="data" 
+                        stroke="#9CA3AF"
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        stroke="#9CA3AF"
+                        fontSize={12}
+                        tickFormatter={formatCurrency}
+                      />
+                      <Tooltip 
+                        formatter={(value, name) => [formatCurrency(value), name === 'faturamento' ? 'Faturamento' : 'Saídas']}
+                        contentStyle={{
+                          backgroundColor: '#1F2937',
+                          border: '1px solid #374151',
+                          borderRadius: '8px',
+                          color: '#FFFFFF'
+                        }}
+                      />
+                      <Bar dataKey="faturamento" fill="#EC4899" name="faturamento" />
+                      <Bar dataKey="saidas" fill="#6B7280" name="saidas" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
 
-        {/* Upload Area - Only show if no Google Sheets data */}
-        {(!dashboardData || dashboardData.data_source === 'none' || dashboardData.data_source === 'upload') && (
-          <Card className="mb-8 border-dashed border-2 border-slate-300 hover:border-violet-400 transition-colors">
-            <CardContent className="p-8">
-              <div {...getRootProps()} className="cursor-pointer text-center">
-                <input {...getInputProps()} />
-                <div className="flex flex-col items-center gap-4">
-                  <div className="p-4 bg-violet-100 rounded-full">
-                    <Upload className="h-8 w-8 text-violet-600" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-semibold text-slate-700">
-                      {isDragActive
-                        ? "Solte a planilha aqui..."
-                        : "Upload manual de planilha Excel (.xlsx)"}
-                    </p>
-                    <p className="text-sm text-slate-500 mt-1">
-                      Use este método apenas se o Google Sheets não estiver funcionando
-                    </p>
-                  </div>
-                  {isLoading && (
-                    <div className="flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-violet-600"></div>
-                      <span className="text-sm text-slate-600">Processando...</span>
-                    </div>
-                  )}
-                  {uploadStatus && (
-                    <Badge variant={uploadStatus.includes("✅") ? "default" : "destructive"}>
-                      {uploadStatus}
-                    </Badge>
-                  )}
-                </div>
+        {/* Crediário View */}
+        {activeView === 'crediario' && (
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-xl">Análise de Crediário</CardTitle>
+              <CardDescription className="text-gray-400">
+                Controle de pagamentos e recebimentos do crediário
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12">
+                <p className="text-gray-400">
+                  Dados de crediário em desenvolvimento...
+                </p>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Dashboard Content */}
-        {dashboardData && chartData && (
-          <>
-            {/* KPIs */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <Card className="bg-gradient-to-br from-violet-500 to-purple-600 text-white">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-medium opacity-90">Vendas Totais</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">{formatCurrency(dashboardData.total_vendas)}</div>
-                  <div className="flex items-center mt-2">
-                    <BarChart3 className="h-4 w-4 opacity-70 mr-1" />
-                    <span className="text-sm opacity-90">{dashboardData.departamentos_count} departamentos</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-medium opacity-90">Margem 2025</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">{formatPercent(dashboardData.margem_media_25)}</div>
-                  <div className="flex items-center mt-2">
-                    <TrendingUp className="h-4 w-4 opacity-70 mr-1" />
-                    <span className="text-sm opacity-90">Margem atual</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-blue-500 to-cyan-600 text-white">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-medium opacity-90">Margem 2024</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">{formatPercent(dashboardData.margem_media_24)}</div>
-                  <div className="flex items-center mt-2">
-                    <FileSpreadsheet className="h-4 w-4 opacity-70 mr-1" />
-                    <span className="text-sm opacity-90">Comparativo</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className={`text-white ${dashboardData.variacao_total >= 0 
-                ? 'bg-gradient-to-br from-emerald-500 to-green-600' 
-                : 'bg-gradient-to-br from-red-500 to-rose-600'}`}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-medium opacity-90">Variação Média</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">{formatPercent(dashboardData.variacao_total)}</div>
-                  <div className="flex items-center mt-2">
-                    {dashboardData.variacao_total >= 0 
-                      ? <TrendingUp className="h-4 w-4 opacity-70 mr-1" />
-                      : <TrendingDown className="h-4 w-4 opacity-70 mr-1" />
-                    }
-                    <span className="text-sm opacity-90">
-                      {dashboardData.variacao_total >= 0 ? 'Crescimento' : 'Redução'}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-              {/* Sales by Department */}
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-xl text-slate-800">Vendas por Departamento</CardTitle>
-                  <CardDescription>Volume de vendas em R$ por departamento</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={chartData.vendas_por_departamento}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                      <XAxis dataKey="departamento" stroke="#64748b" />
-                      <YAxis stroke="#64748b" tickFormatter={formatCurrency} />
-                      <Tooltip formatter={(value) => [formatCurrency(value), 'Vendas']} />
-                      <Bar dataKey="venda_rs" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              {/* Margin Comparison */}
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-xl text-slate-800">Comparativo de Margens</CardTitle>
-                  <CardDescription>Margem 2024 vs 2025 por departamento</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={chartData.comparativo_margens}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                      <XAxis dataKey="departamento" stroke="#64748b" />
-                      <YAxis stroke="#64748b" tickFormatter={formatPercent} />
-                      <Tooltip formatter={(value) => [formatPercent(value), '']} />
-                      <Line type="monotone" dataKey="margem_24" stroke="#06b6d4" strokeWidth={3} name="Margem 2024" />
-                      <Line type="monotone" dataKey="margem_25" stroke="#10b981" strokeWidth={3} name="Margem 2025" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Variation Chart */}
-            <Card className="shadow-lg mb-8">
-              <CardHeader>
-                <CardTitle className="text-xl text-slate-800">Variação % por Departamento</CardTitle>
-                <CardDescription>Percentual de variação nas vendas</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={chartData.variacao_departamentos}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="departamento" stroke="#64748b" />
-                    <YAxis stroke="#64748b" tickFormatter={formatPercent} />
-                    <Tooltip formatter={(value) => [formatPercent(value), 'Variação']} />
-                    <Bar 
-                      dataKey="variacao_percent" 
-                      fill={(entry) => entry?.variacao_percent >= 0 ? '#10b981' : '#ef4444'}
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            {/* Top Departments */}
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl text-slate-800">Top 5 Departamentos</CardTitle>
-                <CardDescription>Departamentos com maior volume de vendas</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {dashboardData.top_departamentos.map((dept, index) => (
-                    <div key={dept.departamento} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold`}
-                             style={{ backgroundColor: COLORS[index % COLORS.length] }}>
-                          {index + 1}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-800">Departamento {dept.departamento}</p>
-                          <p className="text-sm text-slate-600">Margem: {formatPercent(dept.margem_25)}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-lg">{formatCurrency(dept.venda_rs)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </>
+        {/* Saídas View */}
+        {activeView === 'saidas' && (
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-xl">Detalhamento de Saídas</CardTitle>
+              <CardDescription className="text-gray-400">
+                Análise detalhada de todas as saídas por categoria
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12">
+                <p className="text-gray-400">
+                  Detalhamento de saídas em desenvolvimento...
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Empty State */}
         {!dashboardData && !isLoading && (
-          <Card className="text-center py-12">
+          <Card className="bg-gray-900 border-gray-700 text-center py-12">
             <CardContent>
               <div className="flex flex-col items-center gap-4">
-                <div className="p-4 bg-slate-100 rounded-full">
-                  <FileSpreadsheet className="h-12 w-12 text-slate-400" />
+                <div className="p-4 bg-gray-800 rounded-full">
+                  <Cloud className="h-12 w-12 text-gray-400" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-slate-700 mb-2">Dashboard carregando...</h3>
-                  <p className="text-slate-500">
-                    Aguarde enquanto sincronizamos com o Google Sheets ou faça upload de uma planilha
+                  <h3 className="text-xl font-semibold text-white mb-2">Carregando dados...</h3>
+                  <p className="text-gray-400">
+                    Aguarde enquanto sincronizamos com o Google Sheets
                   </p>
                 </div>
               </div>

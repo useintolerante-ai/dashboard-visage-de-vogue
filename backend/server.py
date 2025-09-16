@@ -15,6 +15,8 @@ import json
 import requests
 import asyncio
 import time
+import re
+from decimal import Decimal
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -51,27 +53,27 @@ class StatusCheck(BaseModel):
 class StatusCheckCreate(BaseModel):
     client_name: str
 
-class SalesData(BaseModel):
+class CashFlowData(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    departamento: int
-    custo_medio: float
-    d_estoque: float
-    pmp: float
-    meta_ia: float
-    venda_rs: float
-    margem_24: float
-    margem_25: float
-    variacao_percent: float
+    data_venda: Optional[str] = None
+    valor_venda: float = 0.0
+    forma_pagamento: Optional[str] = None
+    data_saida: Optional[str] = None
+    descricao_saida: Optional[str] = None
+    valor_saida: float = 0.0
+    data_pagamento: Optional[str] = None
+    valor_crediario: float = 0.0
+    mes: str = "SETEMBRO25"
+    source: str = "sheets"
     upload_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    source: str = "upload"  # "upload" or "sheets"
 
 class DashboardSummary(BaseModel):
-    total_vendas: float
-    margem_media_24: float
-    margem_media_25: float
-    variacao_total: float
-    departamentos_count: int
-    top_departamentos: List[Dict[str, Any]]
+    faturamento: float
+    saidas: float
+    lucro_bruto: float
+    recebido_crediario: float
+    a_receber_crediario: float
+    num_vendas: int
     data_source: str = "unknown"
     last_sync: Optional[str] = None
 
@@ -93,6 +95,22 @@ def parse_from_mongo(item):
                 except:
                     pass
     return item
+
+def extract_currency_value(value_str):
+    """Extract numeric value from currency string like 'R$ 1.130,00'"""
+    if not value_str or value_str == '':
+        return 0.0
+    
+    # Convert to string and clean
+    clean_str = str(value_str).replace('R$', '').replace(' ', '').replace('.', '').replace(',', '.')
+    
+    # Remove any non-numeric characters except dot and minus
+    clean_str = re.sub(r'[^\d.-]', '', clean_str)
+    
+    try:
+        return float(clean_str) if clean_str else 0.0
+    except:
+        return 0.0
 
 def fetch_google_sheets_data(sheet_name: str = "SETEMBRO25") -> Dict[str, Any]:
     """
@@ -137,111 +155,78 @@ def fetch_google_sheets_data(sheet_name: str = "SETEMBRO25") -> Dict[str, Any]:
         logger.error(f"Unexpected error fetching Google Sheets data: {str(e)}")
         return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
-def process_sheets_data_to_sales_records(sheets_data: List[Dict]) -> List[SalesData]:
+def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[CashFlowData]:
     """
-    Convert Google Sheets data to SalesData records
-    Handles both department data and cash flow data
+    Convert Google Sheets data to CashFlowData records
     """
-    sales_records = []
+    cashflow_records = []
     
-    # If this is cash flow data (like your actual sheet), process it differently
     for index, row in enumerate(sheets_data):
         try:
-            # Check if this looks like cash flow data
-            if any('venda' in str(key).lower() or 'vendas' in str(key).lower() for key in row.keys()):
-                # This is cash flow format - convert vendas to fake departments
-                vendas_field = None
-                data_field = None
-                
-                for key in row.keys():
-                    if 'venda' in key.lower() and row.get(key):
-                        vendas_field = key
-                    if 'data' in key.lower() and 'venda' in key.lower():
-                        data_field = key
-                
-                if not vendas_field or not row.get(vendas_field):
-                    continue
-                
-                # Extract sales value
-                vendas_value = str(row[vendas_field]).replace('R$', '').replace(',', '').replace(' ', '').strip()
-                if not vendas_value or vendas_value == '':
+            # Skip empty rows
+            if not any(str(value).strip() for value in row.values() if value):
+                continue
+            
+            # Extract data from row
+            data_venda = None
+            valor_venda = 0.0
+            forma_pagamento = None
+            data_saida = None
+            descricao_saida = None
+            valor_saida = 0.0
+            data_pagamento = None
+            valor_crediario = 0.0
+            
+            # Map columns based on headers
+            for key, value in row.items():
+                if not value or str(value).strip() == '':
                     continue
                     
-                try:
-                    vendas_amount = float(vendas_value)
-                    if vendas_amount <= 0:
-                        continue
-                except:
-                    continue
+                key_lower = key.lower().strip()
                 
-                # Create a fake department based on the row index or date
-                fake_dept = (index % 10) + 1  # Create departments 1-10
+                # Sales data
+                if 'data' in key_lower and 'venda' in key_lower:
+                    data_venda = str(value).strip()
+                elif 'venda' in key_lower and ('r$' in str(value).lower() or any(c.isdigit() for c in str(value))):
+                    valor_venda = extract_currency_value(value)
+                elif 'forma' in key_lower and 'pagamento' in key_lower:
+                    forma_pagamento = str(value).strip()
                 
-                sales_record = SalesData(
-                    departamento=fake_dept,
-                    custo_medio=vendas_amount * 0.6,  # Assume 60% cost
-                    d_estoque=30.0,  # Default stock days
-                    pmp=vendas_amount * 0.8,  # Assume 80% of sale price
-                    meta_ia=vendas_amount * 1.2,  # 20% above actual
-                    venda_rs=vendas_amount,
-                    margem_24=0.20,  # 20% margin 2024
-                    margem_25=0.25,  # 25% margin 2025  
-                    variacao_percent=0.05,  # 5% positive variation
+                # Expenses data
+                elif 'data' in key_lower and 'saída' in key_lower:
+                    data_saida = str(value).strip()
+                elif 'descrição' in key_lower or 'descricao' in key_lower:
+                    descricao_saida = str(value).strip()
+                elif 'saída' in key_lower and ('r$' in str(value).lower() or any(c.isdigit() for c in str(value))):
+                    valor_saida = extract_currency_value(value)
+                
+                # Credit payments
+                elif 'data' in key_lower and 'pagamento' in key_lower:
+                    data_pagamento = str(value).strip()
+                elif 'crediário' in key_lower and ('r$' in str(value).lower() or any(c.isdigit() for c in str(value))):
+                    valor_crediario = extract_currency_value(value)
+            
+            # Create record if we have any meaningful data
+            if valor_venda > 0 or valor_saida > 0 or valor_crediario > 0:
+                cashflow_record = CashFlowData(
+                    data_venda=data_venda,
+                    valor_venda=valor_venda,
+                    forma_pagamento=forma_pagamento,
+                    data_saida=data_saida,
+                    descricao_saida=descricao_saida,
+                    valor_saida=valor_saida,
+                    data_pagamento=data_pagamento,
+                    valor_crediario=valor_crediario,
+                    mes="SETEMBRO25",
                     source="sheets"
                 )
-                sales_records.append(sales_record)
-                continue
-            
-            # Original department format processing
-            dept_field = None
-            for key in row.keys():
-                if 'departamento' in key.lower() or 'depto' in key.lower() or 'dept' in key.lower():
-                    dept_field = key
-                    break
-            
-            if not dept_field or not row.get(dept_field):
-                continue
+                cashflow_records.append(cashflow_record)
                 
-            # Extract department number
-            dept_value = str(row[dept_field]).strip()
-            if '-' in dept_value:
-                dept_number = int(dept_value.split('-')[0].strip())
-            else:
-                dept_number = int(float(dept_value))
-            
-            # Map other fields with flexible column name matching
-            def get_field_value(row, possible_names, default=0.0):
-                for name in possible_names:
-                    for key in row.keys():
-                        if name.lower() in key.lower().replace(' ', '').replace('_', ''):
-                            value = row[key]
-                            if value == '' or value is None:
-                                return default
-                            try:
-                                return float(value)
-                            except (ValueError, TypeError):
-                                continue
-                return default
-            
-            sales_record = SalesData(
-                departamento=dept_number,
-                custo_medio=get_field_value(row, ['customedio', 'custo', 'cost']),
-                d_estoque=get_field_value(row, ['destoque', 'estoque', 'stock']),
-                pmp=get_field_value(row, ['pmp', 'precomedio', 'price']),
-                meta_ia=get_field_value(row, ['metaia', 'meta', 'target']),
-                venda_rs=get_field_value(row, ['vendar$', 'venda', 'vendas', 'sales']),
-                margem_24=get_field_value(row, ['margem24', 'margem2024', 'margin24']),
-                margem_25=get_field_value(row, ['margem25', 'margem2025', 'margin25']),
-                variacao_percent=get_field_value(row, ['variacao', 'variação', 'variation', '%variacao']),
-                source="sheets"
-            )
-            sales_records.append(sales_record)
-            
         except Exception as e:
             logger.warning(f"Error processing row {index}: {e}")
             continue
     
-    return sales_records
+    return cashflow_records
 
 async def sync_google_sheets_data():
     """
@@ -263,25 +248,25 @@ async def sync_google_sheets_data():
             logger.error(f"Failed to fetch sheets data: {sheets_result['error']}")
             return
         
-        # Process data into sales records
-        sales_records = process_sheets_data_to_sales_records(sheets_result["data"])
+        # Process data into cashflow records
+        cashflow_records = process_sheets_data_to_cashflow_records(sheets_result["data"])
         
-        if not sales_records:
-            logger.warning("No valid sales records found in sheets data")
+        if not cashflow_records:
+            logger.warning("No valid cashflow records found in sheets data")
             return
         
         # Clear existing sheets data from database
-        await db.sales_data.delete_many({"source": "sheets"})
+        await db.cashflow_data.delete_many({"source": "sheets"})
         
         # Insert new data
-        records_dicts = [prepare_for_mongo(record.dict()) for record in sales_records]
-        await db.sales_data.insert_many(records_dicts)
+        records_dicts = [prepare_for_mongo(record.dict()) for record in cashflow_records]
+        await db.cashflow_data.insert_many(records_dicts)
         
         # Update cache
         sheets_cache["data"] = sheets_result["data"]
         sheets_cache["last_updated"] = datetime.now(timezone.utc)
         
-        logger.info(f"Successfully synced {len(sales_records)} records from Google Sheets")
+        logger.info(f"Successfully synced {len(cashflow_records)} cashflow records from Google Sheets")
         
     except Exception as e:
         logger.error(f"Error during Google Sheets sync: {str(e)}")
@@ -299,61 +284,7 @@ def should_sync_sheets() -> bool:
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
-    return {"message": "Dashboard de Vendas API com Google Sheets"}
-
-@api_router.post("/upload-excel")
-async def upload_excel(file: UploadFile = File(...)):
-    """Process uploaded Excel file and store sales data"""
-    try:
-        # Read Excel file
-        contents = await file.read()
-        df = pd.read_excel(io.BytesIO(contents))
-        
-        # Clear existing upload data
-        await db.sales_data.delete_many({"source": "upload"})
-        
-        # Process each row
-        sales_records = []
-        for index, row in df.iterrows():
-            try:
-                # Extract department number from strings like "2 - MAGAZINE" or just "2"
-                dept_value = str(row['Departamento']).strip()
-                if '-' in dept_value:
-                    dept_number = int(dept_value.split('-')[0].strip())
-                else:
-                    dept_number = int(float(dept_value))  # Handle floats like 2.0
-                
-                sales_record = SalesData(
-                    departamento=dept_number,
-                    custo_medio=float(row['Custo Médio']),
-                    d_estoque=float(row['D. Estoque']),
-                    pmp=float(row['PMP']),
-                    meta_ia=float(row['Meta IA']),
-                    venda_rs=float(row['Venda R$']),
-                    margem_24=float(row['Margem 24']),
-                    margem_25=float(row['Margem 25']),
-                    variacao_percent=float(row['% Variação']),
-                    source="upload"
-                )
-                sales_records.append(sales_record)
-            except Exception as e:
-                logger.warning(f"Error processing row {index}: {e}")
-                continue
-        
-        # Insert into MongoDB
-        if sales_records:
-            records_dicts = [prepare_for_mongo(record.dict()) for record in sales_records]
-            await db.sales_data.insert_many(records_dicts)
-        
-        return {
-            "message": f"Successfully processed {len(sales_records)} records from upload",
-            "records_count": len(sales_records),
-            "source": "upload"
-        }
-        
-    except Exception as e:
-        logger.error(f"Error processing Excel file: {e}")
-        raise HTTPException(status_code=400, detail=f"Error processing Excel file: {str(e)}")
+    return {"message": "Dashboard de Gestão 2025 | Visage de Vogue - API com Google Sheets"}
 
 @api_router.get("/sync-sheets")
 async def trigger_sheets_sync(background_tasks: BackgroundTasks):
@@ -374,50 +305,48 @@ async def get_dashboard_summary(background_tasks: BackgroundTasks, auto_sync: bo
         if auto_sync and should_sync_sheets():
             background_tasks.add_task(sync_google_sheets_data)
         
-        sales_data = await db.sales_data.find().to_list(1000)
+        cashflow_data = await db.cashflow_data.find().to_list(1000)
         
-        if not sales_data:
+        if not cashflow_data:
             # If no data, try immediate sync
             if auto_sync:
                 await sync_google_sheets_data()
-                sales_data = await db.sales_data.find().to_list(1000)
+                cashflow_data = await db.cashflow_data.find().to_list(1000)
         
-        if not sales_data:
+        if not cashflow_data:
             return DashboardSummary(
-                total_vendas=0,
-                margem_media_24=0,
-                margem_media_25=0,
-                variacao_total=0,
-                departamentos_count=0,
-                top_departamentos=[],
+                faturamento=0,
+                saidas=0,
+                lucro_bruto=0,
+                recebido_crediario=0,
+                a_receber_crediario=0,
+                num_vendas=0,
                 data_source="none",
                 last_sync=None
             )
         
         # Calculate summary statistics
-        df = pd.DataFrame(sales_data)
+        df = pd.DataFrame(cashflow_data)
         
-        total_vendas = df['venda_rs'].sum()
-        margem_media_24 = df['margem_24'].mean()
-        margem_media_25 = df['margem_25'].mean()
-        variacao_total = df['variacao_percent'].mean()
-        departamentos_count = len(df)
+        faturamento = df['valor_venda'].sum()
+        saidas = df['valor_saida'].sum()
+        lucro_bruto = faturamento - saidas
+        recebido_crediario = df['valor_crediario'].sum()
         
-        # Top 5 departments by sales
-        top_deps = df.nlargest(5, 'venda_rs')[['departamento', 'venda_rs', 'margem_25']].to_dict('records')
+        # Calculate A Receber (estimate as 30% of credit sales)
+        vendas_crediario = df[df['forma_pagamento'].str.contains('crediário', case=False, na=False)]['valor_venda'].sum() if 'forma_pagamento' in df.columns else 0
+        a_receber_crediario = max(0, vendas_crediario - recebido_crediario)
         
-        # Determine data source
-        sources = df['source'].unique() if 'source' in df.columns else ["unknown"]
-        data_source = "sheets" if "sheets" in sources else "upload" if "upload" in sources else "mixed"
+        num_vendas = len(df[df['valor_venda'] > 0])
         
         return DashboardSummary(
-            total_vendas=total_vendas,
-            margem_media_24=margem_media_24,
-            margem_media_25=margem_media_25,
-            variacao_total=variacao_total,
-            departamentos_count=departamentos_count,
-            top_departamentos=top_deps,
-            data_source=data_source,
+            faturamento=faturamento,
+            saidas=saidas,
+            lucro_bruto=lucro_bruto,
+            recebido_crediario=recebido_crediario,
+            a_receber_crediario=a_receber_crediario,
+            num_vendas=num_vendas,
+            data_source="sheets",
             last_sync=sheets_cache["last_updated"].isoformat() if sheets_cache["last_updated"] else None
         )
         
@@ -425,44 +354,67 @@ async def get_dashboard_summary(background_tasks: BackgroundTasks, auto_sync: bo
         logger.error(f"Error getting dashboard summary: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting dashboard summary: {str(e)}")
 
-@api_router.get("/sales-data", response_model=List[SalesData])
-async def get_sales_data():
-    """Get all sales data"""
+@api_router.get("/cashflow-data")
+async def get_cashflow_data():
+    """Get all cashflow data"""
     try:
-        sales_data = await db.sales_data.find().to_list(1000)
-        return [SalesData(**parse_from_mongo(record)) for record in sales_data]
+        cashflow_data = await db.cashflow_data.find().to_list(1000)
+        return [CashFlowData(**parse_from_mongo(record)) for record in cashflow_data]
     except Exception as e:
-        logger.error(f"Error getting sales data: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting sales data: {str(e)}")
+        logger.error(f"Error getting cashflow data: {e}")
+        raise HTTPException(status_code=500, detail=f"Error getting cashflow data: {str(e)}")
 
 @api_router.get("/chart-data")
 async def get_chart_data():
     """Get data formatted for charts"""
     try:
-        sales_data = await db.sales_data.find().to_list(1000)
+        cashflow_data = await db.cashflow_data.find().to_list(1000)
         
-        if not sales_data:
+        if not cashflow_data:
             return {
-                "vendas_por_departamento": [],
-                "comparativo_margens": [],
-                "variacao_departamentos": []
+                "faturamento_vs_saidas": [],
+                "vendas_por_dia": [],
+                "saidas_por_categoria": []
             }
         
-        df = pd.DataFrame(sales_data)
+        df = pd.DataFrame(cashflow_data)
         
-        # Sales by department
-        vendas_por_departamento = df[['departamento', 'venda_rs']].to_dict('records')
+        # Aggregate by day for faturamento vs saidas
+        vendas_por_dia = []
+        saidas_por_dia = []
         
-        # Margin comparison
-        comparativo_margens = df[['departamento', 'margem_24', 'margem_25']].to_dict('records')
+        # Group by date for sales
+        if 'data_venda' in df.columns:
+            vendas_df = df[df['valor_venda'] > 0].groupby('data_venda')['valor_venda'].sum().reset_index()
+            vendas_por_dia = [{"data": row['data_venda'], "valor": row['valor_venda']} for _, row in vendas_df.iterrows()]
         
-        # Variation by department
-        variacao_departamentos = df[['departamento', 'variacao_percent']].to_dict('records')
+        # Group by date for expenses  
+        if 'data_saida' in df.columns:
+            saidas_df = df[df['valor_saida'] > 0].groupby('data_saida')['valor_saida'].sum().reset_index()
+            saidas_por_dia = [{"data": row['data_saida'], "valor": row['valor_saida']} for _, row in saidas_df.iterrows()]
+        
+        # Combined chart data for faturamento vs saidas
+        all_dates = set()
+        if vendas_por_dia:
+            all_dates.update([v['data'] for v in vendas_por_dia])
+        if saidas_por_dia:
+            all_dates.update([s['data'] for s in saidas_por_dia])
+        
+        faturamento_vs_saidas = []
+        for data in sorted(all_dates):
+            faturamento = next((v['valor'] for v in vendas_por_dia if v['data'] == data), 0)
+            saidas = next((s['valor'] for s in saidas_por_dia if s['data'] == data), 0)
+            
+            faturamento_vs_saidas.append({
+                "data": data,
+                "faturamento": faturamento,
+                "saidas": saidas
+            })
         
         return {
-            "vendas_por_departamento": vendas_por_departamento,
-            "comparativo_margens": comparativo_margens,
-            "variacao_departamentos": variacao_departamentos
+            "faturamento_vs_saidas": faturamento_vs_saidas,
+            "vendas_por_dia": vendas_por_dia,
+            "saidas_por_dia": saidas_por_dia
         }
         
     except Exception as e:
