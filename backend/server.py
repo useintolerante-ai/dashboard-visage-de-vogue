@@ -340,67 +340,47 @@ def fetch_google_sheets_data(sheet_name: str = "MARÇO25") -> Dict[str, Any]:
 
 def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[CashFlowData]:
     """
-    Convert Google Sheets data to CashFlowData records
+    Convert Google Sheets data to CashFlowData records based on actual sheet structure
     """
     cashflow_records = []
     
     for index, row in enumerate(sheets_data):
         try:
-            # Skip empty rows
-            if not any(str(value).strip() for value in row.values() if value):
+            # Skip empty rows or header row
+            if not row or index == 0:
                 continue
             
-            # Extract data from row
-            data_venda = None
-            valor_venda = 0.0
-            forma_pagamento = None
-            data_saida = None
-            descricao_saida = None
-            valor_saida = 0.0
-            data_pagamento = None
-            valor_crediario = 0.0
+            # Map the actual column structure from the sheet
+            # Based on the header: DATA DE VENDAS, VENDAS, ..., FORMA DE PAGAMENTO, ..., DATA DE SAÍDAS, Descrição da Saída, SAÍDA R$, ..., DATA DE PAGAMENTO, ..., PAGAMENTOS CREDIÁRIO
             
-            # Map columns based on headers
-            for key, value in row.items():
-                if not value or str(value).strip() == '':
-                    continue
-                    
-                key_lower = key.lower().strip()
-                
-                # Sales data
-                if 'data' in key_lower and 'venda' in key_lower:
-                    data_venda = str(value).strip()
-                elif 'venda' in key_lower and ('r$' in str(value).lower() or any(c.isdigit() for c in str(value))):
-                    valor_venda = extract_currency_value(value)
-                elif 'forma' in key_lower and 'pagamento' in key_lower:
-                    forma_pagamento = str(value).strip()
-                
-                # Expenses data
-                elif 'data' in key_lower and 'saída' in key_lower:
-                    data_saida = str(value).strip()
-                elif 'descrição' in key_lower or 'descricao' in key_lower:
-                    descricao_saida = str(value).strip()
-                elif 'saída' in key_lower and ('r$' in str(value).lower() or any(c.isdigit() for c in str(value))):
-                    valor_saida = extract_currency_value(value)
-                
-                # Credit payments
-                elif 'data' in key_lower and 'pagamento' in key_lower:
-                    data_pagamento = str(value).strip()
-                elif 'crediário' in key_lower and ('r$' in str(value).lower() or any(c.isdigit() for c in str(value))):
-                    valor_crediario = extract_currency_value(value)
+            data_venda = row.get('DATA DE VENDAS', '').strip() if 'DATA DE VENDAS' in row else ''
+            vendas_value = row.get(' VENDAS', '').strip() if ' VENDAS' in row else ''
+            forma_pagamento = row.get('FORMA DE PAGAMENTO', '').strip() if 'FORMA DE PAGAMENTO' in row else ''
+            
+            data_saida = row.get('DATA DE SAÍDAS', '').strip() if 'DATA DE SAÍDAS' in row else ''
+            descricao_saida = row.get('Descrição da Saída', '').strip() if 'Descrição da Saída' in row else ''
+            saida_value = row.get('SAÍDA R$', '').strip() if 'SAÍDA R$' in row else ''
+            
+            data_pagamento = row.get('DATA DE PAGAMENTO', '').strip() if 'DATA DE PAGAMENTO' in row else ''
+            crediario_value = row.get('PAGAMENTOS CREDIÁRIO', '').strip() if 'PAGAMENTOS CREDIÁRIO' in row else ''
+            
+            # Extract values
+            valor_venda = extract_currency_value(vendas_value) if vendas_value else 0.0
+            valor_saida = extract_currency_value(saida_value) if saida_value else 0.0
+            valor_crediario = extract_currency_value(crediario_value) if crediario_value else 0.0
             
             # Create record if we have any meaningful data
             if valor_venda > 0 or valor_saida > 0 or valor_crediario > 0:
                 cashflow_record = CashFlowData(
-                    data_venda=data_venda,
+                    data_venda=data_venda if data_venda else None,
                     valor_venda=valor_venda,
-                    forma_pagamento=forma_pagamento,
-                    data_saida=data_saida,
-                    descricao_saida=descricao_saida,
+                    forma_pagamento=forma_pagamento if forma_pagamento else None,
+                    data_saida=data_saida if data_saida else None,
+                    descricao_saida=descricao_saida if descricao_saida else None,
                     valor_saida=valor_saida,
-                    data_pagamento=data_pagamento,
+                    data_pagamento=data_pagamento if data_pagamento else None,
                     valor_crediario=valor_crediario,
-                    mes="SETEMBRO25",
+                    mes="MARÇO25",  # Will be set dynamically later
                     source="sheets"
                 )
                 cashflow_records.append(cashflow_record)
