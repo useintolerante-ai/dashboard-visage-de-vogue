@@ -417,90 +417,73 @@ function App() {
 
         {/* Saídas View */}
         {activeView === 'saidas' && (
-          <div className="space-y-6">
-            {/* Month Filter for Saidas */}
-            <div className="flex justify-center">
-              <select
-                value={selectedMonth}
-                onChange={(e) => handleMonthChange(e.target.value)}
-                className="bg-gray-800 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              >
-                {mesesDisponiveis.map(month => (
-                  <option key={month.value} value={month.value}>
-                    {month.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <Card className="bg-gray-900 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white text-xl">
-                  Detalhamento de Saídas - {mesesDisponiveis.find(m => m.value === selectedMonth)?.label || selectedMonth}
-                </CardTitle>
-                <CardDescription className="text-gray-400">
-                  Análise detalhada de todas as saídas do mês
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {saidasData && saidasData.saidas ? (
-                  <>
-                    <div className="mb-4 p-4 bg-gray-800 rounded-lg">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-300">Total de Saídas:</span>
-                        <span className="text-red-400 font-bold text-xl">
-                          {formatCurrency(saidasData.total_valor)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center mt-2">
-                        <span className="text-gray-300">Número de Saídas:</span>
-                        <span className="text-white font-semibold">
-                          {saidasData.total_saidas}
-                        </span>
-                      </div>
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-xl">
+                Detalhamento de Saídas - {mesesDisponiveis.find(m => m.value === selectedMonth)?.label || selectedMonth}
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                Análise detalhada de todas as saídas do mês
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {saidasData && saidasData.saidas ? (
+                <>
+                  <div className="mb-4 p-4 bg-gray-800 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-300">Total de Saídas:</span>
+                      <span className="text-red-400 font-bold text-xl">
+                        {formatCurrency(saidasData.total_valor)}
+                      </span>
                     </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-gray-300">Número de Saídas:</span>
+                      <span className="text-white font-semibold">
+                        {saidasData.total_saidas}
+                      </span>
+                    </div>
+                  </div>
 
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse">
-                        <thead>
-                          <tr className="border-b border-gray-700">
-                            <th className="text-left p-3 text-gray-300 font-medium">Data</th>
-                            <th className="text-left p-3 text-gray-300 font-medium">Descrição</th>
-                            <th className="text-right p-3 text-gray-300 font-medium">Valor</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {saidasData.saidas.map((saida, index) => (
-                            <tr key={saida.id || index} className="border-b border-gray-800 hover:bg-gray-800 transition-colors">
-                              <td className="p-3 text-white">{saida.data}</td>
-                              <td className="p-3 text-white">{saida.descricao}</td>
-                              <td className="p-3 text-right text-red-400 font-semibold">
-                                {formatCurrency(saida.valor)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                        <tfoot>
-                          <tr className="border-t-2 border-gray-600 bg-gray-800">
-                            <td className="p-3 text-white font-bold" colSpan="2">TOTAL</td>
-                            <td className="p-3 text-right text-red-400 font-bold text-lg">
-                              {formatCurrency(saidasData.total_valor)}
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b border-gray-700">
+                          <th className="text-left p-3 text-gray-300 font-medium">Data</th>
+                          <th className="text-left p-3 text-gray-300 font-medium">Descrição</th>
+                          <th className="text-right p-3 text-gray-300 font-medium">Valor</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {saidasData.saidas.map((saida, index) => (
+                          <tr key={saida.id || index} className="border-b border-gray-800 hover:bg-gray-800 transition-colors">
+                            <td className="p-3 text-white">{saida.data}</td>
+                            <td className="p-3 text-white">{saida.descricao}</td>
+                            <td className="p-3 text-right text-red-400 font-semibold">
+                              {formatCurrency(saida.valor)}
                             </td>
                           </tr>
-                        </tfoot>
-                      </table>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-gray-400">
-                      {saidasData === null ? 'Carregando dados de saídas...' : 'Nenhum dado de saída encontrado para este mês'}
-                    </p>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="border-t-2 border-gray-600 bg-gray-800">
+                          <td className="p-3 text-white font-bold" colSpan="2">TOTAL</td>
+                          <td className="p-3 text-right text-red-400 font-bold text-lg">
+                            {formatCurrency(saidasData.total_valor)}
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                </>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-400">
+                    {saidasData === null ? 'Carregando dados de saídas...' : 'Nenhum dado de saída encontrado para este mês'}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* Empty State */}
