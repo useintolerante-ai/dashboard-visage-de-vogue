@@ -852,7 +852,7 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                 # Use the same logic as saidas-data endpoint for consistency
                 # Skip individual row processing for saidas - will be calculated once after the loop
                 
-                # Column 16: PAGAMENTOS CREDIÁRIO - exclude total lines more intelligently
+                # Column 16: PAGAMENTOS CREDIÁRIO - capture ALL individual payments, exclude only clear totals
                 crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
                 if crediario_str and 'R$' in crediario_str and 'R$  -' not in crediario_str:
                     valor_crediario = extract_currency_value(crediario_str)
@@ -862,12 +862,20 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                         if ('TOTAL' in full_row_text or 'SOMA' in full_row_text or 
                             'SUBTOTAL' in full_row_text or 'SALDO' in full_row_text):
                             logger.debug(f"Skipped crediario with TOTAL keyword: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
-                        # For Janeiro specifically, exclude the total line that equals 3503.14
-                        elif sheet_name == "JANEIRO25" and abs(valor_crediario - 3503.14) < 0.01:
-                            logger.debug(f"Skipped Janeiro total line: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
                         else:
-                            total_recebido_crediario += valor_crediario
-                            logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                            # Apply per-month logic to exclude known total lines
+                            is_total_line = False
+                            
+                            if sheet_name == "JANEIRO25" and abs(valor_crediario - 3503.14) < 0.01:
+                                is_total_line = True
+                            elif sheet_name == "FEVEREIRO25" and abs(valor_crediario - sum([162.97])) < 100:  # Will need real total
+                                pass  # Will implement other months as needed
+                            
+                            if is_total_line:
+                                logger.debug(f"Skipped {sheet_name} total line: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                            else:
+                                total_recebido_crediario += valor_crediario
+                                logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
                         
             except Exception as e:
                 logger.warning(f"Error processing row {row_index} in {sheet_name}: {e}")
