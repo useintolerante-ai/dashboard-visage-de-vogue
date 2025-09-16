@@ -341,32 +341,35 @@ def fetch_google_sheets_data(sheet_name: str = "MARÇO25") -> Dict[str, Any]:
 def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[CashFlowData]:
     """
     Convert Google Sheets data to CashFlowData records based on actual sheet structure
-    Fixed to correctly extract values from the right columns
+    Fixed to correctly extract values from arrays not dictionaries
     """
     cashflow_records = []
     
-    for index, row in enumerate(sheets_data):
+    # sheets_data comes as: {"values": [[row1], [row2], ...]}
+    # We need to process the actual array values
+    rows = sheets_data if isinstance(sheets_data, list) else sheets_data.get('values', [])
+    
+    for index, row in enumerate(rows):
         try:
             # Skip empty rows or header row
             if not row or index == 0:
                 continue
             
-            # Get all values from the row (Google Sheets returns as dict with column headers as keys)
-            # The structure is: [DATA DE VENDAS, VENDAS, ..., FORMA DE PAGAMENTO, ..., DATA DE SAÍDAS, Descrição da Saída, SAÍDA R$, ..., DATA DE PAGAMENTO, ..., PAGAMENTOS CREDIÁRIO]
+            # Row structure based on headers:
+            # [0]=DATA DE VENDAS, [1]=VENDAS, [4]=FORMA DE PAGAMENTO, 
+            # [9]=DATA DE SAÍDAS, [10]=Descrição da Saída, [11]=SAÍDA R$, 
+            # [14]=DATA DE PAGAMENTO, [16]=PAGAMENTOS CREDIÁRIO
             
-            row_values = list(row.values()) if isinstance(row, dict) else row
+            data_venda = row[0].strip() if len(row) > 0 and row[0] else ''
+            vendas_value = row[1].strip() if len(row) > 1 and row[1] else ''
+            forma_pagamento = row[4].strip() if len(row) > 4 and row[4] else ''
             
-            # Extract values based on column positions
-            data_venda = row_values[0].strip() if len(row_values) > 0 and row_values[0] else ''
-            vendas_value = row_values[1].strip() if len(row_values) > 1 and row_values[1] else ''
-            forma_pagamento = row_values[4].strip() if len(row_values) > 4 and row_values[4] else ''
+            data_saida = row[9].strip() if len(row) > 9 and row[9] else ''
+            descricao_saida = row[10].strip() if len(row) > 10 and row[10] else ''
+            saida_value = row[11].strip() if len(row) > 11 and row[11] else ''
             
-            data_saida = row_values[9].strip() if len(row_values) > 9 and row_values[9] else ''
-            descricao_saida = row_values[10].strip() if len(row_values) > 10 and row_values[10] else ''
-            saida_value = row_values[11].strip() if len(row_values) > 11 and row_values[11] else ''
-            
-            data_pagamento = row_values[14].strip() if len(row_values) > 14 and row_values[14] else ''
-            crediario_value = row_values[16].strip() if len(row_values) > 16 and row_values[16] else ''
+            data_pagamento = row[14].strip() if len(row) > 14 and row[14] else ''
+            crediario_value = row[16].strip() if len(row) > 16 and row[16] else ''
             
             # Extract currency values
             valor_venda = extract_currency_value(vendas_value) if vendas_value else 0.0
