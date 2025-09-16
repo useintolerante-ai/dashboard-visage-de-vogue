@@ -536,6 +536,9 @@ function App() {
                           <th className="text-left p-3 text-gray-300 font-medium">Data</th>
                           <th className="text-left p-3 text-gray-300 font-medium">Descrição</th>
                           <th className="text-right p-3 text-gray-300 font-medium">Valor</th>
+                          {selectedMonth === 'anointeiro' && (
+                            <th className="text-left p-3 text-gray-300 font-medium">Mês</th>
+                          )}
                         </tr>
                       </thead>
                       <tbody>
@@ -546,15 +549,21 @@ function App() {
                             <td className="p-3 text-right text-red-400 font-semibold">
                               {formatCurrency(saida.valor)}
                             </td>
+                            {selectedMonth === 'anointeiro' && (
+                              <td className="p-3 text-cyan-400">{saida.mes_nome || 'N/A'}</td>
+                            )}
                           </tr>
                         ))}
                       </tbody>
                       <tfoot>
                         <tr className="border-t-2 border-gray-600 bg-gray-800">
-                          <td className="p-3 text-white font-bold" colSpan="2">TOTAL</td>
+                          <td className="p-3 text-white font-bold" colSpan={selectedMonth === 'anointeiro' ? "3" : "2"}>TOTAL</td>
                           <td className="p-3 text-right text-red-400 font-bold text-lg">
                             {formatCurrency(saidasData.total_valor)}
                           </td>
+                          {selectedMonth === 'anointeiro' && (
+                            <td className="p-3"></td>
+                          )}
                         </tr>
                       </tfoot>
                     </table>
