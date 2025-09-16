@@ -199,8 +199,8 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                     vendas_totais = extract_currency_value(vendas_cell)
                     saldo_devedor = extract_currency_value(saldo_cell)
                     
-                    # Get purchase history with rate limiting - simplified approach to avoid quota issues
-                    compras = await get_client_purchase_history_simple(nome_cell)
+                    # Get purchase history with rate limiting - using full version now
+                    compras = await get_client_purchase_history(nome_cell)
                     
                     cliente_data = {
                         "nome": nome_cell,
