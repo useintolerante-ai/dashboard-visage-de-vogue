@@ -523,7 +523,7 @@ function App() {
                   
                   {/* Column Headers */}
                   <div className="bg-gray-800 rounded-lg p-4 border border-gray-600">
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
                       <div className="md:col-span-1">
                         <button 
                           className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
@@ -554,14 +554,6 @@ function App() {
                           onClick={() => handleSort('saldo_devedor', 'currency')}
                         >
                           Saldo Devedor {getSortIcon('saldo_devedor')}
-                        </button>
-                      </div>
-                      <div className="md:col-span-1 text-center">
-                        <button 
-                          className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
-                          onClick={() => handleSort('atrasado_60_dias', 'boolean')}
-                        >
-                          &gt;60 dias s/ pagamento {getSortIcon('atrasado_60_dias')}
                         </button>
                       </div>
                     </div>
