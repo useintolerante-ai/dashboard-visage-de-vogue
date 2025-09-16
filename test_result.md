@@ -169,15 +169,27 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
 ## frontend:
   - task: "Add payment history display alongside purchase history"
     implemented: true
-    working: false
+    working: true
     file: "App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
-        - working: false
+        - working: true
         - agent: "main"
-        - comment: "Modified the crediario client details to display both purchase and payment history side by side. Added payment history table with blue coloring to differentiate from green purchase history. Created grid layout for better organization."
+        - comment: "Successfully implemented side-by-side display of purchase and payment history. Payment history shows in blue coloring to differentiate from green purchase history. Grid layout provides clear organization of both types of transactions."
+
+  - task: "Add >60 days overdue indicator column"
+    implemented: true
+    working: true
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "main"
+        - comment: "Added new sortable column '>60 dias s/ pagamento' with visual indicators. Clients with >60 days show 'SIM' in red, others show 'NÃO' in green. Updated grid layout from 4 to 5 columns and enhanced sorting functionality to handle boolean values."
 
   - task: "Remove faturamento vs saidas chart"
     implemented: true
