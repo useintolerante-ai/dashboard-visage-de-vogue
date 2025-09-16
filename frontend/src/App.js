@@ -235,10 +235,10 @@ function App() {
         <div className="flex justify-center mb-8">
           <select
             value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
+            onChange={(e) => handleMonthChange(e.target.value)}
             className="bg-gray-800 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
           >
-            {months.map(month => (
+            {mesesDisponiveis.map(month => (
               <option key={month.value} value={month.value}>
                 {month.label}
               </option>
