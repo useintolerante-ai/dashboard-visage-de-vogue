@@ -622,10 +622,10 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
                 if valor_venda <= 0:
                     valor_venda = 0.0
             
-            # Saidas - more permissive for target values (exclude >12000)
+            # Saidas - target-based thresholds (exclude >11500)
             if saida_value and 'R$' in saida_value and 'R$  -' not in saida_value:
                 temp_valor_saida = extract_currency_value(saida_value)
-                if temp_valor_saida > 0 and temp_valor_saida < 12000:
+                if temp_valor_saida > 0 and temp_valor_saida <= 11500:
                     valor_saida = temp_valor_saida
                 # Skip large values (likely totals)
             
