@@ -757,6 +757,7 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
     """
     Extract and calculate KPIs from a specific month's sheet
     Only count rows with valid date and value, exclude totals and empty rows
+    More rigorous filtering to exclude total lines
     """
     try:
         sheets_result = fetch_google_sheets_data(sheet_name)
@@ -786,6 +787,11 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
         total_recebido_crediario = 0
         num_vendas = 0
         
+        # First pass: collect all values to identify potential totals
+        all_vendas = []
+        all_saidas = []
+        all_crediario = []
+        
         # Process each row
         for row_index, row in enumerate(rows):
             if row_index == 0 or not row:  # Skip header
@@ -795,46 +801,137 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                 # Get date from column 0 for validation
                 data_cell = str(row[0]).strip().lower() if len(row) > 0 and row[0] else ''
                 
-                # Skip total rows, empty dates, and non-date entries
+                # More rigorous filtering for total rows and invalid dates
                 if (not data_cell or 
                     'total' in data_cell or 
                     'soma' in data_cell or 
                     'subtotal' in data_cell or
-                    not ('/' in data_cell and any(c.isdigit() for c in data_cell))):
+                    'saldo' in data_cell or
+                    data_cell == '' or
+                    not ('/' in data_cell and len(data_cell.split('/')) >= 2)):
                     continue
                 
-                # Column 1: VENDAS (faturamento) - only count if row has valid date and non-zero value
+                # Additional validation: check if it looks like a valid date
+                try:
+                    date_parts = data_cell.split('/')
+                    if len(date_parts) >= 2:
+                        day = int(date_parts[0])
+                        month = int(date_parts[1])
+                        if not (1 <= day <= 31 and 1 <= month <= 12):
+                            continue
+                except:
+                    continue  # Skip if date parsing fails
+                
+                # Collect values for analysis
+                vendas_str = str(row[1]).strip() if len(row) > 1 and row[1] else ''
+                saidas_str = str(row[11]).strip() if len(row) > 11 and row[11] else ''
+                crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
+                
+                if vendas_str and 'R$' in vendas_str and 'R$  -' not in vendas_str:
+                    valor_venda = extract_currency_value(vendas_str)
+                    if valor_venda > 0:
+                        all_vendas.append(valor_venda)
+                
+                if saidas_str and 'R$' in saidas_str and 'R$  -' not in saidas_str:
+                    valor_saida = extract_currency_value(saidas_str)
+                    if valor_saida > 0:
+                        all_saidas.append(valor_saida)
+                
+                if crediario_str and 'R$' in crediario_str and 'R$  -' not in crediario_str:
+                    valor_crediario = extract_currency_value(crediario_str)
+                    if valor_crediario > 0:
+                        all_crediario.append(valor_crediario)
+                        
+            except Exception as e:
+                logger.warning(f"Error in first pass processing row {row_index} in {sheet_name}: {e}")
+                continue
+        
+        # Calculate thresholds to identify potential totals (values that are suspiciously high)
+        vendas_threshold = max(all_vendas) * 0.8 if all_vendas else 999999  # 80% of max value
+        saidas_threshold = max(all_saidas) * 0.8 if all_saidas else 999999
+        crediario_threshold = max(all_crediario) * 0.8 if all_crediario else 999999
+        
+        # Also calculate sum thresholds - if a value is close to the sum of others, it's likely a total
+        vendas_sum = sum(all_vendas)
+        saidas_sum = sum(all_saidas)
+        crediario_sum = sum(all_crediario)
+        
+        # Second pass: apply intelligent filtering
+        for row_index, row in enumerate(rows):
+            if row_index == 0 or not row:  # Skip header
+                continue
+                
+            try:
+                # Get date from column 0 for validation (same validation as first pass)
+                data_cell = str(row[0]).strip().lower() if len(row) > 0 and row[0] else ''
+                
+                if (not data_cell or 
+                    'total' in data_cell or 
+                    'soma' in data_cell or 
+                    'subtotal' in data_cell or
+                    'saldo' in data_cell or
+                    data_cell == '' or
+                    not ('/' in data_cell and len(data_cell.split('/')) >= 2)):
+                    continue
+                
+                # Additional date validation
+                try:
+                    date_parts = data_cell.split('/')
+                    if len(date_parts) >= 2:
+                        day = int(date_parts[0])
+                        month = int(date_parts[1])
+                        if not (1 <= day <= 31 and 1 <= month <= 12):
+                            continue
+                except:
+                    continue
+                
+                # Process values with intelligent total detection
+                
+                # Column 1: VENDAS (faturamento)
                 vendas_str = str(row[1]).strip() if len(row) > 1 and row[1] else ''
                 if vendas_str and 'R$' in vendas_str and 'R$  -' not in vendas_str:
                     valor_venda = extract_currency_value(vendas_str)
                     if valor_venda > 0:
-                        total_faturamento += valor_venda
-                        num_vendas += 1
-                        logger.debug(f"Added venda: {data_cell} - {vendas_str} -> {valor_venda} (row {row_index})")
+                        # Check if this value is likely a total
+                        is_likely_total = (valor_venda >= vendas_threshold or 
+                                         abs(valor_venda - vendas_sum + valor_venda) < valor_venda * 0.1)
+                        
+                        if not is_likely_total:
+                            total_faturamento += valor_venda
+                            num_vendas += 1
+                            logger.debug(f"Added venda: {data_cell} - {vendas_str} -> {valor_venda} (row {row_index})")
+                        else:
+                            logger.debug(f"Skipped likely total venda: {data_cell} - {vendas_str} -> {valor_venda} (row {row_index})")
                 
-                # Column 11: SAÍDA R$ (saídas) - only count if row has valid date and non-zero value
-                # Also exclude values that seem to be totals (very high values)
+                # Column 11: SAÍDA R$ (saídas)
                 saidas_str = str(row[11]).strip() if len(row) > 11 and row[11] else ''
                 if saidas_str and 'R$' in saidas_str and 'R$  -' not in saidas_str:
                     valor_saida = extract_currency_value(saidas_str)
-                    # Exclude suspiciously high values that might be totals (>10000)
-                    if valor_saida > 0 and valor_saida < 10000:
-                        total_saidas += valor_saida
-                        logger.debug(f"Added saida: {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
-                    elif valor_saida >= 10000:
-                        logger.debug(f"Skipped large saida (likely total): {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
+                    if valor_saida > 0:
+                        # Check if this value is likely a total
+                        is_likely_total = (valor_saida >= saidas_threshold or 
+                                         abs(valor_saida - saidas_sum + valor_saida) < valor_saida * 0.1)
+                        
+                        if not is_likely_total:
+                            total_saidas += valor_saida
+                            logger.debug(f"Added saida: {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
+                        else:
+                            logger.debug(f"Skipped likely total saida: {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
                 
-                # Column 16: PAGAMENTOS CREDIÁRIO (recebido crediário) - only count if row has valid date and non-zero value
-                # Also exclude values that seem to be totals (>3000 for crediario)
+                # Column 16: PAGAMENTOS CREDIÁRIO (recebido crediário)
                 crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
                 if crediario_str and 'R$' in crediario_str and 'R$  -' not in crediario_str:
                     valor_crediario = extract_currency_value(crediario_str)
-                    # Exclude suspiciously high values that might be totals (>3000)
-                    if valor_crediario > 0 and valor_crediario < 3000:
-                        total_recebido_crediario += valor_crediario
-                        logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
-                    elif valor_crediario >= 3000:
-                        logger.debug(f"Skipped large crediario (likely total): {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                    if valor_crediario > 0:
+                        # Check if this value is likely a total
+                        is_likely_total = (valor_crediario >= crediario_threshold or 
+                                         abs(valor_crediario - crediario_sum + valor_crediario) < valor_crediario * 0.1)
+                        
+                        if not is_likely_total:
+                            total_recebido_crediario += valor_crediario
+                            logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                        else:
+                            logger.debug(f"Skipped likely total crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
                         
             except Exception as e:
                 logger.warning(f"Error processing row {row_index} in {sheet_name}: {e}")
