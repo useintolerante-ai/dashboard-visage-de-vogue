@@ -838,25 +838,25 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                         logger.debug(f"Added venda: {data_cell} - {vendas_str} -> {valor_venda} (row {row_index})")
                 
                 # Column 11: SAÍDA R$ (saídas) - only count if row has valid date and non-zero value
-                # Exclude very high values that are likely totals (>15000 for safety)
+                # Exclude very high values that are likely totals (>12000 for January)
                 saidas_str = str(row[11]).strip() if len(row) > 11 and row[11] else ''
                 if saidas_str and 'R$' in saidas_str and 'R$  -' not in saidas_str:
                     valor_saida = extract_currency_value(saidas_str)
-                    if valor_saida > 0 and valor_saida < 15000:  # Exclude very high values that are totals
+                    if valor_saida > 0 and valor_saida < 12000:  # Adjusted threshold for saidas
                         total_saidas += valor_saida
                         logger.debug(f"Added saida: {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
-                    elif valor_saida >= 15000:
+                    elif valor_saida >= 12000:
                         logger.debug(f"Skipped large saida (likely total): {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
                 
                 # Column 16: PAGAMENTOS CREDIÁRIO (recebido crediário) - only count if row has valid date and non-zero value
-                # Exclude high values that are likely totals (>4000 for safety)
+                # Exclude high values that are likely totals (>3600 for January)
                 crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
                 if crediario_str and 'R$' in crediario_str and 'R$  -' not in crediario_str:
                     valor_crediario = extract_currency_value(crediario_str)
-                    if valor_crediario > 0 and valor_crediario < 4000:  # Exclude high values that are totals
+                    if valor_crediario > 0 and valor_crediario < 3600:  # Adjusted threshold for crediario
                         total_recebido_crediario += valor_crediario
                         logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
-                    elif valor_crediario >= 4000:
+                    elif valor_crediario >= 3600:
                         logger.debug(f"Skipped large crediario (likely total): {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
                         
             except Exception as e:
