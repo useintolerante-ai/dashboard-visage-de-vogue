@@ -120,6 +120,41 @@ class SaidaData(BaseModel):
     valor: float
     mes: str
 
+def calculate_days_since_last_payment(pagamentos: List[Dict[str, Any]]) -> tuple[int, bool]:
+    """
+    Calculate days since last payment and if client is overdue (>60 days)
+    Returns: (days_since_last_payment, is_overdue_60_days)
+    """
+    if not pagamentos:
+        return 999, True  # No payments = definitely overdue
+    
+    # Find the most recent payment date
+    latest_payment_date = None
+    current_date = datetime.now().date()
+    
+    for pagamento in pagamentos:
+        try:
+            # Parse Brazilian date format (DD/MM/YYYY)
+            date_str = pagamento['data']
+            if '/' in date_str:
+                day, month, year = date_str.split('/')
+                payment_date = datetime(int(year), int(month), int(day)).date()
+                
+                if latest_payment_date is None or payment_date > latest_payment_date:
+                    latest_payment_date = payment_date
+        except (ValueError, KeyError, IndexError) as e:
+            logger.warning(f"Error parsing payment date '{pagamento.get('data', 'N/A')}': {e}")
+            continue
+    
+    if latest_payment_date is None:
+        return 999, True  # Could not parse any dates
+    
+    # Calculate days difference
+    days_diff = (current_date - latest_payment_date).days
+    is_overdue = days_diff > 60
+    
+    return days_diff, is_overdue
+
 def extract_currency_value(value_str):
     """Extract numeric value from currency string like 'R$ 1.130,00'"""
     if not value_str or value_str == '' or str(value_str).strip() == '':
