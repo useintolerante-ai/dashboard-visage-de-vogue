@@ -1258,6 +1258,44 @@ async def get_chart_data():
         logger.error(f"Error getting chart data: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting chart data: {str(e)}")
 
+@api_router.get("/clientes-atrasados")
+async def get_clientes_atrasados():
+    """
+    Get clients with more than 30 days without payment
+    """
+    try:
+        # Get all crediario data
+        crediario_data = await fetch_crediario_data()
+        
+        if not crediario_data["success"]:
+            return {"success": False, "error": crediario_data["error"]}
+        
+        # Filter clients with more than 30 days without payment
+        clientes_atrasados = []
+        for cliente in crediario_data["clientes"]:
+            if cliente.dias_sem_pagamento > 30:
+                clientes_atrasados.append({
+                    "nome": cliente.nome,
+                    "dias_sem_pagamento": cliente.dias_sem_pagamento,
+                    "saldo_devedor": cliente.saldo_devedor,
+                    "vendas_totais": cliente.vendas_totais
+                })
+        
+        # Sort by days without payment (descending - most overdue first)
+        clientes_atrasados.sort(key=lambda x: x["dias_sem_pagamento"], reverse=True)
+        
+        logger.info(f"Found {len(clientes_atrasados)} clients with >30 days without payment")
+        
+        return {
+            "success": True,
+            "clientes": clientes_atrasados,
+            "total_atrasados": len(clientes_atrasados)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting overdue clients: {str(e)}")
+        return {"success": False, "error": f"Error: {str(e)}"}
+
 @api_router.get("/crediario-data")
 async def get_crediario_data():
     """Get crediario data from Google Sheets"""
