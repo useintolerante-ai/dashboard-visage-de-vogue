@@ -152,6 +152,7 @@ function App() {
     
     // Reload dashboard data for new month
     loadDashboardData(mes);
+    loadFaturamentoDiario(mes);
     
     if (activeView === 'saidas') {
       loadSaidasData(mes);
