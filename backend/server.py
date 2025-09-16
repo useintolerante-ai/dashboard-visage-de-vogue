@@ -139,7 +139,7 @@ def extract_currency_value(value_str):
 
 def fetch_crediario_data() -> Dict[str, Any]:
     """
-    Fetch crediario data from Google Sheets
+    Fetch crediario data from Google Sheets with proper client filtering
     """
     try:
         url = f"https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_ID}/values/CREDIARIO?key={GOOGLE_SHEETS_API_KEY}"
@@ -153,75 +153,70 @@ def fetch_crediario_data() -> Dict[str, Any]:
         if not values:
             return {"success": False, "error": "No data found in crediario sheet"}
         
-        # Process crediario data - need to parse the actual structure
         clientes = []
         
-        # Find rows that contain client names (look for patterns in the sheet)
         for i, row in enumerate(values):
             try:
                 if not row or len(row) < 2:
                     continue
                 
-                # Look for client names (usually in first columns and capitalized)
-                for j, cell in enumerate(row[:5]):  # Check first 5 columns for names
-                    if cell and isinstance(cell, str) and len(cell.strip()) > 3:
-                        cell_clean = cell.strip()
-                        # Check if it looks like a name (has letters, is capitalized)
-                        if (cell_clean.isupper() and 
-                            any(c.isalpha() for c in cell_clean) and 
-                            not any(c.isdigit() for c in cell_clean) and
-                            'R$' not in cell_clean and
-                            'PAGAMENTO' not in cell_clean and
-                            len(cell_clean.split()) >= 2):
+                # Look for client names - they appear in the first column
+                nome_cell = row[0].strip() if row[0] else ''
+                vendas_cell = row[1].strip() if len(row) > 1 and row[1] else ''
+                saldo_cell = row[2].strip() if len(row) > 2 and row[2] else ''
+                
+                # Skip header rows and non-client entries
+                if (not nome_cell or 
+                    nome_cell.upper() in ['NOME', 'PAGAMENTOS CREDIÁRIO', '', 'VALOR PAGO'] or
+                    'TOTAL' in nome_cell.upper() or
+                    'SALDO DEVEDOR' in nome_cell.upper()):
+                    continue
+                
+                # Check if this looks like a client name (has letters, not just "Valor pago")
+                if (len(nome_cell) > 2 and 
+                    any(c.isalpha() for c in nome_cell) and 
+                    'VALOR PAGO' not in nome_cell.upper() and
+                    'R$' not in vendas_cell):
+                    
+                    # Extract financial values
+                    vendas_totais = extract_currency_value(vendas_cell) if vendas_cell else 0.0
+                    saldo_devedor = extract_currency_value(saldo_cell) if saldo_cell else 0.0
+                    
+                    # Get payment details from the next row (if it exists and contains "Valor pago")
+                    compras = []
+                    if i + 1 < len(values) and len(values[i + 1]) > 1:
+                        next_row = values[i + 1]
+                        if len(next_row) > 0 and 'Valor pago' in str(next_row[0]):
+                            # Extract payments from columns 4 onwards (monthly payments)
+                            meses = ['Mai/24', 'Jun/24', 'Jul/24', 'Ago/24', 'Set/24', 'Out/24', 'Nov/24', 'Dez/24',
+                                   'Jan/25', 'Fev/25', 'Mar/25', 'Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25']
                             
-                            # Extract financial values from the same row
-                            vendas_totais = 0.0
-                            saldo_devedor = 0.0
-                            
-                            # Look for currency values in the same row
-                            for k, value_cell in enumerate(row):
-                                if value_cell and 'R$' in str(value_cell):
-                                    value = extract_currency_value(value_cell)
-                                    if value > 0:
-                                        if vendas_totais == 0:
-                                            vendas_totais = value
-                                        else:
-                                            saldo_devedor = value
-                            
-                            # Only add if we have meaningful data
-                            if vendas_totais > 0 or cell_clean not in [c['nome'] for c in clientes]:
-                                cliente_data = {
-                                    "nome": cell_clean,
-                                    "vendas_totais": vendas_totais if vendas_totais > 0 else 1000.0,  # Default if not found
-                                    "saldo_devedor": saldo_devedor if saldo_devedor > 0 else vendas_totais * 0.3,  # 30% of sales
-                                    "compras": []  # Will implement detailed purchases later
-                                }
-                                
-                                cliente = ClienteCrediario(**cliente_data)
-                                clientes.append(cliente)
-                                break
+                            for j, mes in enumerate(meses):
+                                if j + 4 < len(next_row):
+                                    pagamento_value = next_row[j + 4]
+                                    if pagamento_value and 'R$' in str(pagamento_value):
+                                        valor_pagamento = extract_currency_value(pagamento_value)
+                                        if valor_pagamento > 0:
+                                            compras.append({
+                                                "data": mes,
+                                                "valor": valor_pagamento
+                                            })
+                    
+                    # Only add if we have meaningful data
+                    if vendas_totais > 0 or saldo_devedor > 0:
+                        cliente_data = {
+                            "nome": nome_cell,
+                            "vendas_totais": vendas_totais,
+                            "saldo_devedor": saldo_devedor,
+                            "compras": compras
+                        }
+                        
+                        cliente = ClienteCrediario(**cliente_data)
+                        clientes.append(cliente)
+                        
             except Exception as e:
                 logger.warning(f"Error processing crediario row {i}: {e}")
                 continue
-        
-        # If no clients found, use fallback data
-        if not clientes:
-            clientes_fallback = [
-                {"nome": "ANGELA MACIEL", "vendas_totais": 9573.40, "saldo_devedor": 4963.40, "compras": []},
-                {"nome": "JAMILA HUSSEIN", "vendas_totais": 5517.70, "saldo_devedor": 3483.05, "compras": []},
-                {"nome": "DEBORA LORENZ", "vendas_totais": 4485.00, "saldo_devedor": 2912.00, "compras": []},
-                {"nome": "ELENA HEUSNER", "vendas_totais": 3432.20, "saldo_devedor": 2354.20, "compras": []},
-                {"nome": "DAIA DEFANTE", "vendas_totais": 8305.10, "saldo_devedor": 2246.10, "compras": []},
-                {"nome": "THAIS GOMES", "vendas_totais": 6005.00, "saldo_devedor": 1944.00, "compras": []},
-                {"nome": "FABIANA FENSKE", "vendas_totais": 2381.00, "saldo_devedor": 1542.42, "compras": []},
-                {"nome": "ALIEZE SANTOS", "vendas_totais": 3200.00, "saldo_devedor": 1200.00, "compras": []},
-                {"nome": "MARIA SILVA", "vendas_totais": 4500.00, "saldo_devedor": 2100.00, "compras": []},
-                {"nome": "JOANA COSTA", "vendas_totais": 3800.00, "saldo_devedor": 1900.00, "compras": []}
-            ]
-            
-            for cliente_data in clientes_fallback:
-                cliente = ClienteCrediario(**cliente_data)
-                clientes.append(cliente)
         
         return {
             "success": True,
