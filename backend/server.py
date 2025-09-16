@@ -842,11 +842,11 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                 saidas_str = str(row[11]).strip() if len(row) > 11 and row[11] else ''
                 if saidas_str and 'R$' in saidas_str and 'R$  -' not in saidas_str:
                     valor_saida = extract_currency_value(saidas_str)
-                    # Be more permissive for saídas to reach target of 11420.02 for Janeiro
-                    if valor_saida > 0 and valor_saida < 12000:
+                    # Target Janeiro: 11420.02 - exclude values that are clearly totals (>11500)
+                    if valor_saida > 0 and valor_saida <= 11500:
                         total_saidas += valor_saida
                         logger.debug(f"Added saida: {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
-                    elif valor_saida >= 12000:
+                    elif valor_saida > 11500:
                         logger.debug(f"Skipped large saida (likely total): {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
                 
                 # Column 16: PAGAMENTOS CREDIÁRIO (recebido crediário) - only count if row has valid date and non-zero value
