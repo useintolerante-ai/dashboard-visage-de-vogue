@@ -68,6 +68,7 @@ function App() {
   useEffect(() => {
     loadDashboardData();
     loadSheetsStatus();
+    loadMesesDisponiveis();
     
     // Auto refresh every 5 minutes
     const interval = setInterval(() => {
