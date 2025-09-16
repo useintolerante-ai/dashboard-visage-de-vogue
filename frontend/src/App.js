@@ -476,7 +476,7 @@ function App() {
                           ) : (
                             <div className="text-center py-8">
                               <p className="text-gray-400">
-                                Nenhum pagamento registrado para este cliente.
+                                Nenhuma compra registrada para este cliente.
                               </p>
                             </div>
                           )}
