@@ -413,15 +413,31 @@ function App() {
                     <table className="w-full border-collapse">
                       <thead className="sticky top-0 bg-gray-900">
                         <tr className="border-b border-gray-700">
-                          <th className="text-left p-3 text-gray-300 font-medium">Data</th>
-                          <th className="text-right p-3 text-gray-300 font-medium">Faturamento</th>
+                          <th 
+                            className="text-left p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                            onClick={() => handleSort('data', 'string')}
+                          >
+                            Data {getSortIcon('data')}
+                          </th>
+                          <th 
+                            className="text-right p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                            onClick={() => handleSort('valor', 'currency')}
+                          >
+                            Faturamento {getSortIcon('valor')}
+                          </th>
                           {faturamentoDiario.mes === "Ano Inteiro (2025)" && (
-                            <th className="text-left p-3 text-gray-300 font-medium">Mês</th>
+                            <th 
+                              className="text-left p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                              onClick={() => handleSort('mes', 'string')}
+                            >
+                              Mês {getSortIcon('mes')}
+                            </th>
                           )}
                         </tr>
                       </thead>
                       <tbody>
-                        {faturamentoDiario.vendas_diarias.map((venda, index) => (
+                        {sortData(faturamentoDiario.vendas_diarias, sortConfig.key, sortConfig.key === 'valor' ? 'currency' : 'string')
+                          .map((venda, index) => (
                           <tr key={index} className="border-b border-gray-800 hover:bg-gray-800 transition-colors">
                             <td className="p-3 text-white">{venda.data}</td>
                             <td className="p-3 text-right text-green-400 font-semibold">
