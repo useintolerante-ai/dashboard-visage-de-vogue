@@ -172,7 +172,7 @@ function App() {
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent">
+          <h1 className="dashboard-title font-bold mb-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent">
             Dashboard de Gestão 2025 | Visage de Vogue
           </h1>
           
