@@ -17,6 +17,7 @@ function App() {
   const [chartData, setChartData] = useState(null);
   const [crediarioData, setCrediarioData] = useState(null);
   const [saidasData, setSaidasData] = useState(null);
+  const [faturamentoDiario, setFaturamentoDiario] = useState(null);
   const [mesesDisponiveis, setMesesDisponiveis] = useState([]);
   const [sheetsStatus, setSheetsStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
