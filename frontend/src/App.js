@@ -179,6 +179,53 @@ function App() {
     }
   };
 
+  const sortData = (data, key, type = 'string') => {
+    if (!data || !key) return data;
+    
+    return [...data].sort((a, b) => {
+      let aVal = a[key];
+      let bVal = b[key];
+      
+      if (type === 'number') {
+        aVal = parseFloat(aVal) || 0;
+        bVal = parseFloat(bVal) || 0;
+      } else if (type === 'currency') {
+        // Remove currency formatting and convert to number
+        aVal = typeof aVal === 'string' ? parseFloat(aVal.replace(/[R$.,\s]/g, '').replace(',', '.')) || 0 : aVal;
+        bVal = typeof bVal === 'string' ? parseFloat(bVal.replace(/[R$.,\s]/g, '').replace(',', '.')) || 0 : bVal;
+      } else {
+        aVal = String(aVal).toLowerCase();
+        bVal = String(bVal).toLowerCase();
+      }
+      
+      if (sortConfig.direction === 'asc') {
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      } else {
+        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+      }
+    });
+  };
+
+  const handleSort = (key, type = 'string') => {
+    let direction = 'desc'; // Default to descending for numbers/currency, ascending for strings
+    if (type === 'string') direction = 'asc';
+    
+    if (sortConfig.key === key && sortConfig.direction === direction) {
+      direction = direction === 'asc' ? 'desc' : 'asc';
+    }
+    
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) {
+      return <span className="text-gray-500 ml-1">↕</span>;
+    }
+    return sortConfig.direction === 'asc' ? 
+      <span className="text-white ml-1">↑</span> : 
+      <span className="text-white ml-1">↓</span>;
+  };
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-6 py-8">
