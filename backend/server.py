@@ -341,6 +341,7 @@ def fetch_google_sheets_data(sheet_name: str = "MARÇO25") -> Dict[str, Any]:
 def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[CashFlowData]:
     """
     Convert Google Sheets data to CashFlowData records based on actual sheet structure
+    Fixed to correctly extract values from the right columns
     """
     cashflow_records = []
     
@@ -350,21 +351,24 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
             if not row or index == 0:
                 continue
             
-            # Map the actual column structure from the sheet
-            # Based on the header: DATA DE VENDAS, VENDAS, ..., FORMA DE PAGAMENTO, ..., DATA DE SAÍDAS, Descrição da Saída, SAÍDA R$, ..., DATA DE PAGAMENTO, ..., PAGAMENTOS CREDIÁRIO
+            # Get all values from the row (Google Sheets returns as dict with column headers as keys)
+            # The structure is: [DATA DE VENDAS, VENDAS, ..., FORMA DE PAGAMENTO, ..., DATA DE SAÍDAS, Descrição da Saída, SAÍDA R$, ..., DATA DE PAGAMENTO, ..., PAGAMENTOS CREDIÁRIO]
             
-            data_venda = row.get('DATA DE VENDAS', '').strip() if 'DATA DE VENDAS' in row else ''
-            vendas_value = row.get(' VENDAS', '').strip() if ' VENDAS' in row else ''
-            forma_pagamento = row.get('FORMA DE PAGAMENTO', '').strip() if 'FORMA DE PAGAMENTO' in row else ''
+            row_values = list(row.values()) if isinstance(row, dict) else row
             
-            data_saida = row.get('DATA DE SAÍDAS', '').strip() if 'DATA DE SAÍDAS' in row else ''
-            descricao_saida = row.get('Descrição da Saída', '').strip() if 'Descrição da Saída' in row else ''
-            saida_value = row.get('SAÍDA R$', '').strip() if 'SAÍDA R$' in row else ''
+            # Extract values based on column positions
+            data_venda = row_values[0].strip() if len(row_values) > 0 and row_values[0] else ''
+            vendas_value = row_values[1].strip() if len(row_values) > 1 and row_values[1] else ''
+            forma_pagamento = row_values[4].strip() if len(row_values) > 4 and row_values[4] else ''
             
-            data_pagamento = row.get('DATA DE PAGAMENTO', '').strip() if 'DATA DE PAGAMENTO' in row else ''
-            crediario_value = row.get('PAGAMENTOS CREDIÁRIO', '').strip() if 'PAGAMENTOS CREDIÁRIO' in row else ''
+            data_saida = row_values[9].strip() if len(row_values) > 9 and row_values[9] else ''
+            descricao_saida = row_values[10].strip() if len(row_values) > 10 and row_values[10] else ''
+            saida_value = row_values[11].strip() if len(row_values) > 11 and row_values[11] else ''
             
-            # Extract values
+            data_pagamento = row_values[14].strip() if len(row_values) > 14 and row_values[14] else ''
+            crediario_value = row_values[16].strip() if len(row_values) > 16 and row_values[16] else ''
+            
+            # Extract currency values
             valor_venda = extract_currency_value(vendas_value) if vendas_value else 0.0
             valor_saida = extract_currency_value(saida_value) if saida_value else 0.0
             valor_crediario = extract_currency_value(crediario_value) if crediario_value else 0.0
@@ -380,7 +384,7 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
                     valor_saida=valor_saida,
                     data_pagamento=data_pagamento if data_pagamento else None,
                     valor_crediario=valor_crediario,
-                    mes="MARÇO25",  # Will be set dynamically later
+                    mes="SHEET_MONTH",  # Will be set dynamically
                     source="sheets"
                 )
                 cashflow_records.append(cashflow_record)
@@ -390,6 +394,22 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
             continue
     
     return cashflow_records
+
+def extract_currency_value(value_str):
+    """Extract numeric value from currency string like 'R$ 1.130,00'"""
+    if not value_str or value_str == '':
+        return 0.0
+    
+    # Convert to string and clean
+    clean_str = str(value_str).replace('R$', '').replace(' ', '').replace('.', '').replace(',', '.')
+    
+    # Remove any non-numeric characters except dot and minus
+    clean_str = re.sub(r'[^\d.-]', '', clean_str)
+    
+    try:
+        return float(clean_str) if clean_str else 0.0
+    except:
+        return 0.0
 
 async def sync_google_sheets_data():
     """
