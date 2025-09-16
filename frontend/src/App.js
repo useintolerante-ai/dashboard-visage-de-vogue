@@ -44,13 +44,9 @@ function App() {
 
   async function loadDashboardData(mes = selectedMonth) {
     try {
-      const [summaryResponse, chartResponse] = await Promise.all([
-        axios.get(`${API}/dashboard-summary?mes=${mes}`),
-        axios.get(`${API}/chart-data`)
-      ]);
+      const summaryResponse = await axios.get(`${API}/dashboard-summary?mes=${mes}`);
 
       setDashboardData(summaryResponse.data);
-      setChartData(chartResponse.data);
       
       console.log('Dashboard data loaded for month:', mes, summaryResponse.data);
     } catch (error) {
