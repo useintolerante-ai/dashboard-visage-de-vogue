@@ -137,9 +137,9 @@ def extract_currency_value(value_str):
     except:
         return 0.0
 
-def fetch_crediario_data() -> Dict[str, Any]:
+async def fetch_crediario_data() -> Dict[str, Any]:
     """
-    Fetch crediario data from Google Sheets with proper client filtering
+    Fetch crediario data from Google Sheets with purchase history
     """
     try:
         url = f"https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_ID}/values/CREDIARIO?key={GOOGLE_SHEETS_API_KEY}"
@@ -164,7 +164,7 @@ def fetch_crediario_data() -> Dict[str, Any]:
                 vendas_cell = str(row[1]).strip() if len(row) > 1 and row[1] else ''
                 saldo_cell = str(row[2]).strip() if len(row) > 2 and row[2] else ''
                 
-                # Check if this is a client row (has name and R$ values)
+                # Check if this is a client row
                 if (nome_cell and 
                     len(nome_cell) > 2 and 
                     nome_cell not in ['NOME', '', 'PAGAMENTOS CREDIÁRIO', 'Valor pago'] and
@@ -175,29 +175,8 @@ def fetch_crediario_data() -> Dict[str, Any]:
                     vendas_totais = extract_currency_value(vendas_cell)
                     saldo_devedor = extract_currency_value(saldo_cell)
                     
-                    # Get payment details from the next row
-                    compras = []
-                    try:
-                        if i + 1 < len(values) and len(values[i + 1]) > 3:
-                            next_row = values[i + 1]
-                            if next_row[0] == '' and 'Valor pago' in str(next_row[1]):
-                                # Extract payments from monthly columns
-                                meses = ['Mai/24', 'Jun/24', 'Jul/24', 'Ago/24', 'Set/24', 'Out/24', 'Nov/24', 'Dez/24',
-                                       'Jan/25', 'Fev/25', 'Mar/25', 'Abr/25', 'Mai/25', 'Jun/25', 'Jul/25', 'Ago/25', 'Set/25']
-                                
-                                for j, mes in enumerate(meses):
-                                    col_index = j + 5  # Payments start from column 5
-                                    if col_index < len(next_row):
-                                        pagamento_str = str(next_row[col_index]).strip()
-                                        if pagamento_str and 'R$' in pagamento_str:
-                                            valor_pagamento = extract_currency_value(pagamento_str)
-                                            if valor_pagamento > 0:
-                                                compras.append({
-                                                    "data": mes,
-                                                    "valor": valor_pagamento
-                                                })
-                    except Exception as e:
-                        logger.warning(f"Error processing payments for {nome_cell}: {e}")
+                    # Get purchase history by searching through sales sheets
+                    compras = await get_client_purchase_history(nome_cell)
                     
                     cliente_data = {
                         "nome": nome_cell,
