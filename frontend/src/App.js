@@ -597,44 +597,88 @@ function App() {
                           </div>
                         </div>
                         
-                        {/* Expanded Purchase History */}
+                        {/* Expanded Purchase & Payment History */}
                         {expandedCliente === cliente.id && (
                           <div className="border-t border-gray-700 p-4 bg-gray-850">
-                            <h4 className="text-white font-semibold mb-3">Histórico de Compras:</h4>
-                            {cliente.compras && cliente.compras.length > 0 ? (
-                              <div className="overflow-x-auto">
-                                <table className="w-full border-collapse">
-                                  <thead>
-                                    <tr className="border-b border-gray-600">
-                                      <th className="text-left p-3 text-gray-300 font-medium">Data</th>
-                                      <th className="text-right p-3 text-gray-300 font-medium">Valor</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {cliente.compras.map((compra, index) => (
-                                      <tr key={index} className="border-b border-gray-700 last:border-b-0">
-                                        <td className="p-3 text-white">{compra.data}</td>
-                                        <td className="p-3 text-right text-green-400 font-semibold">
-                                          {formatCurrency(compra.valor)}
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                  <tfoot>
-                                    <tr className="border-t-2 border-gray-600 bg-gray-800">
-                                      <td className="p-3 text-white font-bold">TOTAL COMPRAS</td>
-                                      <td className="p-3 text-right text-green-400 font-bold text-lg">
-                                        {formatCurrency(cliente.compras.reduce((sum, compra) => sum + compra.valor, 0))}
-                                      </td>
-                                    </tr>
-                                  </tfoot>
-                                </table>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                              {/* Histórico de Compras */}
+                              <div>
+                                <h4 className="text-white font-semibold mb-3">Histórico de Compras:</h4>
+                                {cliente.compras && cliente.compras.length > 0 ? (
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full border-collapse">
+                                      <thead>
+                                        <tr className="border-b border-gray-600">
+                                          <th className="text-left p-3 text-gray-300 font-medium">Data</th>
+                                          <th className="text-right p-3 text-gray-300 font-medium">Valor</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {cliente.compras.map((compra, index) => (
+                                          <tr key={index} className="border-b border-gray-700 last:border-b-0">
+                                            <td className="p-3 text-white">{compra.data}</td>
+                                            <td className="p-3 text-right text-green-400 font-semibold">
+                                              {formatCurrency(compra.valor)}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                      <tfoot>
+                                        <tr className="border-t-2 border-gray-600 bg-gray-800">
+                                          <td className="p-3 text-white font-bold">TOTAL COMPRAS</td>
+                                          <td className="p-3 text-right text-green-400 font-bold text-lg">
+                                            {formatCurrency(cliente.compras.reduce((sum, compra) => sum + compra.valor, 0))}
+                                          </td>
+                                        </tr>
+                                      </tfoot>
+                                    </table>
+                                  </div>
+                                ) : (
+                                  <div className="text-gray-400 text-center py-4">
+                                    Nenhuma compra registrada para este cliente.
+                                  </div>
+                                )}
                               </div>
-                            ) : (
-                              <div className="text-gray-400 text-center py-4">
-                                Nenhuma compra registrada para este cliente.
+
+                              {/* Histórico de Pagamentos */}
+                              <div>
+                                <h4 className="text-white font-semibold mb-3">Histórico de Pagamentos:</h4>
+                                {cliente.pagamentos && cliente.pagamentos.length > 0 ? (
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full border-collapse">
+                                      <thead>
+                                        <tr className="border-b border-gray-600">
+                                          <th className="text-left p-3 text-gray-300 font-medium">Data</th>
+                                          <th className="text-right p-3 text-gray-300 font-medium">Valor</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {cliente.pagamentos.map((pagamento, index) => (
+                                          <tr key={index} className="border-b border-gray-700 last:border-b-0">
+                                            <td className="p-3 text-white">{pagamento.data}</td>
+                                            <td className="p-3 text-right text-blue-400 font-semibold">
+                                              {formatCurrency(pagamento.valor)}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                      <tfoot>
+                                        <tr className="border-t-2 border-gray-600 bg-gray-800">
+                                          <td className="p-3 text-white font-bold">TOTAL PAGAMENTOS</td>
+                                          <td className="p-3 text-right text-blue-400 font-bold text-lg">
+                                            {formatCurrency(cliente.pagamentos.reduce((sum, pagamento) => sum + pagamento.valor, 0))}
+                                          </td>
+                                        </tr>
+                                      </tfoot>
+                                    </table>
+                                  </div>
+                                ) : (
+                                  <div className="text-gray-400 text-center py-4">
+                                    Nenhum pagamento registrado para este cliente.
+                                  </div>
+                                )}
                               </div>
-                            )}
+                            </div>
                           </div>
                         )}
                       </div>
