@@ -826,16 +826,18 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                 continue
                 
             try:
-                # Get date from column 0 for validation
+                # Get date from column 0 for validation - mais flexível
                 data_cell = str(row[0]).strip().lower() if len(row) > 0 and row[0] else ''
                 
-                # Skip total rows, empty dates, and non-date entries
-                # This is the logic that worked correctly for Janeiro
+                # Skip total rows, empty dates, and non-date entries - simplified logic
                 if (not data_cell or 
                     'total' in data_cell or 
                     'soma' in data_cell or 
-                    'subtotal' in data_cell or
-                    not ('/' in data_cell and any(c.isdigit() for c in data_cell))):
+                    'subtotal' in data_cell):
+                    continue
+                
+                # More flexible date validation - just check if it has / and digits
+                if data_cell and '/' not in data_cell:
                     continue
                 
                 # Column 1: VENDAS (faturamento) - only count if row has valid date and non-zero value
