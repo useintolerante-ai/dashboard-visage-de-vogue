@@ -217,6 +217,15 @@ function App() {
     setSortConfig({ key, direction });
   };
 
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) {
+      return <span className="text-gray-500 ml-1">↕</span>;
+    }
+    return sortConfig.direction === 'asc' ? 
+      <span className="text-white ml-1">↑</span> : 
+      <span className="text-white ml-1">↓</span>;
+  };
+
   const sortCrediarioData = (data, key, type = 'string') => {
     if (!data || !key) return data;
     
