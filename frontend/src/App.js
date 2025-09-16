@@ -250,7 +250,7 @@ function App() {
         {activeView === 'visaoGeral' && dashboardData && (
           <div className="space-y-8">
             {/* KPIs Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* Faturamento */}
               <Card className="bg-gray-900 border-gray-700">
                 <CardContent className="p-6">
@@ -303,25 +303,12 @@ function App() {
                 </CardContent>
               </Card>
 
-              {/* A Receber (Cred.) */}
-              <Card className="bg-gray-900 border-gray-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3 mb-2">
-                    {getKPIIcon('areceber')}
-                    <span className="text-blue-400 text-sm font-medium uppercase tracking-wide">A Receber (Cred.)</span>
-                  </div>
-                  <div className="text-2xl font-bold text-white">
-                    {formatCurrency(dashboardData.a_receber_crediario)}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Nº de Vendas */}
+              {/* Nº Vendas - Menor */}
               <Card className="bg-gray-900 border-gray-700">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-2">
                     {getKPIIcon('vendas')}
-                    <span className="text-purple-400 text-sm font-medium uppercase tracking-wide">Nº de Vendas</span>
+                    <span className="text-purple-400 text-sm font-medium uppercase tracking-wide">Nº Vendas</span>
                   </div>
                   <div className="text-2xl font-bold text-white">
                     {dashboardData.num_vendas}
