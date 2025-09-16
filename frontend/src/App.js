@@ -123,6 +123,15 @@ function App() {
     }
   }
 
+  async function loadMesesDisponiveis() {
+    try {
+      const response = await axios.get(`${API}/meses-disponiveis`);
+      setMesesDisponiveis(response.data.meses);
+    } catch (error) {
+      console.error('Erro ao carregar meses disponíveis:', error);
+    }
+  }
+
   const toggleClienteDetails = (clienteIndex) => {
     setExpandedCliente(expandedCliente === clienteIndex ? null : clienteIndex);
   };
