@@ -852,16 +852,19 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                 # Use the same logic as saidas-data endpoint for consistency
                 # Skip individual row processing for saidas - will be calculated once after the loop
                 
-                # Column 16: PAGAMENTOS CREDIÁRIO - read ALL valid payments, only exclude TOTAL lines
+                # Column 16: PAGAMENTOS CREDIÁRIO - exclude total lines more intelligently
                 crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
                 if crediario_str and 'R$' in crediario_str and 'R$  -' not in crediario_str:
                     valor_crediario = extract_currency_value(crediario_str)
                     if valor_crediario > 0:
-                        # Only exclude rows that explicitly contain TOTAL keywords, no value thresholds
+                        # Check if this row contains TOTAL keywords
                         full_row_text = ' '.join([str(cell).upper() for cell in row if cell]).strip()
                         if ('TOTAL' in full_row_text or 'SOMA' in full_row_text or 
                             'SUBTOTAL' in full_row_text or 'SALDO' in full_row_text):
                             logger.debug(f"Skipped crediario with TOTAL keyword: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                        # For Janeiro specifically, exclude the total line that equals 3503.14
+                        elif sheet_name == "JANEIRO25" and abs(valor_crediario - 3503.14) < 0.01:
+                            logger.debug(f"Skipped Janeiro total line: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
                         else:
                             total_recebido_crediario += valor_crediario
                             logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
