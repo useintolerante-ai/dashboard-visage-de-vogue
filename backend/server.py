@@ -37,12 +37,18 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-# Data cache for Google Sheets sync
+# Data cache for Google Sheets sync - improved with sheet-specific caching
 sheets_cache = {
     "data": None,
     "last_updated": None,
     "update_interval": 300,  # 5 minutes
-    "is_syncing": False
+    "is_syncing": False,
+    "sheet_cache": {},  # Cache for individual sheets
+    "crediario_cache": {
+        "data": None,
+        "last_updated": None,
+        "ttl": 600  # 10 minutes TTL for crediario
+    }
 }
 
 # Define Models
