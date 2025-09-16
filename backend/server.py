@@ -796,15 +796,15 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                         logger.debug(f"Skipped large saida (likely total): {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
                 
                 # Column 16: PAGAMENTOS CREDIÁRIO (recebido crediário) - only count if row has valid date and non-zero value
-                # Also exclude values that seem to be totals (very high values)
+                # Also exclude values that seem to be totals (>3000 for crediario)
                 crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
                 if crediario_str and 'R$' in crediario_str and 'R$  -' not in crediario_str:
                     valor_crediario = extract_currency_value(crediario_str)
-                    # Exclude suspiciously high values that might be totals (>5000)
-                    if valor_crediario > 0 and valor_crediario < 5000:
+                    # Exclude suspiciously high values that might be totals (>3000)
+                    if valor_crediario > 0 and valor_crediario < 3000:
                         total_recebido_crediario += valor_crediario
                         logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
-                    elif valor_crediario >= 5000:
+                    elif valor_crediario >= 3000:
                         logger.debug(f"Skipped large crediario (likely total): {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
                         
             except Exception as e:
