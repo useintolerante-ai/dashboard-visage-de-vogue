@@ -318,6 +318,16 @@ async def fetch_crediario_data() -> Dict[str, Any]:
             except:
                 pass
             
+            # Get payment history for this client
+            try:
+                nome_cliente = cliente_data["nome"]
+                pagamentos = await get_client_payment_history(nome_cliente)
+                cliente_data["pagamentos"] = pagamentos
+                logger.info(f"Added {len(pagamentos)} payments for client {nome_cliente}")
+            except Exception as e:
+                logger.warning(f"Error fetching payments for {cliente_data['nome']}: {e}")
+                cliente_data["pagamentos"] = []
+            
             cliente = ClienteCrediario(**cliente_data)
             clientes_list.append(cliente)
         
