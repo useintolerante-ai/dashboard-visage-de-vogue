@@ -550,17 +550,75 @@ async def get_chart_data():
         logger.error(f"Error getting chart data: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting chart data: {str(e)}")
 
-@api_router.get("/sheets-status")
-async def get_sheets_status():
-    """Get Google Sheets integration status"""
-    return {
-        "sheets_id": GOOGLE_SHEETS_ID,
-        "api_key_set": bool(GOOGLE_SHEETS_API_KEY),
-        "last_sync": sheets_cache["last_updated"].isoformat() if sheets_cache["last_updated"] else None,
-        "sync_interval": sheets_cache["update_interval"],
-        "is_syncing": sheets_cache["is_syncing"],
-        "should_sync": should_sync_sheets()
-    }
+@api_router.get("/crediario-data")
+async def get_crediario_data():
+    """Get crediario data from Google Sheets"""
+    try:
+        crediario_data = fetch_crediario_data()
+        
+        if not crediario_data["success"]:
+            raise HTTPException(status_code=500, detail=crediario_data["error"])
+        
+        return {
+            "clientes": [cliente.dict() for cliente in crediario_data["clientes"]],
+            "total_clientes": crediario_data["total_clientes"]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting crediario data: {e}")
+        raise HTTPException(status_code=500, detail=f"Error getting crediario data: {str(e)}")
+
+@api_router.get("/saidas-data/{mes}")
+async def get_saidas_data(mes: str):
+    """Get saidas data for specific month"""
+    try:
+        # Map month names to sheet names
+        month_mapping = {
+            "janeiro": "JANEIRO25",
+            "fevereiro": "FEVEREIRO25", 
+            "marco": "MARÇO25",
+            "abril": "ABRIL25",
+            "maio": "MAIO25",
+            "junho": "JUNHO25",
+            "julho": "JULHO25",
+            "agosto": "AGOSTO25",
+            "setembro": "SETEMBRO25"
+        }
+        
+        sheet_name = month_mapping.get(mes.lower(), mes.upper())
+        
+        saidas_data = fetch_saidas_data(sheet_name)
+        
+        if not saidas_data["success"]:
+            raise HTTPException(status_code=500, detail=saidas_data["error"])
+        
+        return {
+            "saidas": [saida.dict() for saida in saidas_data["saidas"]],
+            "total_saidas": saidas_data["total_saidas"],
+            "total_valor": saidas_data["total_valor"],
+            "mes": mes
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting saidas data: {e}")
+        raise HTTPException(status_code=500, detail=f"Error getting saidas data: {str(e)}")
+
+@api_router.get("/meses-disponiveis")
+async def get_meses_disponiveis():
+    """Get available months"""
+    meses = [
+        {"value": "janeiro", "label": "Janeiro", "sheet": "JANEIRO25"},
+        {"value": "fevereiro", "label": "Fevereiro", "sheet": "FEVEREIRO25"},
+        {"value": "marco", "label": "Março", "sheet": "MARÇO25"},
+        {"value": "abril", "label": "Abril", "sheet": "ABRIL25"},
+        {"value": "maio", "label": "Maio", "sheet": "MAIO25"},
+        {"value": "junho", "label": "Junho", "sheet": "JUNHO25"},
+        {"value": "julho", "label": "Julho", "sheet": "JULHO25"},
+        {"value": "agosto", "label": "Agosto", "sheet": "AGOSTO25"},
+        {"value": "setembro", "label": "Setembro", "sheet": "SETEMBRO25"}
+    ]
+    
+    return {"meses": meses}
 
 # Legacy routes
 @api_router.post("/status", response_model=StatusCheck)
