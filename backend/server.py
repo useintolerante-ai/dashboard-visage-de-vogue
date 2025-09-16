@@ -572,28 +572,108 @@ def fetch_google_sheets_data(sheet_name: str = "MARÇO25") -> Dict[str, Any]:
 def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[CashFlowData]:
     """
     Convert Google Sheets data to CashFlowData records based on actual sheet structure
-    Extract individual transactions and totals correctly - with same filtering logic as extract_current_month_data
+    Extract individual transactions and totals correctly - with improved filtering logic matching extract_current_month_data
     """
     cashflow_records = []
     
     # sheets_data comes as: {"values": [[row1], [row2], ...]}
     rows = sheets_data if isinstance(sheets_data, list) else sheets_data.get('values', [])
     
+    # First pass: collect all values to identify potential totals
+    all_vendas = []
+    all_saidas = []
+    all_crediario = []
+    
     for index, row in enumerate(rows):
         try:
-            # Skip empty rows or header row
             if not row or index == 0:
                 continue
             
-            # Apply same filtering logic as extract_current_month_data
+            # Apply same rigorous filtering logic as extract_current_month_data
             data_cell = str(row[0]).strip().lower() if len(row) > 0 and row[0] else ''
             
-            # Skip total rows, empty dates, and non-date entries
+            # More rigorous filtering for total rows and invalid dates
             if (not data_cell or 
                 'total' in data_cell or 
                 'soma' in data_cell or 
                 'subtotal' in data_cell or
-                not ('/' in data_cell and any(c.isdigit() for c in data_cell))):
+                'saldo' in data_cell or
+                data_cell == '' or
+                not ('/' in data_cell and len(data_cell.split('/')) >= 2)):
+                continue
+            
+            # Additional validation: check if it looks like a valid date
+            try:
+                date_parts = data_cell.split('/')
+                if len(date_parts) >= 2:
+                    day = int(date_parts[0])
+                    month = int(date_parts[1])
+                    if not (1 <= day <= 31 and 1 <= month <= 12):
+                        continue
+            except:
+                continue  # Skip if date parsing fails
+            
+            # Collect values for analysis
+            vendas_value = str(row[1]).strip() if len(row) > 1 and row[1] else ''
+            saida_value = str(row[11]).strip() if len(row) > 11 and row[11] else ''
+            crediario_value = str(row[16]).strip() if len(row) > 16 and row[16] else ''
+            
+            if vendas_value and 'R$' in vendas_value and 'R$  -' not in vendas_value:
+                valor_venda = extract_currency_value(vendas_value)
+                if valor_venda > 0:
+                    all_vendas.append(valor_venda)
+            
+            if saida_value and 'R$' in saida_value and 'R$  -' not in saida_value:
+                valor_saida = extract_currency_value(saida_value)
+                if valor_saida > 0:
+                    all_saidas.append(valor_saida)
+            
+            if crediario_value and 'R$' in crediario_value and 'R$  -' not in crediario_value:
+                valor_crediario = extract_currency_value(crediario_value)
+                if valor_crediario > 0:
+                    all_crediario.append(valor_crediario)
+                    
+        except Exception as e:
+            logger.warning(f"Error in first pass processing row {index}: {e}")
+            continue
+    
+    # Calculate thresholds to identify potential totals
+    vendas_threshold = max(all_vendas) * 0.8 if all_vendas else 999999
+    saidas_threshold = max(all_saidas) * 0.8 if all_saidas else 999999
+    crediario_threshold = max(all_crediario) * 0.8 if all_crediario else 999999
+    
+    # Calculate sum thresholds
+    vendas_sum = sum(all_vendas)
+    saidas_sum = sum(all_saidas)
+    crediario_sum = sum(all_crediario)
+    
+    # Second pass: create records with intelligent filtering
+    for index, row in enumerate(rows):
+        try:
+            if not row or index == 0:
+                continue
+            
+            # Apply same filtering logic as first pass
+            data_cell = str(row[0]).strip().lower() if len(row) > 0 and row[0] else ''
+            
+            if (not data_cell or 
+                'total' in data_cell or 
+                'soma' in data_cell or 
+                'subtotal' in data_cell or
+                'saldo' in data_cell or
+                data_cell == '' or
+                not ('/' in data_cell and len(data_cell.split('/')) >= 2)):
+                continue
+            
+            # Additional date validation
+            try:
+                date_parts = data_cell.split('/')
+                if len(date_parts) >= 2:
+                    day = int(date_parts[0])
+                    month = int(date_parts[1])
+                    if not (1 <= day <= 31 and 1 <= month <= 12):
+                        continue
+            except:
                 continue
             
             # Row structure based on headers:
@@ -612,28 +692,37 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
             data_pagamento = row[14].strip() if len(row) > 14 and row[14] else ''
             crediario_value = row[16].strip() if len(row) > 16 and row[16] else ''
             
-            # Extract currency values with filtering for valid values only
+            # Extract currency values with intelligent total detection
             valor_venda = 0.0
             valor_saida = 0.0
             valor_crediario = 0.0
             
-            # Vendas - filter out negative values and apply same logic
+            # Vendas - with total detection
             if vendas_value and 'R$' in vendas_value and 'R$  -' not in vendas_value:
-                valor_venda = extract_currency_value(vendas_value)
-                if valor_venda <= 0:
-                    valor_venda = 0.0
+                temp_valor_venda = extract_currency_value(vendas_value)
+                if temp_valor_venda > 0:
+                    is_likely_total = (temp_valor_venda >= vendas_threshold or 
+                                     abs(temp_valor_venda - vendas_sum + temp_valor_venda) < temp_valor_venda * 0.1)
+                    if not is_likely_total:
+                        valor_venda = temp_valor_venda
             
-            # Saidas - filter out high values (totals) and negative values
+            # Saidas - with total detection
             if saida_value and 'R$' in saida_value and 'R$  -' not in saida_value:
                 temp_valor_saida = extract_currency_value(saida_value)
-                if temp_valor_saida > 0 and temp_valor_saida < 10000:  # Same filter as extract_current_month_data
-                    valor_saida = temp_valor_saida
+                if temp_valor_saida > 0:
+                    is_likely_total = (temp_valor_saida >= saidas_threshold or 
+                                     abs(temp_valor_saida - saidas_sum + temp_valor_saida) < temp_valor_saida * 0.1)
+                    if not is_likely_total:
+                        valor_saida = temp_valor_saida
             
-            # Crediario - filter out high values (totals) and negative values
+            # Crediario - with total detection
             if crediario_value and 'R$' in crediario_value and 'R$  -' not in crediario_value:
                 temp_valor_crediario = extract_currency_value(crediario_value)
-                if temp_valor_crediario > 0 and temp_valor_crediario < 3000:  # Same filter as extract_current_month_data
-                    valor_crediario = temp_valor_crediario
+                if temp_valor_crediario > 0:
+                    is_likely_total = (temp_valor_crediario >= crediario_threshold or 
+                                     abs(temp_valor_crediario - crediario_sum + temp_valor_crediario) < temp_valor_crediario * 0.1)
+                    if not is_likely_total:
+                        valor_crediario = temp_valor_crediario
             
             # Create record if we have any meaningful data
             if valor_venda > 0 or valor_saida > 0 or valor_crediario > 0:
