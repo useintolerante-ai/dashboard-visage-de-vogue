@@ -110,6 +110,8 @@ class ClienteCrediario(BaseModel):
     saldo_devedor: float = 0.0
     compras: List[Dict[str, Any]] = []
     pagamentos: List[Dict[str, Any]] = []
+    dias_sem_pagamento: int = 0
+    atrasado_60_dias: bool = False
 
 class SaidaData(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
