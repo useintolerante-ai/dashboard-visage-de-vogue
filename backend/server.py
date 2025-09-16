@@ -652,7 +652,7 @@ async def get_crediario_data():
 
 @api_router.get("/saidas-data/{mes}")
 async def get_saidas_data(mes: str):
-    """Get saidas data for specific month"""
+    """Get saidas data for specific month or all year"""
     try:
         # Map month names to sheet names
         month_mapping = {
@@ -667,19 +667,45 @@ async def get_saidas_data(mes: str):
             "setembro": "SETEMBRO25"
         }
         
-        sheet_name = month_mapping.get(mes.lower(), mes.upper())
+        if mes.lower() == "anointeiro":
+            # Return combined data from all months
+            all_saidas = []
+            total_valor_year = 0
+            
+            for month_name, sheet_name in month_mapping.items():
+                try:
+                    saidas_data = fetch_saidas_data(sheet_name)
+                    if saidas_data["success"]:
+                        for saida in saidas_data["saidas"]:
+                            saida_dict = saida.dict()
+                            saida_dict["mes_nome"] = month_name.capitalize()
+                            all_saidas.append(saida_dict)
+                            total_valor_year += saida.valor
+                except Exception as e:
+                    logger.warning(f"Error processing {sheet_name}: {e}")
+                    continue
+            
+            return {
+                "saidas": all_saidas,
+                "total_saidas": len(all_saidas),
+                "total_valor": total_valor_year,
+                "mes": "Ano Inteiro (2025)"
+            }
         
-        saidas_data = fetch_saidas_data(sheet_name)
-        
-        if not saidas_data["success"]:
-            raise HTTPException(status_code=500, detail=saidas_data["error"])
-        
-        return {
-            "saidas": [saida.dict() for saida in saidas_data["saidas"]],
-            "total_saidas": saidas_data["total_saidas"],
-            "total_valor": saidas_data["total_valor"],
-            "mes": mes
-        }
+        else:
+            sheet_name = month_mapping.get(mes.lower(), mes.upper())
+            
+            saidas_data = fetch_saidas_data(sheet_name)
+            
+            if not saidas_data["success"]:
+                raise HTTPException(status_code=500, detail=saidas_data["error"])
+            
+            return {
+                "saidas": [saida.dict() for saida in saidas_data["saidas"]],
+                "total_saidas": saidas_data["total_saidas"],
+                "total_valor": saidas_data["total_valor"],
+                "mes": mes
+            }
         
     except Exception as e:
         logger.error(f"Error getting saidas data: {e}")
