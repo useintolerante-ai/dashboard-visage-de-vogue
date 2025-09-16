@@ -804,6 +804,24 @@ async def get_faturamento_diario(mes: str):
         logger.error(f"Error getting daily sales data: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting daily sales data: {str(e)}")
 
+@api_router.get("/meses-disponiveis")
+async def get_meses_disponiveis():
+    """Get available months"""
+    meses = [
+        {"value": "anointeiro", "label": "Ano Inteiro (2025)", "sheet": "ALL"},
+        {"value": "janeiro", "label": "Janeiro", "sheet": "JANEIRO25"},
+        {"value": "fevereiro", "label": "Fevereiro", "sheet": "FEVEREIRO25"},
+        {"value": "marco", "label": "Março", "sheet": "MARÇO25"},
+        {"value": "abril", "label": "Abril", "sheet": "ABRIL25"},
+        {"value": "maio", "label": "Maio", "sheet": "MAIO25"},
+        {"value": "junho", "label": "Junho", "sheet": "JUNHO25"},
+        {"value": "julho", "label": "Julho", "sheet": "JULHO25"},
+        {"value": "agosto", "label": "Agosto", "sheet": "AGOSTO25"},
+        {"value": "setembro", "label": "Setembro", "sheet": "SETEMBRO25"}
+    ]
+    
+    return {"meses": meses}
+
 @api_router.get("/sheets-status")
 async def get_sheets_status():
     """Get Google Sheets integration status"""
