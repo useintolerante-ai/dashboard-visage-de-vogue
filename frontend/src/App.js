@@ -558,7 +558,7 @@ function App() {
                           className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
                           onClick={() => handleSort('atrasado_60_dias', 'boolean')}
                         >
-                          >60 dias s/ pagamento {getSortIcon('atrasado_60_dias')}
+                          &gt;60 dias s/ pagamento {getSortIcon('atrasado_60_dias')}
                         </button>
                       </div>
                     </div>
