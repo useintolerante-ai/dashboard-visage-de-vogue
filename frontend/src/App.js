@@ -21,6 +21,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [expandedCliente, setExpandedCliente] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
 
   async function syncGoogleSheets() {
     setIsSyncing(true);
