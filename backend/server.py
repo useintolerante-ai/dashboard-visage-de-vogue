@@ -345,6 +345,112 @@ async def fetch_crediario_data() -> Dict[str, Any]:
         
         return {"success": False, "error": f"Error: {str(e)}"}
 
+async def get_client_payment_history(client_name: str) -> List[Dict[str, Any]]:
+    """
+    Get payment history for a specific client from sales sheets using fuzzy matching
+    Extracts data from column 14 (DATA DE PAGAMENTO) and column 16 (PAGAMENTOS CREDIÁRIO)
+    """
+    pagamentos = []
+    
+    # Normalize client name for better matching
+    client_name_normalized = client_name.strip().casefold()
+    
+    # Search through all monthly sheets for this client's payments
+    months = ["JANEIRO25", "FEVEREIRO25", "MARÇO25", "ABRIL25", "MAIO25", 
+              "JUNHO25", "JULHO25", "AGOSTO25", "SETEMBRO25"]
+    
+    logger.info(f"Searching for payments for client: '{client_name}' (normalized: '{client_name_normalized}')")
+    
+    for month_sheet in months:
+        try:
+            sheets_result = fetch_google_sheets_data_cached(month_sheet)
+            if sheets_result["success"]:
+                rows = sheets_result["data"]
+                
+                for row_index, row in enumerate(rows):
+                    if row_index == 0 or len(row) < 17:  # Skip header and incomplete rows
+                        continue
+                    
+                    try:
+                        # Check for payment data: column 14 (DATA DE PAGAMENTO) and column 16 (PAGAMENTOS CREDIÁRIO)
+                        data_pagamento = str(row[14]).strip() if len(row) > 14 and row[14] else ''
+                        valor_pagamento_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
+                        
+                        # Skip rows without valid payment data
+                        if not data_pagamento or not valor_pagamento_str or 'R$' not in valor_pagamento_str:
+                            continue
+                        
+                        # Skip total lines
+                        if ('total' in data_pagamento.lower() or 'soma' in data_pagamento.lower() or
+                            'subtotal' in data_pagamento.lower() or 'saldo' in data_pagamento.lower()):
+                            continue
+                        
+                        # Look for client name in multiple columns where it might appear
+                        # Common columns that might contain client names: 2, 3, 4, 5, 6, etc.
+                        potential_client_columns = [2, 3, 4, 5, 6, 7, 8]
+                        
+                        client_found = False
+                        for col_index in potential_client_columns:
+                            if len(row) > col_index and row[col_index]:
+                                cell_value = str(row[col_index]).strip().casefold()
+                                
+                                # Multiple matching strategies
+                                # 1. Exact match (case insensitive)
+                                if client_name_normalized == cell_value:
+                                    client_found = True
+                                    break
+                                
+                                # 2. Partial match (client name contains or is contained in cell)
+                                elif (client_name_normalized in cell_value or 
+                                      cell_value in client_name_normalized):
+                                    client_found = True
+                                    break
+                                
+                                # 3. Fuzzy match (similarity > 80%)
+                                elif len(client_name_normalized) > 3 and len(cell_value) > 3:
+                                    similarity = fuzz.ratio(client_name_normalized, cell_value)
+                                    if similarity > 80:
+                                        client_found = True
+                                        logger.info(f"Fuzzy match found for payment: '{client_name}' ~ '{row[col_index]}' (similarity: {similarity}%)")
+                                        break
+                        
+                        if client_found:
+                            # Extract payment value
+                            valor_pagamento = extract_currency_value(valor_pagamento_str)
+                            
+                            if valor_pagamento > 0:
+                                pagamentos.append({
+                                    "data": data_pagamento,
+                                    "valor": valor_pagamento
+                                })
+                                logger.info(f"Added payment for {client_name}: {data_pagamento} - R$ {valor_pagamento}")
+                            
+                    except Exception as e:
+                        logger.warning(f"Error processing row {row_index} in {month_sheet} for {client_name} payments: {e}")
+                        continue
+                            
+        except Exception as e:
+            logger.warning(f"Error searching {month_sheet} for {client_name} payments: {e}")
+            continue
+    
+    # Sort payments by date (newest first) and deduplicate
+    unique_pagamentos = []
+    seen_payments = set()
+    
+    for pagamento in pagamentos:
+        key = f"{pagamento['data']}_{pagamento['valor']}"
+        if key not in seen_payments:
+            seen_payments.add(key)
+            unique_pagamentos.append(pagamento)
+    
+    try:
+        unique_pagamentos.sort(key=lambda x: x['data'], reverse=True)
+    except:
+        pass  # If date sorting fails, keep original order
+    
+    logger.info(f"Found {len(unique_pagamentos)} unique payments for client '{client_name}'")
+    return unique_pagamentos
+
 async def get_client_purchase_history(client_name: str) -> List[Dict[str, Any]]:
     """
     Get purchase history for a specific client from sales sheets using fuzzy matching
