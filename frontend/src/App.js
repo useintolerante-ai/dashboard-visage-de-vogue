@@ -146,6 +146,8 @@ function App() {
       loadCrediarioData();
     } else if (viewName === 'saidas') {
       loadSaidasData(selectedMonth);
+    } else if (viewName === 'visaoGeral') {
+      loadFaturamentoDiario(selectedMonth);
     }
   };
 
