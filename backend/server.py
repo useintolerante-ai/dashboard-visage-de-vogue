@@ -159,8 +159,8 @@ async def fetch_crediario_data() -> Dict[str, Any]:
             return cache["data"]
     
     try:
-        # Use cached version to avoid rate limits
-        url = f"https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_ID}/values/CREDIARIO?key={GOOGLE_SHEETS_API_KEY}"
+        # Use the correct sheet name for crediario
+        url = f"https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_ID}/values/CREDIARIO%20POR%20CONTRATO?key={GOOGLE_SHEETS_API_KEY}"
         
         # Add rate limiting delay
         time.sleep(1)
