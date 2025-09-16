@@ -837,29 +837,33 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                         num_vendas += 1
                         logger.debug(f"Added venda: {data_cell} - {vendas_str} -> {valor_venda} (row {row_index})")
                 
-                # Column 11: SAÍDA R$ (saídas) - only count if row has valid date and non-zero value
-                # Exclude the total line by setting conservative threshold
+                # Column 11: SAÍDA R$ (saídas) - BETTER logic to exclude total lines
                 saidas_str = str(row[11]).strip() if len(row) > 11 and row[11] else ''
                 if saidas_str and 'R$' in saidas_str and 'R$  -' not in saidas_str:
                     valor_saida = extract_currency_value(saidas_str)
-                    # Target Janeiro: 11420.02 - exclude values that are clearly totals (>11500)
-                    if valor_saida > 0 and valor_saida <= 11500:
-                        total_saidas += valor_saida
-                        logger.debug(f"Added saida: {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
-                    elif valor_saida > 11500:
-                        logger.debug(f"Skipped large saida (likely total): {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
+                    if valor_saida > 0:
+                        # Check if this row contains "TOTAL" or similar keywords more thoroughly
+                        full_row_text = ' '.join([str(cell).upper() for cell in row if cell]).strip()
+                        if ('TOTAL' in full_row_text or 'SOMA' in full_row_text or 
+                            'SUBTOTAL' in full_row_text or 'SALDO' in full_row_text):
+                            logger.debug(f"Skipped saida with TOTAL keyword: {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
+                        else:
+                            total_saidas += valor_saida
+                            logger.debug(f"Added saida: {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
                 
-                # Column 16: PAGAMENTOS CREDIÁRIO (recebido crediário) - only count if row has valid date and non-zero value
-                # Exclude total lines for crediário - Janeiro should be 3503.14
+                # Column 16: PAGAMENTOS CREDIÁRIO - BETTER logic to exclude total lines
                 crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
                 if crediario_str and 'R$' in crediario_str and 'R$  -' not in crediario_str:
                     valor_crediario = extract_currency_value(crediario_str)
-                    # Be conservative for crediário too - exclude anything > 2500
-                    if valor_crediario > 0 and valor_crediario < 2500:
-                        total_recebido_crediario += valor_crediario
-                        logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
-                    elif valor_crediario >= 2500:
-                        logger.debug(f"Skipped large crediario (likely total): {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                    if valor_crediario > 0:
+                        # Check if this row contains "TOTAL" or similar keywords more thoroughly
+                        full_row_text = ' '.join([str(cell).upper() for cell in row if cell]).strip()
+                        if ('TOTAL' in full_row_text or 'SOMA' in full_row_text or 
+                            'SUBTOTAL' in full_row_text or 'SALDO' in full_row_text):
+                            logger.debug(f"Skipped crediario with TOTAL keyword: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                        else:
+                            total_recebido_crediario += valor_crediario
+                            logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
                         
             except Exception as e:
                 logger.warning(f"Error processing row {row_index} in {sheet_name}: {e}")
