@@ -686,6 +686,7 @@ async def trigger_sheets_sync(background_tasks: BackgroundTasks):
 def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
     """
     Extract and calculate KPIs from a specific month's sheet
+    Only count rows with valid date and value, exclude totals
     """
     try:
         sheets_result = fetch_google_sheets_data(sheet_name)
@@ -726,31 +727,37 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                 if any(keyword in row_data for keyword in ['TOTAL', 'SOMA', 'SUBTOTAL', 'SALDO']):
                     continue
                 
-                # Extract values from standard positions
-                # Column 1: VENDAS (faturamento) - only count non-empty values
+                # Get date from column 0 for validation
+                data_cell = str(row[0]).strip() if len(row) > 0 and row[0] else ''
+                
+                # Only process rows that have a valid date (contains numbers and /)
+                if not data_cell or not ('/' in data_cell and any(c.isdigit() for c in data_cell)):
+                    continue
+                
+                # Column 1: VENDAS (faturamento) - only count if row has valid date
                 vendas_str = str(row[1]).strip() if len(row) > 1 and row[1] else ''
                 if vendas_str and 'R$' in vendas_str and vendas_str != '' and vendas_str != ' ':
                     valor_venda = extract_currency_value(vendas_str)
                     if valor_venda > 0:
                         total_faturamento += valor_venda
                         num_vendas += 1
-                        logger.debug(f"Added venda: {vendas_str} -> {valor_venda} (row {row_index})")
+                        logger.debug(f"Added venda: {data_cell} - {vendas_str} -> {valor_venda} (row {row_index})")
                 
-                # Column 11: SAÍDA R$ (saídas) - only count non-empty values
+                # Column 11: SAÍDA R$ (saídas) - only count if row has valid date
                 saidas_str = str(row[11]).strip() if len(row) > 11 and row[11] else ''
                 if saidas_str and 'R$' in saidas_str and saidas_str != '' and saidas_str != ' ':
                     valor_saida = extract_currency_value(saidas_str)
                     if valor_saida > 0:
                         total_saidas += valor_saida
-                        logger.debug(f"Added saida: {saidas_str} -> {valor_saida} (row {row_index})")
+                        logger.debug(f"Added saida: {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
                 
-                # Column 16: PAGAMENTOS CREDIÁRIO (recebido crediário) - only count non-empty values
+                # Column 16: PAGAMENTOS CREDIÁRIO (recebido crediário) - only count if row has valid date
                 crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
                 if crediario_str and 'R$' in crediario_str and crediario_str != '' and crediario_str != ' ':
                     valor_crediario = extract_currency_value(crediario_str)
                     if valor_crediario > 0:
                         total_recebido_crediario += valor_crediario
-                        logger.debug(f"Added crediario: {crediario_str} -> {valor_crediario} (row {row_index})")
+                        logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
                         
             except Exception as e:
                 logger.warning(f"Error processing row {row_index} in {sheet_name}: {e}")
