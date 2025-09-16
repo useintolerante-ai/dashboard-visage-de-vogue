@@ -147,6 +147,7 @@ def extract_currency_value(value_str):
 async def fetch_crediario_data() -> Dict[str, Any]:
     """
     Fetch crediario data from Google Sheets with purchase history - cached version
+    Gets purchase history from CREDIARIO POR CONTRATO and saldo devedor from CREDIARIO
     """
     current_time = datetime.now(timezone.utc)
     
@@ -159,13 +160,50 @@ async def fetch_crediario_data() -> Dict[str, Any]:
             return cache["data"]
     
     try:
-        # Use the correct sheet name for crediario
-        url = f"https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_ID}/values/CREDIARIO%20POR%20CONTRATO?key={GOOGLE_SHEETS_API_KEY}"
+        # First, get saldo devedor from CREDIARIO sheet
+        crediario_url = f"https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_ID}/values/CREDIARIO?key={GOOGLE_SHEETS_API_KEY}"
+        time.sleep(0.5)
         
-        # Add rate limiting delay
-        time.sleep(1)
+        crediario_response = requests.get(crediario_url, timeout=30)
+        crediario_response.raise_for_status()
+        crediario_data = crediario_response.json()
+        crediario_values = crediario_data.get('values', [])
         
-        response = requests.get(url, timeout=30)
+        # Extract saldo devedor by client name from CREDIARIO sheet
+        saldos_devedores = {}
+        for i, row in enumerate(crediario_values):
+            try:
+                if not row or len(row) < 3 or i == 0:  # Skip header
+                    continue
+                
+                nome_cell = str(row[0]).strip() if row[0] else ''
+                vendas_cell = str(row[1]).strip() if len(row) > 1 and row[1] else ''
+                saldo_cell = str(row[2]).strip() if len(row) > 2 and row[2] else ''
+                
+                # Check if this is a client row
+                if (nome_cell and 
+                    len(nome_cell) > 2 and 
+                    nome_cell not in ['NOME', '', 'PAGAMENTOS CREDIÁRIO', 'Valor pago'] and
+                    'TOTAL' not in nome_cell.upper() and
+                    'SALDO DEVEDOR' not in nome_cell.upper() and
+                    'R$' in vendas_cell and 'R$' in saldo_cell):
+                    
+                    vendas_totais = extract_currency_value(vendas_cell)
+                    saldo_devedor = extract_currency_value(saldo_cell)
+                    
+                    saldos_devedores[nome_cell.upper()] = {
+                        "vendas_totais": vendas_totais,
+                        "saldo_devedor": saldo_devedor
+                    }
+            except Exception as e:
+                logger.warning(f"Error processing crediario saldo row {i}: {e}")
+                continue
+        
+        # Now get purchase history from CREDIARIO POR CONTRATO
+        contrato_url = f"https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_ID}/values/CREDIARIO%20POR%20CONTRATO?key={GOOGLE_SHEETS_API_KEY}"
+        time.sleep(0.5)
+        
+        response = requests.get(contrato_url, timeout=30)
         response.raise_for_status()
         
         data = response.json()
@@ -179,11 +217,7 @@ async def fetch_crediario_data() -> Dict[str, Any]:
         
         clientes = {}
         
-        # This sheet has a specific structure:
-        # Row 4 (index 3): Client names and totals
-        # Row 5+ (index 4+): Purchase details with dates and values
-        
-        # First, extract client names and totals from row 4
+        # Extract client names and totals from row 4
         if len(values) > 3:
             client_row = values[3]  # Row 4 (index 3)
             
@@ -200,14 +234,21 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                     valor_total = extract_currency_value(valor_total_cell)
                     
                     if valor_total > 0:
-                        clientes[col_group] = {  # Use column group as key
-                            "nome": nome_cell,
+                        # Look for saldo devedor in CREDIARIO sheet
+                        nome_upper = nome_cell.upper()
+                        saldo_info = saldos_devedores.get(nome_upper, {
                             "vendas_totais": valor_total,
-                            "saldo_devedor": valor_total,  # Assuming total = saldo for now
+                            "saldo_devedor": valor_total  # fallback to total if not found
+                        })
+                        
+                        clientes[col_group] = {
+                            "nome": nome_cell,
+                            "vendas_totais": saldo_info["vendas_totais"],
+                            "saldo_devedor": saldo_info["saldo_devedor"],
                             "compras": []
                         }
         
-        # Now extract purchase details from subsequent rows
+        # Extract purchase details from subsequent rows
         for row_index in range(4, len(values)):  # Start from row 5 (index 4)
             row = values[row_index]
             
@@ -260,7 +301,7 @@ async def fetch_crediario_data() -> Dict[str, Any]:
         cache["data"] = result
         cache["last_updated"] = current_time
         
-        logger.info(f"Found {len(clientes_list)} clients in CREDIARIO POR CONTRATO with purchase history")
+        logger.info(f"Found {len(clientes_list)} clients in CREDIARIO POR CONTRATO with saldo from CREDIARIO")
         
         return result
         
