@@ -690,7 +690,7 @@ async def get_chart_data():
 async def get_crediario_data():
     """Get crediario data from Google Sheets"""
     try:
-        crediario_data = fetch_crediario_data()
+        crediario_data = await fetch_crediario_data()
         
         if not crediario_data["success"]:
             raise HTTPException(status_code=500, detail=crediario_data["error"])
