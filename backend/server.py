@@ -572,7 +572,7 @@ def fetch_google_sheets_data(sheet_name: str = "MARÇO25") -> Dict[str, Any]:
 def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[CashFlowData]:
     """
     Convert Google Sheets data to CashFlowData records based on actual sheet structure
-    Extract individual transactions correctly - with simplified filtering logic matching extract_current_month_data
+    Using the same proven logic as extract_current_month_data for consistency
     """
     cashflow_records = []
     
@@ -584,17 +584,15 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
             if not row or index == 0:
                 continue
             
-            # Apply same simplified filtering logic as extract_current_month_data
-            data_cell = str(row[0]).strip() if len(row) > 0 and row[0] else ''
+            # Apply same proven filtering logic as extract_current_month_data
+            data_cell = str(row[0]).strip().lower() if len(row) > 0 and row[0] else ''
             
-            # Check for total/sum keywords in the entire row
-            row_text = ' '.join([str(cell).upper() for cell in row if cell]).strip()
-            if ('TOTAL' in row_text or 'SOMA' in row_text or 'SUBTOTAL' in row_text or 
-                'SALDO DEVEDOR' in row_text or 'SALDO INICIAL' in row_text):
-                continue
-            
-            # Validate date format - must be DD/MM/YYYY or DD/MM/YY
-            if not data_cell or not is_valid_date_format(data_cell):
+            # Skip total rows, empty dates, and non-date entries - same logic as extract_current_month_data
+            if (not data_cell or 
+                'total' in data_cell or 
+                'soma' in data_cell or 
+                'subtotal' in data_cell or
+                not ('/' in data_cell and any(c.isdigit() for c in data_cell))):
                 continue
             
             # Row structure based on headers:
@@ -613,28 +611,30 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
             data_pagamento = row[14].strip() if len(row) > 14 and row[14] else ''
             crediario_value = row[16].strip() if len(row) > 16 and row[16] else ''
             
-            # Extract currency values with simple filtering
+            # Extract currency values with same thresholds as extract_current_month_data
             valor_venda = 0.0
             valor_saida = 0.0
             valor_crediario = 0.0
             
-            # Vendas - simple filtering
+            # Vendas - same logic as extract_current_month_data
             if vendas_value and 'R$' in vendas_value and 'R$  -' not in vendas_value:
                 valor_venda = extract_currency_value(vendas_value)
                 if valor_venda <= 0:
                     valor_venda = 0.0
             
-            # Saidas - simple filtering
+            # Saidas - same thresholds as extract_current_month_data (exclude >15000)
             if saida_value and 'R$' in saida_value and 'R$  -' not in saida_value:
-                valor_saida = extract_currency_value(saida_value)
-                if valor_saida <= 0:
-                    valor_saida = 0.0
+                temp_valor_saida = extract_currency_value(saida_value)
+                if temp_valor_saida > 0 and temp_valor_saida < 15000:
+                    valor_saida = temp_valor_saida
+                # Skip large values (likely totals)
             
-            # Crediario - simple filtering
+            # Crediario - same thresholds as extract_current_month_data (exclude >4000)
             if crediario_value and 'R$' in crediario_value and 'R$  -' not in crediario_value:
-                valor_crediario = extract_currency_value(crediario_value)
-                if valor_crediario <= 0:
-                    valor_crediario = 0.0
+                temp_valor_crediario = extract_currency_value(crediario_value)
+                if temp_valor_crediario > 0 and temp_valor_crediario < 4000:
+                    valor_crediario = temp_valor_crediario
+                # Skip large values (likely totals)
             
             # Create record if we have any meaningful data
             if valor_venda > 0 or valor_saida > 0 or valor_crediario > 0:
