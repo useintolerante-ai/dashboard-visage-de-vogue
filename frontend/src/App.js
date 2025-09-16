@@ -114,12 +114,12 @@ function App() {
     }
   }
 
-  async function loadMesesDisponiveis() {
+  async function loadFaturamentoDiario(mes = selectedMonth) {
     try {
-      const response = await axios.get(`${API}/meses-disponiveis`);
-      setMesesDisponiveis(response.data.meses);
+      const response = await axios.get(`${API}/faturamento-diario/${mes}`);
+      setFaturamentoDiario(response.data);
     } catch (error) {
-      console.error('Erro ao carregar meses disponíveis:', error);
+      console.error('Erro ao carregar faturamento diário:', error);
     }
   }
 
