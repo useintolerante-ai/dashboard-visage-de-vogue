@@ -510,8 +510,47 @@ function App() {
                     Total de clientes: <span className="text-white font-semibold">{crediarioData.total_clientes}</span>
                   </div>
                   
+                  {/* Column Headers */}
+                  <div className="bg-gray-800 rounded-lg p-4 border border-gray-600">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                      <div className="md:col-span-1">
+                        <button 
+                          className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
+                          onClick={() => handleSort('nome', 'string')}
+                        >
+                          Clientes {getSortIcon('nome')}
+                        </button>
+                      </div>
+                      <div className="md:col-span-1 text-center">
+                        <button 
+                          className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
+                          onClick={() => handleSort('vendas_totais', 'currency')}
+                        >
+                          Total Vendas {getSortIcon('vendas_totais')}
+                        </button>
+                      </div>
+                      <div className="md:col-span-1 text-center">
+                        <button 
+                          className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
+                          onClick={() => handleSort('compras', 'number')}
+                        >
+                          Compras {getSortIcon('compras')}
+                        </button>
+                      </div>
+                      <div className="md:col-span-1 text-center">
+                        <button 
+                          className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
+                          onClick={() => handleSort('saldo_devedor', 'currency')}
+                        >
+                          Saldo Devedor {getSortIcon('saldo_devedor')}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div className="space-y-3">
-                    {crediarioData.clientes.map((cliente) => (
+                    {sortCrediarioData(crediarioData.clientes, sortConfig.key, sortConfig.key === 'vendas_totais' || sortConfig.key === 'saldo_devedor' ? 'currency' : sortConfig.key === 'compras' ? 'number' : 'string')
+                      .map((cliente) => (
                       <div key={cliente.id} className="bg-gray-800 rounded-lg border border-gray-700">
                         {/* Client Header */}
                         <div 
