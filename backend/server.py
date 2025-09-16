@@ -705,23 +705,104 @@ async def get_saidas_data(mes: str):
         logger.error(f"Error getting saidas data: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting saidas data: {str(e)}")
 
-@api_router.get("/meses-disponiveis")
-async def get_meses_disponiveis():
-    """Get available months"""
-    meses = [
-        {"value": "anointeiro", "label": "Ano Inteiro (2025)", "sheet": "ALL"},
-        {"value": "janeiro", "label": "Janeiro", "sheet": "JANEIRO25"},
-        {"value": "fevereiro", "label": "Fevereiro", "sheet": "FEVEREIRO25"},
-        {"value": "marco", "label": "Março", "sheet": "MARÇO25"},
-        {"value": "abril", "label": "Abril", "sheet": "ABRIL25"},
-        {"value": "maio", "label": "Maio", "sheet": "MAIO25"},
-        {"value": "junho", "label": "Junho", "sheet": "JUNHO25"},
-        {"value": "julho", "label": "Julho", "sheet": "JULHO25"},
-        {"value": "agosto", "label": "Agosto", "sheet": "AGOSTO25"},
-        {"value": "setembro", "label": "Setembro", "sheet": "SETEMBRO25"}
-    ]
-    
-    return {"meses": meses}
+@api_router.get("/faturamento-diario/{mes}")
+async def get_faturamento_diario(mes: str):
+    """Get daily sales data for specific month"""
+    try:
+        # Map month names to sheet names
+        month_mapping = {
+            "janeiro": "JANEIRO25",
+            "fevereiro": "FEVEREIRO25", 
+            "marco": "MARÇO25",
+            "abril": "ABRIL25",
+            "maio": "MAIO25",
+            "junho": "JUNHO25",
+            "julho": "JULHO25",
+            "agosto": "AGOSTO25",
+            "setembro": "SETEMBRO25"
+        }
+        
+        if mes.lower() == "anointeiro":
+            # Return combined data from all months
+            vendas_diarias = []
+            for month_name, sheet_name in month_mapping.items():
+                try:
+                    sheets_result = fetch_google_sheets_data(sheet_name)
+                    if sheets_result["success"]:
+                        cashflow_records = process_sheets_data_to_cashflow_records(sheets_result["data"])
+                        
+                        # Group by date
+                        vendas_por_data = {}
+                        for record in cashflow_records:
+                            if record.data_venda and record.valor_venda > 0:
+                                data = record.data_venda
+                                if data not in vendas_por_data:
+                                    vendas_por_data[data] = 0
+                                vendas_por_data[data] += record.valor_venda
+                        
+                        # Add to combined list
+                        for data, valor in vendas_por_data.items():
+                            vendas_diarias.append({
+                                "data": data,
+                                "valor": valor,
+                                "mes": month_name.capitalize()
+                            })
+                except Exception as e:
+                    logger.warning(f"Error processing {sheet_name}: {e}")
+                    continue
+                    
+            # Sort by date
+            vendas_diarias.sort(key=lambda x: x['data'])
+            total_valor = sum(v['valor'] for v in vendas_diarias)
+            
+            return {
+                "vendas_diarias": vendas_diarias,
+                "total_vendas": len(vendas_diarias),
+                "total_valor": total_valor,
+                "mes": "Ano Inteiro (2025)"
+            }
+        
+        else:
+            sheet_name = month_mapping.get(mes.lower(), mes.upper())
+            
+            sheets_result = fetch_google_sheets_data(sheet_name)
+            
+            if not sheets_result["success"]:
+                raise HTTPException(status_code=500, detail=sheets_result["error"])
+            
+            # Process data into cashflow records
+            cashflow_records = process_sheets_data_to_cashflow_records(sheets_result["data"])
+            
+            # Group sales by date
+            vendas_por_data = {}
+            for record in cashflow_records:
+                if record.data_venda and record.valor_venda > 0:
+                    data = record.data_venda
+                    if data not in vendas_por_data:
+                        vendas_por_data[data] = 0
+                    vendas_por_data[data] += record.valor_venda
+            
+            # Convert to list format
+            vendas_diarias = []
+            for data, valor in vendas_por_data.items():
+                vendas_diarias.append({
+                    "data": data,
+                    "valor": valor
+                })
+            
+            # Sort by date
+            vendas_diarias.sort(key=lambda x: x['data'])
+            
+            return {
+                "vendas_diarias": vendas_diarias,
+                "total_vendas": len(vendas_diarias),
+                "total_valor": sum(v['valor'] for v in vendas_diarias),
+                "mes": mes
+            }
+        
+    except Exception as e:
+        logger.error(f"Error getting daily sales data: {e}")
+        raise HTTPException(status_code=500, detail=f"Error getting daily sales data: {str(e)}")
 
 @api_router.get("/sheets-status")
 async def get_sheets_status():
