@@ -471,6 +471,146 @@ function App() {
 
             {/* Chart removed per user request */}
 
+            {/* Crediário Summary and Overdue Clients - Side by Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Crediário Summary */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white text-xl">Resumo Crediário</CardTitle>
+                  <CardDescription className="text-gray-400">
+                    Visão geral dos clientes
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {crediarioData ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-gray-800 p-4 rounded-lg">
+                          <div className="text-gray-400 text-sm">Total Clientes</div>
+                          <div className="text-2xl font-bold text-white">
+                            {crediarioData.total_clientes}
+                          </div>
+                        </div>
+                        <div className="bg-gray-800 p-4 rounded-lg">
+                          <div className="text-gray-400 text-sm">Total em Aberto</div>
+                          <div className="text-2xl font-bold text-yellow-400">
+                            {formatCurrency(crediarioData.clientes.reduce((sum, cliente) => sum + cliente.saldo_devedor, 0))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <button
+                          onClick={() => {
+                            setActiveView('crediario');
+                            loadCrediarioData();
+                          }}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                        >
+                          Ver Detalhes do Crediário
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-gray-400">Carregando dados do crediário...</div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Clientes com Atraso nos Pagamentos */}
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white text-xl">Dias s/ Pagamento</CardTitle>
+                  <CardDescription className="text-gray-400">
+                    Clientes com mais de 30 dias sem pagamento (para cobrança)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {clientesAtrasados ? (
+                    clientesAtrasados.clientes && clientesAtrasados.clientes.length > 0 ? (
+                      <div>
+                        <div className="mb-4 p-4 bg-gray-800 rounded-lg">
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-300">Total de Clientes em Atraso:</span>
+                            <span className="text-red-400 font-bold text-xl">
+                              {clientesAtrasados.clientes.length}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="overflow-x-auto max-h-80">
+                          <table className="w-full border-collapse">
+                            <thead className="sticky top-0 bg-gray-900">
+                              <tr className="border-b border-gray-700">
+                                <th 
+                                  className="text-left p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                                  onClick={() => handleSortAtraso('nome')}
+                                >
+                                  Cliente {getSortIconAtraso('nome')}
+                                </th>
+                                <th 
+                                  className="text-right p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                                  onClick={() => handleSortAtraso('dias_sem_pagamento')}
+                                >
+                                  Dias {getSortIconAtraso('dias_sem_pagamento')}
+                                </th>
+                                <th className="text-right p-3 text-gray-300 font-medium">
+                                  Saldo
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {sortClientesAtrasados(clientesAtrasados.clientes, sortConfigAtraso.key, sortConfigAtraso.direction)
+                                .slice(0, 8)  // Show only first 8 clients to fit in the card
+                                .map((cliente, index) => (
+                                <tr key={index} className="border-b border-gray-700 hover:bg-gray-800">
+                                  <td className="p-2 text-white text-sm">{cliente.nome}</td>
+                                  <td className="p-2 text-right">
+                                    <span className={`font-bold text-sm ${
+                                      cliente.dias_sem_pagamento > 90 ? 'text-red-600' : 
+                                      cliente.dias_sem_pagamento > 60 ? 'text-red-400' : 
+                                      'text-orange-400'
+                                    }`}>
+                                      {cliente.dias_sem_pagamento}d
+                                    </span>
+                                  </td>
+                                  <td className="p-2 text-right text-yellow-400 font-semibold text-sm">
+                                    {formatCurrency(cliente.saldo_devedor)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        
+                        {clientesAtrasados.clientes.length > 8 && (
+                          <div className="text-center mt-3">
+                            <div className="text-gray-400 text-sm">
+                              E mais {clientesAtrasados.clientes.length - 8} clientes...
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="text-green-400 text-lg font-semibold">
+                          🎉 Nenhum cliente com atraso!
+                        </div>
+                        <div className="text-gray-400 mt-2">
+                          Todos os clientes estão em dia.
+                        </div>
+                      </div>
+                    )
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-gray-400">Carregando dados de atraso...</div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Faturamento Diário Table */}
             {faturamentoDiario && faturamentoDiario.vendas_diarias && faturamentoDiario.vendas_diarias.length > 0 && (
               <Card className="bg-gray-900 border-gray-700">
