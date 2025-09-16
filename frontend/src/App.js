@@ -22,6 +22,8 @@ function App() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [expandedCliente, setExpandedCliente] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+  const [clientesAtrasados, setClientesAtrasados] = useState(null);
+  const [sortConfigAtraso, setSortConfigAtraso] = useState({ key: 'dias_sem_pagamento', direction: 'desc' });
 
   async function syncGoogleSheets() {
     setIsSyncing(true);
