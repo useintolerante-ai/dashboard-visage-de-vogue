@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./com
 import { Button } from "./components/ui/button";
 import { Badge } from "./components/ui/badge";
 import { RefreshCw, Cloud, TrendingUp, TrendingDown, DollarSign, ShoppingCart, CreditCard, Target } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
