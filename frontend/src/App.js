@@ -70,11 +70,13 @@ function App() {
     loadDashboardData();
     loadSheetsStatus();
     loadMesesDisponiveis();
+    loadFaturamentoDiario();
     
     // Auto refresh every 5 minutes
     const interval = setInterval(() => {
       loadDashboardData();
       loadSheetsStatus();
+      loadFaturamentoDiario();
     }, 300000); // 5 minutes
     
     return () => clearInterval(interval);
