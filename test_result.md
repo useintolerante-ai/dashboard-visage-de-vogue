@@ -101,3 +101,74 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+## user_problem_statement: 
+Concluir o dashboard, corrigir crediário para mostrar compras (data + valor) ao invés de pagamentos, remover gráfico de faturamento vs saída, e corrigir valores dos KPIs da visão geral
+
+## backend:
+  - task: "Fix crediario purchase history extraction"
+    implemented: true
+    working: "testing"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "testing"
+        - agent: "main"
+        - comment: "Implemented real purchase history extraction from Google Sheets instead of mock data. Updated get_client_purchase_history function to search through monthly sheets for actual client purchases."
+
+  - task: "Improve KPI calculations in dashboard summary"
+    implemented: true
+    working: "testing"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "testing"
+        - agent: "main"
+        - comment: "Created new extract_current_month_data function for accurate KPI calculations. Updated dashboard-summary endpoint to use improved data extraction."
+
+## frontend:
+  - task: "Remove faturamento vs saidas chart"
+    implemented: true
+    working: true
+    file: "App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "main"
+        - comment: "Successfully removed chart component and related imports. Chart no longer appears in UI."
+
+  - task: "Update crediario text from payments to purchases"
+    implemented: true
+    working: true
+    file: "App.js"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "main"
+        - comment: "Updated text labels from 'Histórico de Pagamentos' to 'Histórico de Compras' and related text changes."
+
+## metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+## test_plan:
+  current_focus:
+    - "Fix crediario purchase history extraction"
+    - "Improve KPI calculations in dashboard summary"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+## agent_communication:
+    - agent: "main"
+    - message: "Implemented major fixes: 1) Corrected crediario to show actual purchase history from sheets instead of mock data, 2) Improved KPI calculations with new extract_current_month_data function, 3) Removed faturamento vs saidas chart as requested, 4) Updated UI text from payments to purchases. Backend needs testing to verify crediario data extraction works correctly."
