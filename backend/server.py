@@ -780,7 +780,7 @@ def is_valid_date_format(date_str: str) -> bool:
 def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
     """
     Extract and calculate KPIs from a specific month's sheet
-    Only count rows with valid date and value, exclude totals - simplified and more accurate
+    Using the proven logic that worked for Janeiro - simple but effective
     """
     try:
         sheets_result = fetch_google_sheets_data(sheet_name)
@@ -810,31 +810,25 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
         total_recebido_crediario = 0
         num_vendas = 0
         
-        # Process each row with simpler and more accurate filtering
+        # Process each row using the logic that worked for Janeiro
         for row_index, row in enumerate(rows):
             if row_index == 0 or not row:  # Skip header
                 continue
                 
             try:
                 # Get date from column 0 for validation
-                data_cell = str(row[0]).strip() if len(row) > 0 and row[0] else ''
+                data_cell = str(row[0]).strip().lower() if len(row) > 0 and row[0] else ''
                 
-                # Simple but effective filtering:
-                # 1. Must have a valid date format (DD/MM/YYYY or DD/MM/YY)
-                # 2. Exclude rows that contain "TOTAL", "SOMA", etc.
-                # 3. Exclude empty date cells
-                
-                # Check for total/sum keywords in the entire row
-                row_text = ' '.join([str(cell).upper() for cell in row if cell]).strip()
-                if ('TOTAL' in row_text or 'SOMA' in row_text or 'SUBTOTAL' in row_text or 
-                    'SALDO DEVEDOR' in row_text or 'SALDO INICIAL' in row_text):
+                # Skip total rows, empty dates, and non-date entries
+                # This is the logic that worked correctly for Janeiro
+                if (not data_cell or 
+                    'total' in data_cell or 
+                    'soma' in data_cell or 
+                    'subtotal' in data_cell or
+                    not ('/' in data_cell and any(c.isdigit() for c in data_cell))):
                     continue
                 
-                # Validate date format - must be DD/MM/YYYY or DD/MM/YY
-                if not data_cell or not is_valid_date_format(data_cell):
-                    continue
-                
-                # Column 1: VENDAS (faturamento)
+                # Column 1: VENDAS (faturamento) - only count if row has valid date and non-zero value
                 vendas_str = str(row[1]).strip() if len(row) > 1 and row[1] else ''
                 if vendas_str and 'R$' in vendas_str and 'R$  -' not in vendas_str:
                     valor_venda = extract_currency_value(vendas_str)
@@ -843,21 +837,27 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                         num_vendas += 1
                         logger.debug(f"Added venda: {data_cell} - {vendas_str} -> {valor_venda} (row {row_index})")
                 
-                # Column 11: SAÍDA R$ (saídas)
+                # Column 11: SAÍDA R$ (saídas) - only count if row has valid date and non-zero value
+                # Exclude very high values that are likely totals (>15000 for safety)
                 saidas_str = str(row[11]).strip() if len(row) > 11 and row[11] else ''
                 if saidas_str and 'R$' in saidas_str and 'R$  -' not in saidas_str:
                     valor_saida = extract_currency_value(saidas_str)
-                    if valor_saida > 0:
+                    if valor_saida > 0 and valor_saida < 15000:  # Exclude very high values that are totals
                         total_saidas += valor_saida
                         logger.debug(f"Added saida: {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
+                    elif valor_saida >= 15000:
+                        logger.debug(f"Skipped large saida (likely total): {data_cell} - {saidas_str} -> {valor_saida} (row {row_index})")
                 
-                # Column 16: PAGAMENTOS CREDIÁRIO (recebido crediário)
+                # Column 16: PAGAMENTOS CREDIÁRIO (recebido crediário) - only count if row has valid date and non-zero value
+                # Exclude high values that are likely totals (>4000 for safety)
                 crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
                 if crediario_str and 'R$' in crediario_str and 'R$  -' not in crediario_str:
                     valor_crediario = extract_currency_value(crediario_str)
-                    if valor_crediario > 0:
+                    if valor_crediario > 0 and valor_crediario < 4000:  # Exclude high values that are totals
                         total_recebido_crediario += valor_crediario
                         logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                    elif valor_crediario >= 4000:
+                        logger.debug(f"Skipped large crediario (likely total): {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
                         
             except Exception as e:
                 logger.warning(f"Error processing row {row_index} in {sheet_name}: {e}")
