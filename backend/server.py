@@ -622,17 +622,17 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
                 if valor_venda <= 0:
                     valor_venda = 0.0
             
-            # Saidas - same thresholds as extract_current_month_data (exclude >15000)
+            # Saidas - same thresholds as extract_current_month_data (exclude >12000)
             if saida_value and 'R$' in saida_value and 'R$  -' not in saida_value:
                 temp_valor_saida = extract_currency_value(saida_value)
-                if temp_valor_saida > 0 and temp_valor_saida < 15000:
+                if temp_valor_saida > 0 and temp_valor_saida < 12000:
                     valor_saida = temp_valor_saida
                 # Skip large values (likely totals)
             
-            # Crediario - same thresholds as extract_current_month_data (exclude >4000)
+            # Crediario - same thresholds as extract_current_month_data (exclude >3600)
             if crediario_value and 'R$' in crediario_value and 'R$  -' not in crediario_value:
                 temp_valor_crediario = extract_currency_value(crediario_value)
-                if temp_valor_crediario > 0 and temp_valor_crediario < 4000:
+                if temp_valor_crediario > 0 and temp_valor_crediario < 3600:
                     valor_crediario = temp_valor_crediario
                 # Skip large values (likely totals)
             
