@@ -312,22 +312,12 @@ def fetch_google_sheets_data(sheet_name: str = "MARÇO25") -> Dict[str, Any]:
         if not values:
             return {"success": False, "error": "No data found in sheet"}
         
-        # Convert to structured data
-        headers = values[0] if values else []
-        rows = values[1:] if len(values) > 1 else []
-        
-        structured_data = []
-        for row in rows:
-            # Pad row with empty strings if shorter than headers
-            padded_row = row + [''] * (len(headers) - len(row))
-            row_dict = dict(zip(headers, padded_row))
-            structured_data.append(row_dict)
-        
+        # Return raw values array instead of converting to dict
         return {
             "success": True,
-            "data": structured_data,
-            "headers": headers,
-            "total_rows": len(structured_data),
+            "data": values,  # Raw array data
+            "headers": values[0] if values else [],
+            "total_rows": len(values),
             "sheet_name": sheet_name
         }
         
