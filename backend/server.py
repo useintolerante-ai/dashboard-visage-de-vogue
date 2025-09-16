@@ -655,6 +655,7 @@ async def get_saidas_data(mes: str):
 async def get_meses_disponiveis():
     """Get available months"""
     meses = [
+        {"value": "anointeiro", "label": "Ano Inteiro (2025)", "sheet": "ALL"},
         {"value": "janeiro", "label": "Janeiro", "sheet": "JANEIRO25"},
         {"value": "fevereiro", "label": "Fevereiro", "sheet": "FEVEREIRO25"},
         {"value": "marco", "label": "Março", "sheet": "MARÇO25"},
