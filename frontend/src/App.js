@@ -573,7 +573,7 @@ function App() {
                           className="p-4 hover:bg-gray-700 cursor-pointer transition-colors"
                           onClick={() => setExpandedCliente(expandedCliente === cliente.id ? null : cliente.id)}
                         >
-                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
                             {/* Client Name */}
                             <div className="md:col-span-1">
                               <h3 className="text-white font-semibold text-lg">{cliente.nome}</h3>
@@ -600,6 +600,14 @@ function App() {
                               <div className="text-gray-400 text-sm">Saldo Devedor</div>
                               <div className="text-red-400 font-bold text-lg">
                                 {formatCurrency(cliente.saldo_devedor)}
+                              </div>
+                            </div>
+                            
+                            {/* 60+ Days Without Payment */}
+                            <div className="md:col-span-1 text-center">
+                              <div className="text-gray-400 text-sm">&gt;60 dias s/ pagamento</div>
+                              <div className={`font-bold text-lg ${cliente.atrasado_60_dias ? 'text-red-500' : 'text-green-500'}`}>
+                                {cliente.atrasado_60_dias ? 'SIM' : 'NÃO'}
                               </div>
                             </div>
                           </div>
