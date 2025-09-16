@@ -401,13 +401,24 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
 
 def extract_currency_value(value_str):
     """Extract numeric value from currency string like 'R$ 1.130,00'"""
-    if not value_str or value_str == '':
+    if not value_str or value_str == '' or str(value_str).strip() == '':
         return 0.0
     
     # Convert to string and clean
-    clean_str = str(value_str).replace('R$', '').replace(' ', '').replace('.', '').replace(',', '.')
+    clean_str = str(value_str).replace('R$', '').replace(' ', '')
     
-    # Remove any non-numeric characters except dot and minus
+    # Handle Brazilian number format: 1.234,56 -> 1234.56
+    if ',' in clean_str and '.' in clean_str:
+        # Format like 1.234,56
+        clean_str = clean_str.replace('.', '').replace(',', '.')
+    elif ',' in clean_str and '.' not in clean_str:
+        # Format like 1234,56
+        clean_str = clean_str.replace(',', '.')
+    # If only dots, assume it's thousands separator: 1.234 -> 1234
+    elif '.' in clean_str and len(clean_str.split('.')[-1]) == 3:
+        clean_str = clean_str.replace('.', '')
+    
+    # Remove any remaining non-numeric characters except dot and minus
     clean_str = re.sub(r'[^\d.-]', '', clean_str)
     
     try:
