@@ -154,11 +154,21 @@ button:hover {
   
   .text-5xl {
     font-size: 2rem;
+    line-height: 1.2;
   }
   
   .text-2xl {
     font-size: 1.5rem;
   }
+}
+
+/* Fix title wrapping and spacing */
+.dashboard-title {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1.1;
+  word-break: keep-all;
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
 
 /* Enhanced focus states */
