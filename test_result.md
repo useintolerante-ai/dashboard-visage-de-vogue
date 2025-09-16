@@ -167,6 +167,18 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
         - comment: "Added comprehensive caching system with fetch_google_sheets_data_cached function. Implemented 5-minute TTL for sheet data and 10-minute TTL for crediario data. Added rate limiting delays to prevent 429 quota errors."
 
 ## frontend:
+  - task: "Add payment history display alongside purchase history"
+    implemented: true
+    working: false
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+        - agent: "main"
+        - comment: "Modified the crediario client details to display both purchase and payment history side by side. Added payment history table with blue coloring to differentiate from green purchase history. Created grid layout for better organization."
+
   - task: "Remove faturamento vs saidas chart"
     implemented: true
     working: true
