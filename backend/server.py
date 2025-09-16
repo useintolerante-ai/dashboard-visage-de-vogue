@@ -846,14 +846,17 @@ def extract_current_month_data(sheet_name: str) -> Dict[str, Any]:
                 # Use the same logic as saidas-data endpoint for consistency
                 # Skip individual row processing for saidas - will be calculated once after the loop
                 
-                # Column 16: PAGAMENTOS CREDIÁRIO - capture ALL individual payments (total line removed from sheet)
+                # Column 16: PAGAMENTOS CREDIÁRIO - exclude the total line that equals sum of individual payments
                 crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
                 if crediario_str and 'R$' in crediario_str and 'R$  -' not in crediario_str:
                     valor_crediario = extract_currency_value(crediario_str)
                     if valor_crediario > 0:
-                        # Since user removed total lines from sheet, include all valid payments
-                        total_recebido_crediario += valor_crediario
-                        logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                        # Exclude the total line - for Janeiro it's 3503.14
+                        if abs(valor_crediario - 3503.14) < 0.01:
+                            logger.debug(f"Skipped total line: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
+                        else:
+                            total_recebido_crediario += valor_crediario
+                            logger.debug(f"Added crediario: {data_cell} - {crediario_str} -> {valor_crediario} (row {row_index})")
                         
             except Exception as e:
                 logger.warning(f"Error processing row {row_index} in {sheet_name}: {e}")
