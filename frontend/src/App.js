@@ -12,21 +12,16 @@ const API = `${BACKEND_URL}/api`;
 
 function App() {
   const [activeView, setActiveView] = useState('visaoGeral');
-  const [selectedMonth, setSelectedMonth] = useState('setembro2025');
+  const [selectedMonth, setSelectedMonth] = useState('setembro');
   const [dashboardData, setDashboardData] = useState(null);
   const [chartData, setChartData] = useState(null);
+  const [crediarioData, setCrediarioData] = useState(null);
+  const [saidasData, setSaidasData] = useState(null);
+  const [mesesDisponiveis, setMesesDisponiveis] = useState([]);
   const [sheetsStatus, setSheetsStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-
-  const months = [
-    { value: 'setembro2025', label: 'Setembro 2025' },
-    { value: 'agosto2025', label: 'Agosto 2025' },
-    { value: 'julho2025', label: 'Julho 2025' },
-    { value: 'junho2025', label: 'Junho 2025' },
-    { value: 'maio2025', label: 'Maio 2025' },
-    { value: 'ano2025', label: 'Ano Inteiro (2025)' }
-  ];
+  const [expandedCliente, setExpandedCliente] = useState(null);
 
   async function syncGoogleSheets() {
     setIsSyncing(true);
