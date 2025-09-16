@@ -572,7 +572,7 @@ def fetch_google_sheets_data(sheet_name: str = "MARÇO25") -> Dict[str, Any]:
 def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[CashFlowData]:
     """
     Convert Google Sheets data to CashFlowData records based on actual sheet structure
-    Extract individual transactions and totals correctly
+    Extract individual transactions and totals correctly - with same filtering logic as extract_current_month_data
     """
     cashflow_records = []
     
@@ -583,6 +583,17 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
         try:
             # Skip empty rows or header row
             if not row or index == 0:
+                continue
+            
+            # Apply same filtering logic as extract_current_month_data
+            data_cell = str(row[0]).strip().lower() if len(row) > 0 and row[0] else ''
+            
+            # Skip total rows, empty dates, and non-date entries
+            if (not data_cell or 
+                'total' in data_cell or 
+                'soma' in data_cell or 
+                'subtotal' in data_cell or
+                not ('/' in data_cell and any(c.isdigit() for c in data_cell))):
                 continue
             
             # Row structure based on headers:
@@ -601,10 +612,28 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
             data_pagamento = row[14].strip() if len(row) > 14 and row[14] else ''
             crediario_value = row[16].strip() if len(row) > 16 and row[16] else ''
             
-            # Extract currency values
-            valor_venda = extract_currency_value(vendas_value) if vendas_value else 0.0
-            valor_saida = extract_currency_value(saida_value) if saida_value else 0.0
-            valor_crediario = extract_currency_value(crediario_value) if crediario_value else 0.0
+            # Extract currency values with filtering for valid values only
+            valor_venda = 0.0
+            valor_saida = 0.0
+            valor_crediario = 0.0
+            
+            # Vendas - filter out negative values and apply same logic
+            if vendas_value and 'R$' in vendas_value and 'R$  -' not in vendas_value:
+                valor_venda = extract_currency_value(vendas_value)
+                if valor_venda <= 0:
+                    valor_venda = 0.0
+            
+            # Saidas - filter out high values (totals) and negative values
+            if saida_value and 'R$' in saida_value and 'R$  -' not in saida_value:
+                temp_valor_saida = extract_currency_value(saida_value)
+                if temp_valor_saida > 0 and temp_valor_saida < 10000:  # Same filter as extract_current_month_data
+                    valor_saida = temp_valor_saida
+            
+            # Crediario - filter out high values (totals) and negative values
+            if crediario_value and 'R$' in crediario_value and 'R$  -' not in crediario_value:
+                temp_valor_crediario = extract_currency_value(crediario_value)
+                if temp_valor_crediario > 0 and temp_valor_crediario < 3000:  # Same filter as extract_current_month_data
+                    valor_crediario = temp_valor_crediario
             
             # Create record if we have any meaningful data
             if valor_venda > 0 or valor_saida > 0 or valor_crediario > 0:
