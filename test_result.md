@@ -103,7 +103,7 @@
 #====================================================================================================
 
 ## user_problem_statement: 
-Concluir o dashboard, corrigir crediário para mostrar compras (data + valor) ao invés de pagamentos, remover gráfico de faturamento vs saída, e corrigir valores dos KPIs da visão geral
+Corrigir saldo devedor dos clientes do crediário que não estão sendo atualizados corretamente (ex: Daiane Defante) e adicionar histórico de pagamentos junto com o histórico de compras na aba Crediário.
 
 ## backend:
   - task: "Fix crediario purchase history extraction"
