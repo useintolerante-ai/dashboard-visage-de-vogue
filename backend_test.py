@@ -255,24 +255,26 @@ def main():
     print("\n📡 PHASE 1: Basic API Connectivity")
     tester.test_root_endpoint()
     
-    # Test 2: Empty state endpoints
-    print("\n📊 PHASE 2: Empty State Testing")
-    tester.test_dashboard_summary_empty()
-    tester.test_chart_data_empty()
-    tester.test_sales_data_empty()
+    # Test 2: Dashboard Summary KPIs for different months
+    print("\n📊 PHASE 2: Dashboard Summary KPI Testing")
+    tester.test_dashboard_summary_janeiro()
+    tester.test_dashboard_summary_marco()
+    tester.test_dashboard_summary_setembro()
+    tester.test_dashboard_summary_anointeiro()
     
-    # Test 3: Excel upload functionality
-    print("\n📤 PHASE 3: Excel Upload Testing")
-    upload_success, _ = tester.test_excel_upload()
+    # Test 3: Crediario Data (Purchase History)
+    print("\n💳 PHASE 3: Crediario Purchase History Testing")
+    tester.test_crediario_data()
     
-    # Test 4: Data populated endpoints (only if upload was successful)
-    if upload_success:
-        print("\n📈 PHASE 4: Data Population Testing")
-        tester.test_dashboard_summary_with_data()
-        tester.test_chart_data_with_data()
-        tester.run_test("Sales Data (With Data)", "GET", "sales-data", 200)
-    else:
-        print("\n⚠️  PHASE 4: Skipped (Upload failed)")
+    # Test 4: Other endpoints
+    print("\n📈 PHASE 4: Other Endpoints Testing")
+    tester.test_saidas_data_anointeiro()
+    tester.test_faturamento_diario_anointeiro()
+    tester.test_meses_disponiveis()
+    
+    # Test 5: Google Sheets Integration
+    print("\n🔄 PHASE 5: Google Sheets Integration Testing")
+    tester.test_sync_sheets()
     
     # Print final results
     print("\n" + "=" * 60)
@@ -280,6 +282,12 @@ def main():
     print(f"Tests Run: {tester.tests_run}")
     print(f"Tests Passed: {tester.tests_passed}")
     print(f"Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    # Print critical failures
+    if tester.critical_failures:
+        print(f"\n❌ CRITICAL FAILURES:")
+        for failure in tester.critical_failures:
+            print(f"   • {failure}")
     
     if tester.tests_passed == tester.tests_run:
         print("🎉 All backend tests passed!")
