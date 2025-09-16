@@ -382,6 +382,44 @@ def fetch_saidas_data(sheet_name: str) -> Dict[str, Any]:
         logger.error(f"Error fetching saidas data: {str(e)}")
         return {"success": False, "error": f"Error: {str(e)}"}
 
+def fetch_google_sheets_data_cached(sheet_name: str = "MARÇO25") -> Dict[str, Any]:
+    """
+    Fetch data from Google Sheets with caching to avoid rate limits
+    """
+    current_time = datetime.now(timezone.utc)
+    
+    # Check if we have cached data for this sheet
+    if sheet_name in sheets_cache["sheet_cache"]:
+        cache_entry = sheets_cache["sheet_cache"][sheet_name]
+        if cache_entry["last_updated"]:
+            elapsed = (current_time - cache_entry["last_updated"]).total_seconds()
+            if elapsed < 300:  # 5 minutes cache
+                logger.info(f"Using cached data for sheet {sheet_name}")
+                return cache_entry["data"]
+    
+    # Fetch fresh data
+    try:
+        time.sleep(0.5)  # Rate limiting delay
+        result = fetch_google_sheets_data(sheet_name)
+        
+        # Cache the result
+        sheets_cache["sheet_cache"][sheet_name] = {
+            "data": result,
+            "last_updated": current_time
+        }
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error fetching {sheet_name}: {e}")
+        # Return cached data if available, even if expired
+        if (sheet_name in sheets_cache["sheet_cache"] and 
+            sheets_cache["sheet_cache"][sheet_name]["data"]):
+            logger.warning(f"Returning expired cache for {sheet_name}")
+            return sheets_cache["sheet_cache"][sheet_name]["data"]
+        
+        return {"success": False, "error": str(e)}
+
 def fetch_google_sheets_data(sheet_name: str = "MARÇO25") -> Dict[str, Any]:
     """
     Fetch data from Google Sheets using the Sheets API
