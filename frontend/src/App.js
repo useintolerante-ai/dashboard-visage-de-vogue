@@ -139,6 +139,10 @@ function App() {
 
   const handleMonthChange = (mes) => {
     setSelectedMonth(mes);
+    
+    // Reload dashboard data for new month
+    loadDashboardData(mes);
+    
     if (activeView === 'saidas') {
       loadSaidasData(mes);
     }
