@@ -427,57 +427,105 @@ async def trigger_sheets_sync(background_tasks: BackgroundTasks):
     }
 
 @api_router.get("/dashboard-summary", response_model=DashboardSummary)
-async def get_dashboard_summary(background_tasks: BackgroundTasks, auto_sync: bool = True):
-    """Get dashboard summary statistics with automatic sync"""
+async def get_dashboard_summary(mes: str = "marco", background_tasks: BackgroundTasks = None, auto_sync: bool = True):
+    """Get dashboard summary statistics for specific month or year"""
     try:
         # Trigger sync if needed
         if auto_sync and should_sync_sheets():
             background_tasks.add_task(sync_google_sheets_data)
         
-        cashflow_data = await db.cashflow_data.find().to_list(1000)
-        
-        if not cashflow_data:
-            # If no data, try immediate sync
-            if auto_sync:
-                await sync_google_sheets_data()
-                cashflow_data = await db.cashflow_data.find().to_list(1000)
-        
-        if not cashflow_data:
+        if mes.lower() == "ano" or mes.lower() == "anointeiro":
+            # Load data from all months
+            all_months = ["JANEIRO25", "FEVEREIRO25", "MARÇO25", "ABRIL25", "MAIO25", 
+                         "JUNHO25", "JULHO25", "AGOSTO25", "SETEMBRO25"]
+            
+            total_faturamento = 0
+            total_saidas = 0
+            total_recebido_crediario = 0
+            total_num_vendas = 0
+            
+            for month_sheet in all_months:
+                try:
+                    sheets_result = fetch_google_sheets_data(month_sheet)
+                    if sheets_result["success"]:
+                        cashflow_records = process_sheets_data_to_cashflow_records(sheets_result["data"])
+                        
+                        if cashflow_records:
+                            df = pd.DataFrame([record.dict() for record in cashflow_records])
+                            total_faturamento += df['valor_venda'].sum()
+                            total_saidas += df['valor_saida'].sum()
+                            total_recebido_crediario += df['valor_crediario'].sum()
+                            total_num_vendas += len(df[df['valor_venda'] > 0])
+                except Exception as e:
+                    logger.warning(f"Error processing {month_sheet}: {e}")
+                    continue
+            
             return DashboardSummary(
-                faturamento=0,
-                saidas=0,
-                lucro_bruto=0,
-                recebido_crediario=0,
-                a_receber_crediario=0,
-                num_vendas=0,
-                data_source="none",
-                last_sync=None
+                faturamento=total_faturamento,
+                saidas=total_saidas,
+                lucro_bruto=total_faturamento - total_saidas,
+                recebido_crediario=total_recebido_crediario,
+                a_receber_crediario=0,  # Will calculate properly later
+                num_vendas=total_num_vendas,
+                data_source="sheets_yearly",
+                last_sync=sheets_cache["last_updated"].isoformat() if sheets_cache["last_updated"] else None
             )
         
-        # Calculate summary statistics
-        df = pd.DataFrame(cashflow_data)
-        
-        faturamento = df['valor_venda'].sum()
-        saidas = df['valor_saida'].sum()
-        lucro_bruto = faturamento - saidas
-        recebido_crediario = df['valor_crediario'].sum()
-        
-        # Calculate A Receber (estimate as 30% of credit sales)
-        vendas_crediario = df[df['forma_pagamento'].str.contains('crediário', case=False, na=False)]['valor_venda'].sum() if 'forma_pagamento' in df.columns else 0
-        a_receber_crediario = max(0, vendas_crediario - recebido_crediario)
-        
-        num_vendas = len(df[df['valor_venda'] > 0])
-        
-        return DashboardSummary(
-            faturamento=faturamento,
-            saidas=saidas,
-            lucro_bruto=lucro_bruto,
-            recebido_crediario=recebido_crediario,
-            a_receber_crediario=a_receber_crediario,
-            num_vendas=num_vendas,
-            data_source="sheets",
-            last_sync=sheets_cache["last_updated"].isoformat() if sheets_cache["last_updated"] else None
-        )
+        else:
+            # Load data for specific month
+            month_mapping = {
+                "janeiro": "JANEIRO25",
+                "fevereiro": "FEVEREIRO25", 
+                "marco": "MARÇO25",
+                "abril": "ABRIL25",
+                "maio": "MAIO25",
+                "junho": "JUNHO25",
+                "julho": "JULHO25",
+                "agosto": "AGOSTO25",
+                "setembro": "SETEMBRO25"
+            }
+            
+            sheet_name = month_mapping.get(mes.lower(), "MARÇO25")
+            
+            # Fetch specific month data
+            sheets_result = fetch_google_sheets_data(sheet_name)
+            
+            if not sheets_result["success"]:
+                logger.error(f"Failed to fetch sheets data for {mes}: {sheets_result['error']}")
+                return DashboardSummary(
+                    faturamento=0, saidas=0, lucro_bruto=0, recebido_crediario=0,
+                    a_receber_crediario=0, num_vendas=0, data_source="none", last_sync=None
+                )
+            
+            # Process data into cashflow records
+            cashflow_records = process_sheets_data_to_cashflow_records(sheets_result["data"])
+            
+            if not cashflow_records:
+                return DashboardSummary(
+                    faturamento=0, saidas=0, lucro_bruto=0, recebido_crediario=0,
+                    a_receber_crediario=0, num_vendas=0, data_source="sheets", last_sync=None
+                )
+            
+            # Calculate summary statistics
+            df = pd.DataFrame([record.dict() for record in cashflow_records])
+            
+            faturamento = df['valor_venda'].sum()
+            saidas = df['valor_saida'].sum()
+            lucro_bruto = faturamento - saidas
+            recebido_crediario = df['valor_crediario'].sum()
+            a_receber_crediario = 0  # Will implement proper calculation later
+            num_vendas = len(df[df['valor_venda'] > 0])
+            
+            return DashboardSummary(
+                faturamento=faturamento,
+                saidas=saidas,
+                lucro_bruto=lucro_bruto,
+                recebido_crediario=recebido_crediario,
+                a_receber_crediario=a_receber_crediario,
+                num_vendas=num_vendas,
+                data_source="sheets",
+                last_sync=sheets_cache["last_updated"].isoformat() if sheets_cache["last_updated"] else None
+            )
         
     except Exception as e:
         logger.error(f"Error getting dashboard summary: {e}")
