@@ -332,27 +332,23 @@ def fetch_google_sheets_data(sheet_name: str = "MARÇO25") -> Dict[str, Any]:
 def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[CashFlowData]:
     """
     Convert Google Sheets data to CashFlowData records based on actual sheet structure
-    Look for summary totals instead of individual transactions
+    Extract individual transactions and totals correctly
     """
     cashflow_records = []
     
     # sheets_data comes as: {"values": [[row1], [row2], ...]}
     rows = sheets_data if isinstance(sheets_data, list) else sheets_data.get('values', [])
     
-    # Look for summary rows (usually have empty first column but values in second column)
-    total_faturamento = 0.0
-    total_saidas = 0.0
-    total_crediario = 0.0
-    
-    individual_sales = []
-    individual_expenses = []
-    individual_credits = []
-    
     for index, row in enumerate(rows):
         try:
             # Skip empty rows or header row
             if not row or index == 0:
                 continue
+            
+            # Row structure based on headers:
+            # [0]=DATA DE VENDAS, [1]=VENDAS, [4]=FORMA DE PAGAMENTO, 
+            # [9]=DATA DE SAÍDAS, [10]=Descrição da Saída, [11]=SAÍDA R$, 
+            # [14]=DATA DE PAGAMENTO, [16]=PAGAMENTOS CREDIÁRIO
             
             data_venda = row[0].strip() if len(row) > 0 and row[0] else ''
             vendas_value = row[1].strip() if len(row) > 1 and row[1] else ''
@@ -370,46 +366,25 @@ def process_sheets_data_to_cashflow_records(sheets_data: List[Dict]) -> List[Cas
             valor_saida = extract_currency_value(saida_value) if saida_value else 0.0
             valor_crediario = extract_currency_value(crediario_value) if crediario_value else 0.0
             
-            # Look for summary totals (empty first column, but has values)
-            if not data_venda and valor_venda > 1000:  # Likely a total
-                total_faturamento = valor_venda
-            elif data_venda and valor_venda > 0 and valor_venda < 10000:  # Individual sale
-                individual_sales.append(valor_venda)
-            
-            if not data_saida and valor_saida > 1000:  # Likely a total
-                total_saidas = valor_saida
-            elif data_saida and valor_saida > 0:  # Individual expense
-                individual_expenses.append(valor_saida)
-            
-            if not data_pagamento and valor_crediario > 1000:  # Likely a total
-                total_crediario = valor_crediario
-            elif data_pagamento and valor_crediario > 0:  # Individual credit payment
-                individual_credits.append(valor_crediario)
+            # Create record if we have any meaningful data
+            if valor_venda > 0 or valor_saida > 0 or valor_crediario > 0:
+                cashflow_record = CashFlowData(
+                    data_venda=data_venda if data_venda else None,
+                    valor_venda=valor_venda,
+                    forma_pagamento=forma_pagamento if forma_pagamento else None,
+                    data_saida=data_saida if data_saida else None,
+                    descricao_saida=descricao_saida if descricao_saida else None,
+                    valor_saida=valor_saida,
+                    data_pagamento=data_pagamento if data_pagamento else None,
+                    valor_crediario=valor_crediario,
+                    mes="SHEET_MONTH",
+                    source="sheets"
+                )
+                cashflow_records.append(cashflow_record)
                 
         except Exception as e:
             logger.warning(f"Error processing row {index}: {e}")
             continue
-    
-    # Use totals if found, otherwise sum individuals
-    final_faturamento = total_faturamento if total_faturamento > 0 else sum(individual_sales)
-    final_saidas = total_saidas if total_saidas > 0 else sum(individual_expenses)
-    final_crediario = total_crediario if total_crediario > 0 else sum(individual_credits)
-    
-    # Create a single summary record
-    if final_faturamento > 0 or final_saidas > 0 or final_crediario > 0:
-        cashflow_record = CashFlowData(
-            data_venda=None,
-            valor_venda=final_faturamento,
-            forma_pagamento=None,
-            data_saida=None,
-            descricao_saida=None,
-            valor_saida=final_saidas,
-            data_pagamento=None,
-            valor_crediario=final_crediario,
-            mes="SHEET_MONTH",
-            source="sheets"
-        )
-        cashflow_records.append(cashflow_record)
     
     return cashflow_records
 
