@@ -106,6 +106,30 @@
 Corrigir saldo devedor dos clientes do crediário que não estão sendo atualizados corretamente (ex: Daiane Defante) e adicionar histórico de pagamentos junto com o histórico de compras na aba Crediário.
 
 ## backend:
+  - task: "Fix saldo devedor calculation with improved fuzzy matching"
+    implemented: true
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+        - agent: "main"
+        - comment: "Implemented improved fuzzy matching using rapidfuzz library for better client name matching in saldo devedor calculation. Enhanced matching with 75% similarity threshold and fallback to partial/word-based matching."
+
+  - task: "Add payment history alongside purchase history"
+    implemented: true
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+        - agent: "main"
+        - comment: "Created get_client_payment_history function to extract payment data from columns 14 (DATA DE PAGAMENTO) and 16 (PAGAMENTOS CREDIÁRIO). Modified fetch_crediario_data to include payment history for each client. Added pagamentos field to ClienteCrediario model."
+
   - task: "Fix crediario purchase history extraction"
     implemented: true
     working: true
