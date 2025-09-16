@@ -443,7 +443,7 @@ function App() {
                         <div className="mt-2 p-4 bg-gray-800 rounded-lg">
                           {cliente.compras && cliente.compras.length > 0 ? (
                             <div>
-                              <h4 className="text-white font-semibold mb-3">Histórico de Pagamentos:</h4>
+                              <h4 className="text-white font-semibold mb-3">Histórico de Compras:</h4>
                               <div className="overflow-x-auto">
                                 <table className="w-full border-collapse">
                                   <thead>
