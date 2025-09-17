@@ -122,38 +122,95 @@ class SaidaData(BaseModel):
 
 def calculate_days_since_last_payment(pagamentos: List[Dict[str, Any]]) -> tuple[int, bool]:
     """
-    Calculate days since last payment and if client is overdue (>60 days)
+    Calculate days since last payment based on months (30 days per month)
+    If payment in last month = 30 days, 2 months ago = 60 days, etc.
     Returns: (days_since_last_payment, is_overdue_60_days)
     """
     if not pagamentos:
         return 999, True  # No payments = definitely overdue
     
-    # Find the most recent payment date
-    latest_payment_date = None
-    current_date = datetime.now().date()
+    # Current month mapping
+    current_month = datetime.now().month
+    current_year = datetime.now().year
     
-    for pagamento in pagamentos:
-        try:
-            # Parse Brazilian date format (DD/MM/YYYY)
-            date_str = pagamento['data']
-            if '/' in date_str:
-                day, month, year = date_str.split('/')
-                payment_date = datetime(int(year), int(month), int(day)).date()
+    # Month mapping for 2025
+    month_map = {
+        "JANEIRO25": 1, "FEVEREIRO25": 2, "MARÇO25": 3, "ABRIL25": 4, 
+        "MAIO25": 5, "JUNHO25": 6, "JULHO25": 7, "AGOSTO25": 8, "SETEMBRO25": 9,
+        "OUTUBRO25": 10, "NOVEMBRO25": 11, "DEZEMBRO25": 12
+    }
+    
+    # Find the most recent month with payments
+    latest_payment_month = None
+    latest_month_number = 0
+    
+    # Check each month to see if there are payments
+    months_to_check = ["SETEMBRO25", "AGOSTO25", "JULHO25", "JUNHO25", "MAIO25", 
+                      "ABRIL25", "MARÇO25", "FEVEREIRO25", "JANEIRO25"]
+    
+    for month_name in months_to_check:
+        month_number = month_map.get(month_name, 0)
+        if month_number > 0:
+            # Check if this client has payments in this month
+            # We'll check by looking at the payment data structure
+            try:
+                # For now, we'll use a simpler approach
+                # If pagamentos list has data, assume there were recent payments
+                if pagamentos and len(pagamentos) > 0:
+                    # Check the payment dates to determine the month
+                    for pagamento in pagamentos:
+                        payment_date = pagamento.get('data', '')
+                        if payment_date:
+                            # Try to extract month from payment date (format: DD/MM/YYYY)
+                            try:
+                                parts = payment_date.split('/')
+                                if len(parts) >= 3:
+                                    payment_month = int(parts[1])
+                                    payment_year = int(parts[2])
+                                    
+                                    if payment_year == 2025 and payment_month > latest_month_number:
+                                        latest_month_number = payment_month
+                                        latest_payment_month = payment_month
+                            except (ValueError, IndexError):
+                                continue
                 
-                if latest_payment_date is None or payment_date > latest_payment_date:
-                    latest_payment_date = payment_date
-        except (ValueError, KeyError, IndexError) as e:
-            logger.warning(f"Error parsing payment date '{pagamento.get('data', 'N/A')}': {e}")
-            continue
+                if latest_payment_month:
+                    break
+            except Exception as e:
+                logger.warning(f"Error processing payment month: {e}")
+                continue
     
-    if latest_payment_date is None:
-        return 999, True  # Could not parse any dates
+    # If no specific month found, but has payments, assume it's from recent months
+    if not latest_payment_month and pagamentos:
+        # Default to 2 months ago if we have payment data but can't determine exact month
+        latest_payment_month = max(1, current_month - 2)
     
-    # Calculate days difference
-    days_diff = (current_date - latest_payment_date).days
-    is_overdue = days_diff > 60
+    if not latest_payment_month:
+        return 999, True  # No payments found
     
-    return days_diff, is_overdue
+    # Calculate months difference
+    months_diff = current_month - latest_payment_month
+    if months_diff < 0:
+        months_diff = 0  # Same month or future month
+    
+    # Convert months to days (30 days per month)
+    days_since_payment = max(30, months_diff * 30)  # Minimum 30 days
+    
+    # If no difference, but we're in a different month, at least 30 days
+    if months_diff == 0:
+        days_since_payment = 30
+    elif months_diff == 1:
+        days_since_payment = 60
+    elif months_diff == 2:
+        days_since_payment = 90
+    else:
+        days_since_payment = months_diff * 30
+    
+    is_overdue = days_since_payment > 60
+    
+    logger.info(f"Payment calculation: current_month={current_month}, latest_payment_month={latest_payment_month}, months_diff={months_diff}, days={days_since_payment}")
+    
+    return days_since_payment, is_overdue
 
 def extract_currency_value(value_str):
     """Extract numeric value from currency string like 'R$ 1.130,00'"""
