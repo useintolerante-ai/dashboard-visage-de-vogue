@@ -371,6 +371,16 @@ function App() {
               Crediário
             </button>
             <button
+              onClick={() => showView('diasPagamento')}
+              className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                activeView === 'diasPagamento' 
+                  ? 'bg-pink-600 text-white' 
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}
+            >
+              Dias s/ Pagamento
+            </button>
+            <button
               onClick={() => showView('saidas')}
               className={`px-6 py-3 rounded-md font-medium transition-colors ${
                 activeView === 'saidas' 
