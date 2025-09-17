@@ -1464,6 +1464,7 @@ async def get_dashboard_summary(mes: str = "marco", background_tasks: Background
                 recebido_crediario=month_data["recebido_crediario"],
                 a_receber_crediario=0,  # Will implement proper calculation later
                 num_vendas=month_data["num_vendas"],
+                ticket_medio=month_data["faturamento"] / month_data["num_vendas"] if month_data["num_vendas"] > 0 else 0.0,
                 data_source="sheets",
                 last_sync=sheets_cache["last_updated"].isoformat() if sheets_cache["last_updated"] else None
             )
