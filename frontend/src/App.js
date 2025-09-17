@@ -656,9 +656,9 @@ function App() {
                             </div>
                             
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                              {/* Histórico de Compras */}
+                              {/* Histórico de Vendas */}
                               <div>
-                                <h4 className="text-white font-semibold mb-3">Histórico de Compras:</h4>
+                                <h4 className="text-white font-semibold mb-3">Histórico de Vendas:</h4>
                                 {cliente.compras && cliente.compras.length > 0 ? (
                                   <div className="overflow-x-auto">
                                     <table className="w-full border-collapse">
