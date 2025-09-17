@@ -863,9 +863,9 @@ function App() {
                           {sortClientesAtrasados(clientesAtrasados.clientes, sortConfigAtraso.key, sortConfigAtraso.direction)
                             .map((cliente, index) => (
                             <tr key={index} className="border-b border-gray-700 hover:bg-gray-800">
-                              <td className="p-3 text-white">{cliente.nome}</td>
+                              <td className="p-3 text-white text-sm">{cliente.nome}</td>
                               <td className="p-3 text-right">
-                                <span className={`font-bold ${
+                                <span className={`font-bold text-sm ${
                                   cliente.dias_sem_pagamento > 90 ? 'text-red-600' : 
                                   cliente.dias_sem_pagamento > 60 ? 'text-red-400' : 
                                   'text-orange-400'
@@ -873,7 +873,7 @@ function App() {
                                   {cliente.dias_sem_pagamento} dias
                                 </span>
                               </td>
-                              <td className="p-3 text-right text-yellow-400 font-semibold">
+                              <td className="p-3 text-right text-yellow-400 font-semibold text-sm">
                                 {formatCurrency(cliente.saldo_devedor)}
                               </td>
                             </tr>
