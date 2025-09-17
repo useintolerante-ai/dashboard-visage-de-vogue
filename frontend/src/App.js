@@ -414,72 +414,69 @@ function App() {
         {activeView === 'visaoGeral' && dashboardData && (
           <div className="space-y-8">
             {/* KPIs Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-              {/* Faturamento */}
-              <Card className="bg-gray-900 border-gray-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    {getKPIIcon('faturamento')}
-                    <span className="text-orange-400 text-xs font-medium uppercase tracking-wide">Faturamento</span>
+            <Card className="bg-gray-900 border-gray-700 mb-6">
+              <CardHeader>
+                <CardTitle className="text-white text-lg">Indicadores Financeiros</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {/* Faturamento */}
+                  <div className="bg-gray-800 p-4 rounded-lg text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      {getKPIIcon('faturamento')}
+                      <span className="text-orange-400 text-xs font-medium uppercase">Faturamento</span>
+                    </div>
+                    <div className="text-lg font-bold text-white">
+                      {formatCurrency(dashboardData.faturamento)}
+                    </div>
                   </div>
-                  <div className="text-lg font-bold text-white">
-                    {formatCurrency(dashboardData.faturamento)}
-                  </div>
-                </CardContent>
-              </Card>
 
-              {/* Saídas */}
-              <Card className="bg-gray-900 border-gray-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    {getKPIIcon('saidas')}
-                    <span className="text-green-400 text-xs font-medium uppercase tracking-wide">Saídas</span>
+                  {/* Saídas */}
+                  <div className="bg-gray-800 p-4 rounded-lg text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      {getKPIIcon('saidas')}
+                      <span className="text-green-400 text-xs font-medium uppercase">Saídas</span>
+                    </div>
+                    <div className="text-lg font-bold text-white">
+                      {formatCurrency(dashboardData.saidas)}
+                    </div>
                   </div>
-                  <div className="text-lg font-bold text-white">
-                    {formatCurrency(dashboardData.saidas)}
-                  </div>
-                </CardContent>
-              </Card>
 
-              {/* Lucro Bruto */}
-              <Card className="bg-gray-900 border-gray-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    {getKPIIcon('lucro')}
-                    <span className="text-blue-400 text-xs font-medium uppercase tracking-wide">Lucro Bruto</span>
+                  {/* Lucro Bruto */}
+                  <div className="bg-gray-800 p-4 rounded-lg text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      {getKPIIcon('lucro')}
+                      <span className="text-blue-400 text-xs font-medium uppercase">Lucro Bruto</span>
+                    </div>
+                    <div className={`text-lg font-bold ${getKPIColor(dashboardData.lucro_bruto, 'lucro')}`}>
+                      {formatCurrency(dashboardData.lucro_bruto)}
+                    </div>
                   </div>
-                  <div className={`text-lg font-bold ${getKPIColor(dashboardData.lucro_bruto, 'lucro')}`}>
-                    {formatCurrency(dashboardData.lucro_bruto)}
-                  </div>
-                </CardContent>
-              </Card>
 
-              {/* Recebido (Cred.) */}
-              <Card className="bg-gray-900 border-gray-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    {getKPIIcon('recebido')}
-                    <span className="text-cyan-400 text-xs font-medium uppercase tracking-wide">Recebido (Cred.)</span>
+                  {/* Recebido (Cred.) */}
+                  <div className="bg-gray-800 p-4 rounded-lg text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      {getKPIIcon('recebido')}
+                      <span className="text-cyan-400 text-xs font-medium uppercase">Recebido Cred.</span>
+                    </div>
+                    <div className="text-lg font-bold text-white">
+                      {formatCurrency(dashboardData.recebido_crediario)}
+                    </div>
                   </div>
-                  <div className="text-lg font-bold text-white">
-                    {formatCurrency(dashboardData.recebido_crediario)}
-                  </div>
-                </CardContent>
-              </Card>
 
-              {/* Total em Aberto Cred. */}
-              <Card className="bg-gray-900 border-gray-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    {getKPIIcon('vendas')}
-                    <span className="text-purple-400 text-xs font-medium uppercase tracking-wide">Total em Aberto Cred.</span>
+                  {/* Total em Aberto */}
+                  <div className="bg-gray-800 p-4 rounded-lg text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      {getKPIIcon('vendas')}
+                      <span className="text-purple-400 text-xs font-medium uppercase">Em Aberto</span>
+                    </div>
+                    <div className="text-lg font-bold text-white">
+                      {crediarioData ? formatCurrency(crediarioData.clientes.reduce((sum, cliente) => sum + cliente.saldo_devedor, 0)) : '...'}
+                    </div>
                   </div>
-                  <div className="text-lg font-bold text-white">
-                    {crediarioData ? formatCurrency(crediarioData.clientes.reduce((sum, cliente) => sum + cliente.saldo_devedor, 0)) : '...'}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Chart removed per user request */}
 
