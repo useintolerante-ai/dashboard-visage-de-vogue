@@ -470,30 +470,36 @@ async def get_client_payment_history(client_name: str) -> List[Dict[str, Any]]:
                             if len(row) > col_index and row[col_index]:
                                 cell_value = str(row[col_index]).strip().casefold()
                                 
-                                # Multiple matching strategies - made more specific
+                                # Multiple matching strategies - balanced approach
                                 # 1. Exact match (case insensitive)
                                 if client_name_normalized == cell_value:
                                     client_found = True
                                     logger.debug(f"Exact match found for payment: '{client_name}' == '{row[col_index]}'")
                                     break
                                 
-                                # 2. Check if client name words match (more specific than partial)
-                                client_words = set(client_name_normalized.split())
-                                cell_words = set(cell_value.split())
-                                if len(client_words) >= 2 and len(cell_words) >= 2:
-                                    # At least 2 words must match
-                                    matching_words = client_words & cell_words
-                                    if len(matching_words) >= 2:
-                                        client_found = True
-                                        logger.debug(f"Word match found for payment: '{client_name}' ~ '{row[col_index]}' (words: {matching_words})")
+                                # 2. First and last name match (common approach)
+                                client_words = client_name_normalized.split()
+                                cell_words = cell_value.split()
+                                if len(client_words) >= 2 and len(cell_words) >= 1:
+                                    # Check if any client word matches any cell word (case insensitive)
+                                    for client_word in client_words:
+                                        if len(client_word) > 2:  # Skip very short words
+                                            for cell_word in cell_words:
+                                                if len(cell_word) > 2 and client_word == cell_word:
+                                                    client_found = True
+                                                    logger.debug(f"Word match found for payment: '{client_name}' ~ '{row[col_index]}' (word: {client_word})")
+                                                    break
+                                            if client_found:
+                                                break
+                                    if client_found:
                                         break
                                 
-                                # 3. Fuzzy match with higher threshold (similarity > 90%)
-                                elif len(client_name_normalized) > 5 and len(cell_value) > 5:
+                                # 3. Fuzzy match with medium threshold (similarity > 85%)
+                                elif len(client_name_normalized) > 4 and len(cell_value) > 4:
                                     similarity = fuzz.ratio(client_name_normalized, cell_value)
-                                    if similarity > 90:
+                                    if similarity > 85:
                                         client_found = True
-                                        logger.info(f"High similarity match found for payment: '{client_name}' ~ '{row[col_index]}' (similarity: {similarity}%)")
+                                        logger.info(f"Fuzzy match found for payment: '{client_name}' ~ '{row[col_index]}' (similarity: {similarity}%)")
                                         break
                         
                         if client_found:
