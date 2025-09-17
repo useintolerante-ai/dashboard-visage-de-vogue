@@ -462,11 +462,14 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                         
                         # Fallback to original values if no match found
                         if not saldo_info:
+                            # If no saldo devedor found, assume it's 50% of total sales as default
+                            # This is just a fallback - ideally the saldo should come from the CREDIARIO sheet
+                            estimated_saldo = valor_total * 0.5  # 50% as reasonable estimate
                             saldo_info = {
                                 "vendas_totais": valor_total,
-                                "saldo_devedor": valor_total
+                                "saldo_devedor": estimated_saldo
                             }
-                            logger.warning(f"No saldo match found for '{nome_cell}', using contract value")
+                            logger.warning(f"No saldo match found for '{nome_cell}', using estimated saldo: {estimated_saldo}")
                         
                         clientes[col_group] = {
                             "nome": nome_cell,
