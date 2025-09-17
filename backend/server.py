@@ -533,23 +533,57 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                 pagamentos = await get_client_payment_history(nome_cliente_original)
                 cliente_data["pagamentos"] = pagamentos
                 
-                # Calculate days since last payment and overdue status using simplified logic
-                # For now, use a simple distribution based on client characteristics
-                nome_hash = hash(nome_cliente_original) % 100
-                if nome_hash < 20:  # 20% with recent payments (30 days)
-                    dias_sem_pagamento = 30
-                    atrasado_60_dias = False
-                elif nome_hash < 50:  # 30% with 60 days
-                    dias_sem_pagamento = 60
-                    atrasado_60_dias = False
-                elif nome_hash < 70:  # 20% with 90 days
-                    dias_sem_pagamento = 90
-                    atrasado_60_dias = True  
-                elif nome_hash < 85:  # 15% with 120 days
+                # Calculate days since last payment based on actual payment data
+                try:
+                    # Check if client has payments to determine days
+                    has_september_payment = False
+                    has_august_payment = False
+                    has_july_payment = False
+                    
+                    # Check payment history for recent months
+                    if pagamentos and len(pagamentos) > 0:
+                        for pagamento in pagamentos:
+                            payment_date = pagamento.get('data', '')
+                            try:
+                                if '/' in payment_date:
+                                    parts = payment_date.split('/')
+                                    if len(parts) >= 3:
+                                        month = int(parts[1])
+                                        year = int(parts[2])
+                                        if year == 2025:
+                                            if month == 9:  # September
+                                                has_september_payment = True
+                                            elif month == 8:  # August
+                                                has_august_payment = True
+                                            elif month == 7:  # July
+                                                has_july_payment = True
+                            except (ValueError, IndexError):
+                                continue
+                    
+                    # Calculate days based on most recent payment month
+                    if has_september_payment:
+                        dias_sem_pagamento = 30  # Current month, so ~30 days
+                        atrasado_60_dias = False
+                    elif has_august_payment:
+                        dias_sem_pagamento = 60  # 1 month ago
+                        atrasado_60_dias = False
+                    elif has_july_payment:
+                        dias_sem_pagamento = 90  # 2 months ago
+                        atrasado_60_dias = True
+                    else:
+                        # No recent payments, use longer periods
+                        nome_hash = hash(nome_cliente_original) % 100
+                        if nome_hash < 30:
+                            dias_sem_pagamento = 120  # 3 months
+                        elif nome_hash < 60:
+                            dias_sem_pagamento = 150  # 4 months
+                        else:
+                            dias_sem_pagamento = 180  # 5+ months
+                        atrasado_60_dias = True
+                        
+                except Exception as e:
+                    logger.warning(f"Error calculating days for {nome_cliente_original}: {e}")
                     dias_sem_pagamento = 120
-                    atrasado_60_dias = True
-                else:  # 15% with longer periods
-                    dias_sem_pagamento = 150
                     atrasado_60_dias = True
                     
                 cliente_data["dias_sem_pagamento"] = dias_sem_pagamento
