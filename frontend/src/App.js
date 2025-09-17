@@ -419,7 +419,7 @@ function App() {
                 <CardTitle className="text-white text-lg">Indicadores Financeiros</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                   {/* Faturamento */}
                   <div className="bg-gray-800 p-4 rounded-lg text-center">
                     <div className="flex items-center justify-center gap-2 mb-2">
@@ -472,6 +472,17 @@ function App() {
                     </div>
                     <div className="text-lg font-bold text-white">
                       {crediarioData ? formatCurrency(crediarioData.clientes.reduce((sum, cliente) => sum + cliente.saldo_devedor, 0)) : '...'}
+                    </div>
+                  </div>
+
+                  {/* Ticket Médio */}
+                  <div className="bg-gray-800 p-4 rounded-lg text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      {getKPIIcon('faturamento')}
+                      <span className="text-yellow-400 text-xs font-medium uppercase">Ticket Médio</span>
+                    </div>
+                    <div className="text-lg font-bold text-white">
+                      {formatCurrency(dashboardData.ticket_medio || 0)}
                     </div>
                   </div>
                 </div>
