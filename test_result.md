@@ -191,7 +191,7 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
         - agent: "main"
         - comment: "Successfully removed confusing '>60 dias s/ pagamento' column from Crediário tab. Created new 'Dias s/ pagamento' section in Visão Geral showing clients with >30 days without payment. Added sortable table with client name, days overdue, and outstanding balance. Color-coded indicators: orange (30-60 days), red (60-90 days), dark red (90+ days)."
 
-  - task: "Fix saldo devedor calculation and improve layouts"
+  - task: "Final layout improvements and client filtering"
     implemented: true
     working: true
     file: "server.py, App.js"
@@ -201,7 +201,7 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
     status_history:
         - working: true
         - agent: "main"
-        - comment: "Successfully fixed saldo devedor calculation - no longer equals vendas_totais. ANGELA MACIEL now shows correct values: vendas R$9.573,40 vs saldo R$4.963,40. Improved crediário layout to show client and saldo in single line with flex layout. Enhanced KPIs layout with more compact design (text-xs, p-4, text-lg). Grid changed to 2-3-5 columns for better responsiveness."
+        - comment: "Successfully implemented all requested improvements: 1) Crediário table now shows clients and saldo devedor in proper inline layout with flex, 2) Expanded client view shows Total Vendas, Saldo Devedor, and Nº Compras in single inline layout, 3) Filtered out clients with saldo devedor < R$ 1.00, zero, or negative (reduced from 29 to 23 clients), 4) Improved KPIs layout in Visão Geral with unified card design and better organization. All layouts optimized for better visual hierarchy."
 
   - task: "Remove faturamento vs saidas chart"
     implemented: true
