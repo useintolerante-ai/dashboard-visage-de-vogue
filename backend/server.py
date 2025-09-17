@@ -120,6 +120,100 @@ class SaidaData(BaseModel):
     valor: float
     mes: str
 
+def calculate_days_since_last_payment_by_month(client_name: str) -> tuple[int, bool]:
+    """
+    Calculate days since last payment based on which months have payment data
+    September = current month, August = 30 days, July = 60 days, etc.
+    Returns: (days_since_last_payment, is_overdue_60_days)
+    """
+    try:
+        # Current month (September 2025 = month 9)
+        current_month = 9  # September
+        
+        # Month mapping for 2025 (backwards from current)
+        months_data = [
+            ("SETEMBRO25", 9, 0),    # Current month = 0 days ago
+            ("AGOSTO25", 8, 30),     # 1 month ago = 30 days
+            ("JULHO25", 7, 60),      # 2 months ago = 60 days
+            ("JUNHO25", 6, 90),      # 3 months ago = 90 days
+            ("MAIO25", 5, 120),      # 4 months ago = 120 days
+            ("ABRIL25", 4, 150),     # 5 months ago = 150 days
+            ("MARÇO25", 3, 180),     # 6 months ago = 180 days
+            ("FEVEREIRO25", 2, 210), # 7 months ago = 210 days
+            ("JANEIRO25", 1, 240),   # 8 months ago = 240 days
+        ]
+        
+        # Check each month for payment data (starting from most recent)
+        for month_name, month_num, days_ago in months_data:
+            try:
+                sheets_result = fetch_google_sheets_data_cached(month_name)
+                if sheets_result["success"]:
+                    rows = sheets_result["data"]
+                    
+                    # Look for payments for this client in this month
+                    client_name_norm = client_name.strip().upper()
+                    found_payment = False
+                    
+                    for row_index, row in enumerate(rows):
+                        if row_index == 0 or len(row) < 17:
+                            continue
+                        
+                        try:
+                            # Check if there's payment data in this row
+                            data_pagamento = str(row[14]).strip() if len(row) > 14 and row[14] else ''
+                            valor_pagamento = str(row[16]).strip() if len(row) > 16 and row[16] else ''
+                            
+                            if not data_pagamento or not valor_pagamento or 'R$' not in valor_pagamento:
+                                continue
+                            
+                            # Check if this row matches our client
+                            for col_index in [2, 3, 4, 5, 6, 7, 8]:
+                                if len(row) > col_index and row[col_index]:
+                                    cell_value = str(row[col_index]).strip().upper()
+                                    
+                                    # Simple word matching
+                                    client_words = client_name_norm.split()
+                                    cell_words = cell_value.split()
+                                    
+                                    match_count = 0
+                                    for client_word in client_words:
+                                        if len(client_word) > 2:  # Skip short words
+                                            for cell_word in cell_words:
+                                                if len(cell_word) > 2 and client_word == cell_word:
+                                                    match_count += 1
+                                                    break
+                                    
+                                    # If at least one significant word matches
+                                    if match_count > 0:
+                                        found_payment = True
+                                        logger.info(f"Found payment for {client_name} in {month_name} - {days_ago} days ago")
+                                        break
+                                
+                                if found_payment:
+                                    break
+                        except Exception as e:
+                            continue
+                        
+                        if found_payment:
+                            break
+                    
+                    if found_payment:
+                        # Add minimum 30 days if found in current or recent month
+                        actual_days = max(30, days_ago) if days_ago == 0 else days_ago
+                        is_overdue = actual_days > 60
+                        return actual_days, is_overdue
+                        
+            except Exception as e:
+                logger.warning(f"Error checking {month_name} for {client_name}: {e}")
+                continue
+        
+        # No payments found in any month
+        return 999, True
+        
+    except Exception as e:
+        logger.error(f"Error calculating payment days for {client_name}: {e}")
+        return 999, True
+
 def calculate_days_since_last_payment(pagamentos: List[Dict[str, Any]]) -> tuple[int, bool]:
     """
     Calculate days since last payment based on months (30 days per month)
