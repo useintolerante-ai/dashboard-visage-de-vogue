@@ -586,9 +586,9 @@ function App() {
                   </div>
                   
                   {/* Column Headers */}
-                  <div className="bg-gray-800 rounded-lg p-4 border border-gray-600">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                      <div className="md:col-span-1">
+                  <div className="bg-gray-900 p-3 rounded-lg border border-gray-600">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
                         <button 
                           className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
                           onClick={() => handleSort('nome', 'string')}
@@ -596,7 +596,7 @@ function App() {
                           Clientes {getSortIcon('nome')}
                         </button>
                       </div>
-                      <div className="md:col-span-1 text-center">
+                      <div className="text-right">
                         <button 
                           className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
                           onClick={() => handleSort('saldo_devedor', 'currency')}
