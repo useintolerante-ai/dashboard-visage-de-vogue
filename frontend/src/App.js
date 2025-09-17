@@ -587,29 +587,13 @@ function App() {
                   
                   {/* Column Headers */}
                   <div className="bg-gray-800 rounded-lg p-4 border border-gray-600">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                       <div className="md:col-span-1">
                         <button 
                           className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
                           onClick={() => handleSort('nome', 'string')}
                         >
                           Clientes {getSortIcon('nome')}
-                        </button>
-                      </div>
-                      <div className="md:col-span-1 text-center">
-                        <button 
-                          className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
-                          onClick={() => handleSort('vendas_totais', 'currency')}
-                        >
-                          Total Vendas {getSortIcon('vendas_totais')}
-                        </button>
-                      </div>
-                      <div className="md:col-span-1 text-center">
-                        <button 
-                          className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
-                          onClick={() => handleSort('compras', 'number')}
-                        >
-                          Compras {getSortIcon('compras')}
                         </button>
                       </div>
                       <div className="md:col-span-1 text-center">
