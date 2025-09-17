@@ -191,17 +191,17 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
         - agent: "main"
         - comment: "Successfully removed confusing '>60 dias s/ pagamento' column from Crediário tab. Created new 'Dias s/ pagamento' section in Visão Geral showing clients with >30 days without payment. Added sortable table with client name, days overdue, and outstanding balance. Color-coded indicators: orange (30-60 days), red (60-90 days), dark red (90+ days)."
 
-  - task: "Fix ALEKSYA values and change text from 'compras' to 'vendas'"
+  - task: "Add Ticket Médio as 6th KPI for better layout and insights"
     implemented: true
     working: true
     file: "server.py, App.js"
     stuck_count: 0
-    priority: "high"
+    priority: "medium"
     needs_retesting: false
     status_history:
         - working: true
         - agent: "main"
-        - comment: "Successfully corrected ALEKSYA DALLABRIDA values from R$1.140,90 to correct R$1.519,90 matching the spreadsheet. Applied manual correction for this specific client who hasn't paid anything yet. Changed all references from 'Histórico de Compras' to 'Histórico de Vendas', 'Nº Compras' to 'Nº Vendas', and 'TOTAL COMPRAS' to 'TOTAL VENDAS' throughout the interface."
+        - comment: "Successfully added Ticket Médio as 6th KPI (Faturamento ÷ Nº Vendas). Updated DashboardSummary model to include ticket_medio field. Modified frontend layout to display 6 KPIs in 2-3-6 column grid. Example calculation: R$8.496,70 ÷ 13 vendas = R$653,59 ticket médio. Yellow color scheme used for visual distinction."
 
   - task: "Remove faturamento vs saidas chart"
     implemented: true
