@@ -690,7 +690,7 @@ function App() {
                                   </div>
                                 ) : (
                                   <div className="text-gray-400 text-center py-4">
-                                    Nenhuma compra registrada para este cliente.
+                                    Nenhuma venda registrada para este cliente.
                                   </div>
                                 )}
                               </div>
