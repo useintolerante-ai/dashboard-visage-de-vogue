@@ -534,7 +534,7 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                 cliente_data["pagamentos"] = pagamentos
                 
                 # Calculate days since last payment and overdue status
-                dias_sem_pagamento, atrasado_60_dias = calculate_days_since_last_payment(pagamentos)
+                dias_sem_pagamento, atrasado_60_dias = calculate_days_since_last_payment_by_month(nome_cliente_original)
                 cliente_data["dias_sem_pagamento"] = dias_sem_pagamento
                 cliente_data["atrasado_60_dias"] = atrasado_60_dias
                 
