@@ -613,18 +613,17 @@ function App() {
                       <div key={cliente.id} className="bg-gray-800 rounded-lg border border-gray-700">
                         {/* Client Header */}
                         <div 
-                          className="p-4 hover:bg-gray-700 cursor-pointer transition-colors"
+                          className="p-3 hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-700"
                           onClick={() => setExpandedCliente(expandedCliente === cliente.id ? null : cliente.id)}
                         >
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                          <div className="flex justify-between items-center">
                             {/* Client Name */}
-                            <div className="md:col-span-1">
+                            <div className="flex-1">
                               <h3 className="text-white font-semibold text-sm">{cliente.nome}</h3>
                             </div>
                             
                             {/* Outstanding Balance */}
-                            <div className="md:col-span-1 text-center">
-                              <div className="text-gray-400 text-xs">Saldo Devedor</div>
+                            <div className="text-right">
                               <div className="text-red-400 font-bold text-sm">
                                 {formatCurrency(cliente.saldo_devedor)}
                               </div>
