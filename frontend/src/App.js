@@ -680,7 +680,7 @@ function App() {
                                       </tbody>
                                       <tfoot>
                                         <tr className="border-t-2 border-gray-600 bg-gray-800">
-                                          <td className="p-3 text-white font-bold">TOTAL COMPRAS</td>
+                                          <td className="p-3 text-white font-bold">TOTAL VENDAS</td>
                                           <td className="p-3 text-right text-green-400 font-bold text-lg">
                                             {formatCurrency(cliente.compras.reduce((sum, compra) => sum + compra.valor, 0))}
                                           </td>
