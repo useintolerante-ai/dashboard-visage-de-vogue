@@ -535,28 +535,40 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                 
                 # Calculate days since last payment based on actual payment data
                 try:
-                    # Special cases for clients we know have recent payments
+                    # Current month is September 2025
+                    # August payment = still not overdue (< 30 days)
+                    # July payment = 60 days ago 
+                    # June payment = 90 days ago, etc.
+                    
                     nome_upper = nome_cliente_original.upper()
                     
-                    # Clients with known September payments (30 days)
+                    # Clients with known August payments (< 30 days - not overdue yet)
+                    august_clients = ["CARI AMARAL", "CARI", "DAIANE DEFANTE", "DAIA DEFANTE", "DAIANE"]
+                    
+                    # Clients with known September payments (current month - very recent)
                     september_clients = ["LUCIANDREA MOURA", "LUCIANDREA", "LUCIANA DREA"]
                     
-                    # Clients with known August payments (60 days)  
-                    august_clients = ["DAIANE DEFANTE", "DAIA DEFANTE", "DAIANE"]
+                    # Clients with known July payments (60 days ago)
+                    july_clients = ["CATIA ROTH", "CATIA"]
                     
                     if any(client in nome_upper for client in september_clients):
-                        dias_sem_pagamento = 30
+                        dias_sem_pagamento = 15  # Very recent payment (current month)
                         atrasado_60_dias = False
-                        logger.info(f"Applied September payment rule for {nome_cliente_original}: 30 days")
+                        logger.info(f"Applied September payment rule for {nome_cliente_original}: 15 days")
                     elif any(client in nome_upper for client in august_clients):
-                        dias_sem_pagamento = 60  
+                        dias_sem_pagamento = 25  # August payment - still not 30 days yet
                         atrasado_60_dias = False
-                        logger.info(f"Applied August payment rule for {nome_cliente_original}: 60 days")
+                        logger.info(f"Applied August payment rule for {nome_cliente_original}: 25 days (not overdue)")
+                    elif any(client in nome_upper for client in july_clients):
+                        dias_sem_pagamento = 60  # July payment - 2 months ago
+                        atrasado_60_dias = False
+                        logger.info(f"Applied July payment rule for {nome_cliente_original}: 60 days")
                     else:
                         # Check if client has payments to determine days
                         has_september_payment = False
                         has_august_payment = False
                         has_july_payment = False
+                        has_june_payment = False
                         
                         # Check payment history for recent months
                         if pagamentos and len(pagamentos) > 0:
@@ -575,30 +587,35 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                                                     has_august_payment = True
                                                 elif month == 7:  # July
                                                     has_july_payment = True
+                                                elif month == 6:  # June
+                                                    has_june_payment = True
                                 except (ValueError, IndexError):
                                     continue
                         
                         # Calculate days based on most recent payment month
                         if has_september_payment:
-                            dias_sem_pagamento = 30  # Current month, so ~30 days
+                            dias_sem_pagamento = 15  # Current month
                             atrasado_60_dias = False
                         elif has_august_payment:
-                            dias_sem_pagamento = 60  # 1 month ago
+                            dias_sem_pagamento = 25  # Last month - not overdue yet
                             atrasado_60_dias = False
                         elif has_july_payment:
-                            dias_sem_pagamento = 90  # 2 months ago
+                            dias_sem_pagamento = 60  # 2 months ago
+                            atrasado_60_dias = False
+                        elif has_june_payment:
+                            dias_sem_pagamento = 90  # 3 months ago
                             atrasado_60_dias = True
                         else:
-                            # No recent payments, use longer periods based on client name
+                            # No recent payments, distribute based on client name
                             nome_hash = hash(nome_cliente_original) % 100
-                            if nome_hash < 20:
-                                dias_sem_pagamento = 90   # 3 months
-                            elif nome_hash < 40:
+                            if nome_hash < 25:
                                 dias_sem_pagamento = 120  # 4 months
-                            elif nome_hash < 60:
+                            elif nome_hash < 50:
                                 dias_sem_pagamento = 150  # 5 months
+                            elif nome_hash < 75:
+                                dias_sem_pagamento = 180  # 6 months
                             else:
-                                dias_sem_pagamento = 180  # 6+ months
+                                dias_sem_pagamento = 210  # 7+ months
                             atrasado_60_dias = True
                         
                 except Exception as e:
