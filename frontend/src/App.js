@@ -616,26 +616,10 @@ function App() {
                           className="p-4 hover:bg-gray-700 cursor-pointer transition-colors"
                           onClick={() => setExpandedCliente(expandedCliente === cliente.id ? null : cliente.id)}
                         >
-                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                             {/* Client Name */}
                             <div className="md:col-span-1">
                               <h3 className="text-white font-semibold text-sm">{cliente.nome}</h3>
-                            </div>
-                            
-                            {/* Total Sales */}
-                            <div className="md:col-span-1 text-center">
-                              <div className="text-gray-400 text-xs">Total Vendas</div>
-                              <div className="text-green-400 font-bold text-sm">
-                                {formatCurrency(cliente.vendas_totais)}
-                              </div>
-                            </div>
-                            
-                            {/* Purchases Count */}
-                            <div className="md:col-span-1 text-center">
-                              <div className="text-gray-400 text-xs">Nº Compras</div>
-                              <div className="text-blue-400 font-bold text-sm">
-                                {cliente.compras.length}
-                              </div>
                             </div>
                             
                             {/* Outstanding Balance */}
