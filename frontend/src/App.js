@@ -467,15 +467,15 @@ function App() {
                 </CardContent>
               </Card>
 
-              {/* Nº Vendas - Menor */}
+              {/* Total em Aberto Cred. */}
               <Card className="bg-gray-900 border-gray-700">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-2">
                     {getKPIIcon('vendas')}
-                    <span className="text-purple-400 text-sm font-medium uppercase tracking-wide">Nº Vendas</span>
+                    <span className="text-purple-400 text-sm font-medium uppercase tracking-wide">Total em Aberto Cred.</span>
                   </div>
                   <div className="text-2xl font-bold text-white">
-                    {dashboardData.num_vendas}
+                    {crediarioData ? formatCurrency(crediarioData.clientes.reduce((sum, cliente) => sum + cliente.saldo_devedor, 0)) : '...'}
                   </div>
                 </CardContent>
               </Card>
