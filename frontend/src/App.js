@@ -483,61 +483,6 @@ function App() {
 
             {/* Chart removed per user request */}
 
-            {/* Resumo do Crediário */}
-            <Card className="bg-gray-900 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white text-xl">Resumo Crediário</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Visão geral dos clientes
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {crediarioData ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-gray-800 p-4 rounded-lg text-center">
-                      <div className="text-gray-400 text-sm">Total Clientes</div>
-                      <div className="text-2xl font-bold text-white">
-                        {crediarioData.total_clientes}
-                      </div>
-                    </div>
-                    <div className="bg-gray-800 p-4 rounded-lg text-center">
-                      <div className="text-gray-400 text-sm">Total em Aberto</div>
-                      <div className="text-xl font-bold text-yellow-400">
-                        {formatCurrency(crediarioData.clientes.reduce((sum, cliente) => sum + cliente.saldo_devedor, 0))}
-                      </div>
-                    </div>
-                    <div className="bg-gray-800 p-4 rounded-lg text-center">
-                      <div className="text-gray-400 text-sm">Clientes em Atraso</div>
-                      <div className="text-2xl font-bold text-red-400">
-                        {clientesAtrasados ? clientesAtrasados.total_atrasados : '...'}
-                      </div>
-                    </div>
-                    <div className="bg-gray-800 p-4 rounded-lg text-center">
-                      <div className="text-gray-400 text-sm">Ações</div>
-                      <div className="flex gap-2 mt-1">
-                        <button
-                          onClick={() => setActiveView('crediario')}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
-                        >
-                          Crediário
-                        </button>
-                        <button
-                          onClick={() => setActiveView('diasPagamento')}
-                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
-                        >
-                          Cobranças
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="text-gray-400">Carregando dados do crediário...</div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
             {/* Faturamento Diário Table */}
             {faturamentoDiario && faturamentoDiario.vendas_diarias && faturamentoDiario.vendas_diarias.length > 0 && (
               <Card className="bg-gray-900 border-gray-700">
