@@ -155,6 +155,8 @@ function App() {
     // Load specific data for each view
     if (viewName === 'crediario') {
       loadCrediarioData();
+    } else if (viewName === 'diasPagamento') {
+      loadClientesAtrasados();
     } else if (viewName === 'saidas') {
       loadSaidasData(selectedMonth);
     } else if (viewName === 'visaoGeral') {
