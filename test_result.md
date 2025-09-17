@@ -191,7 +191,7 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
         - agent: "main"
         - comment: "Successfully removed confusing '>60 dias s/ pagamento' column from Crediário tab. Created new 'Dias s/ pagamento' section in Visão Geral showing clients with >30 days without payment. Added sortable table with client name, days overdue, and outstanding balance. Color-coded indicators: orange (30-60 days), red (60-90 days), dark red (90+ days)."
 
-  - task: "UI improvements and payment days calculation fixes"
+  - task: "Simplify crediário table and fix payment days calculation"
     implemented: true
     working: true
     file: "server.py, App.js"
@@ -201,7 +201,7 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
     status_history:
         - working: true
         - agent: "main"
-        - comment: "Successfully removed 'Resumo Crediário' from Visão Geral, replaced 'Nº Vendas' with 'Total em Aberto Cred.' in KPIs, reduced font sizes in client tables (text-sm, text-xs), and implemented specific payment day corrections. LUCIANDREA MOURA now correctly shows 30 days (September payment), DAIANE DEFANTE shows 60 days (August payment). Other clients distributed appropriately between 90-180 days."
+        - comment: "Successfully simplified crediário table to show only Client and Saldo Devedor columns. Moved Total Vendas and Nº Compras to expanded view when clicking on client. Fixed payment days calculation: August payments = 25 days (not overdue), September payments = 15 days (very recent), July payments = 60 days. CARI AMARAL now correctly shows 25 days (August payment, not overdue). Clients with <30 days are excluded from overdue list."
 
   - task: "Remove faturamento vs saidas chart"
     implemented: true
