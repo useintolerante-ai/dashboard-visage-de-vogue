@@ -635,23 +635,25 @@ function App() {
                         {expandedCliente === cliente.id && (
                           <div className="border-t border-gray-700 p-4 bg-gray-850">
                             {/* Cliente Summary */}
-                            <div className="mb-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-                              <div className="bg-gray-800 p-3 rounded-lg text-center">
-                                <div className="text-gray-400 text-xs">Total Vendas</div>
-                                <div className="text-green-400 font-bold text-sm">
-                                  {formatCurrency(cliente.vendas_totais)}
+                            <div className="mb-4 bg-gray-800 p-3 rounded-lg">
+                              <div className="flex justify-between items-center text-sm">
+                                <div className="text-center">
+                                  <div className="text-gray-400 text-xs">Total Vendas</div>
+                                  <div className="text-green-400 font-bold">
+                                    {formatCurrency(cliente.vendas_totais)}
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="bg-gray-800 p-3 rounded-lg text-center">
-                                <div className="text-gray-400 text-xs">Nº Compras</div>
-                                <div className="text-blue-400 font-bold text-sm">
-                                  {cliente.compras.length}
+                                <div className="text-center">
+                                  <div className="text-gray-400 text-xs">Saldo Devedor</div>
+                                  <div className="text-red-400 font-bold">
+                                    {formatCurrency(cliente.saldo_devedor)}
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="bg-gray-800 p-3 rounded-lg text-center">
-                                <div className="text-gray-400 text-xs">Saldo Devedor</div>
-                                <div className="text-red-400 font-bold text-sm">
-                                  {formatCurrency(cliente.saldo_devedor)}
+                                <div className="text-center">
+                                  <div className="text-gray-400 text-xs">Nº Compras</div>
+                                  <div className="text-blue-400 font-bold">
+                                    {cliente.compras.length}
+                                  </div>
                                 </div>
                               </div>
                             </div>
