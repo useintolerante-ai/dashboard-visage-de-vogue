@@ -647,7 +647,7 @@ function App() {
                                   </div>
                                 </div>
                                 <div className="text-center">
-                                  <div className="text-gray-400 text-xs">Nº Compras</div>
+                                  <div className="text-gray-400 text-xs">Nº Vendas</div>
                                   <div className="text-blue-400 font-bold">
                                     {cliente.compras.length}
                                   </div>
