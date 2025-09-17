@@ -522,6 +522,12 @@ async def fetch_crediario_data() -> Dict[str, Any]:
                 logger.warning(f"Skipping duplicate client: {nome_cliente}")
                 continue
             
+            # Skip clients with saldo devedor below R$ 1.00, zero, or negative
+            saldo_devedor = cliente_data.get("saldo_devedor", 0)
+            if saldo_devedor < 1.0:
+                logger.info(f"Excluding client {nome_cliente} with low saldo devedor: R$ {saldo_devedor}")
+                continue
+            
             nomes_processados.add(nome_cliente)
             
             # Sort purchases by date (newest first)
