@@ -48,7 +48,14 @@ function App() {
 
   async function loadFormasPagamento(mes = selectedMonth) {
     try {
-      const response = await axios.get(`${API}/formas-pagamento/${mes}`);
+      // Map 'anointeiro' to current month for payment methods
+      let mesParaAPI = mes;
+      if (mes === 'anointeiro') {
+        mesParaAPI = 'setembro'; // Use current month for year view
+      }
+      
+      console.log(`Loading payment methods for: ${mes} -> ${mesParaAPI}`);
+      const response = await axios.get(`${API}/formas-pagamento/${mesParaAPI}`);
       setFormasPagamentoData(response.data);
     } catch (error) {
       console.error('Erro ao carregar formas de pagamento:', error);
