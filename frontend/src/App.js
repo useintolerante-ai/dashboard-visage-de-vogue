@@ -251,9 +251,8 @@ function App() {
 
   const handleFaturamentoClick = async () => {
     setShowFormasPagamento(true);
-    if (!formasPagamentoData) {
-      await loadFormasPagamento();
-    }
+    setFormasPagamentoData(null); // Reset data when opening modal
+    await loadFormasPagamento(selectedMonth);
   };
 
   const sortClientesAtrasados = (clientes, key, direction) => {
