@@ -55,7 +55,10 @@ function App() {
       }
       
       console.log(`Loading payment methods for: ${mes} -> ${mesParaAPI}`);
+      console.log(`Making API call to: ${API}/formas-pagamento/${mesParaAPI}`);
+      
       const response = await axios.get(`${API}/formas-pagamento/${mesParaAPI}`);
+      console.log('API Response:', response.data);
       setFormasPagamentoData(response.data);
     } catch (error) {
       console.error('Erro ao carregar formas de pagamento:', error);
