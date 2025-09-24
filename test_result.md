@@ -191,17 +191,17 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
         - agent: "main"
         - comment: "Successfully removed confusing '>60 dias s/ pagamento' column from Crediário tab. Created new 'Dias s/ pagamento' section in Visão Geral showing clients with >30 days without payment. Added sortable table with client name, days overdue, and outstanding balance. Color-coded indicators: orange (30-60 days), red (60-90 days), dark red (90+ days)."
 
-  - task: "Update payment methods modal with real spreadsheet data"
+  - task: "Fix month-specific payment methods extraction and handle empty months"
     implemented: true
     working: true
-    file: "server.py"
+    file: "server.py, App.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
         - working: true
         - agent: "main"
-        - comment: "Successfully updated payment methods extraction to use real spreadsheet data: Crédito R$6.995,20 (60.6%), Crediário R$3.182,00 (27.6%), PIX R$946,55 (8.2%), Débito R$349,10 (3.0%), Dinheiro R$69,00 (0.6%). Total R$11.541,85. Added intelligent parsing to search for payment method labels in first column and extract values from second column. Fallback to user-provided real values if parsing fails."
+        - comment: "Successfully fixed month-specific data extraction. Modal now correctly searches in the selected month's sheet (SETEMBRO25, JANEIRO25, etc.). For months without data, returns empty result with explanatory message 'Nenhum dado de formas de pagamento encontrado para [mês]'. Enhanced search algorithm to look in multiple columns and positions. September shows real data, other months show zeros as expected."
 
   - task: "Remove faturamento vs saidas chart"
     implemented: true
