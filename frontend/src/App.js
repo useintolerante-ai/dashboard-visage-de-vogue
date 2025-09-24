@@ -1045,11 +1045,11 @@ function App() {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <div className="text-gray-400">
-                      {formasPagamentoData.success ? 
-                        "Nenhuma forma de pagamento encontrada para este período." :
-                        "Erro ao carregar formas de pagamento."
-                      }
+                    <div className="text-gray-400 text-lg mb-2">
+                      {formasPagamentoData.message || "Nenhuma forma de pagamento encontrada para este período."}
+                    </div>
+                    <div className="text-gray-500 text-sm">
+                      Os dados de formas de pagamento podem não estar preenchidos para este mês.
                     </div>
                   </div>
                 )
