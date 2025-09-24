@@ -1616,26 +1616,59 @@ async def get_formas_pagamento(mes: str):
         header_row = None
         payment_columns = {}
         
+        # Look for payment method columns (usually in the first few rows)
+        header_row = None
+        payment_columns = {}
+        
         # Find header row and identify payment method columns
-        for i, row in enumerate(rows[:5]):  # Check first 5 rows for headers
-            if len(row) > 10:
+        for i, row in enumerate(rows[:10]):  # Check first 10 rows for headers
+            if len(row) > 5:
                 for j, cell in enumerate(row):
                     if cell and isinstance(cell, str):
-                        cell_upper = cell.upper()
-                        if "PIX" in cell_upper:
-                            payment_columns["PIX"] = j
-                            header_row = i
-                        elif "CARTÃO" in cell_upper or "CARTAO" in cell_upper:
-                            if "CRÉDITO" in cell_upper or "CREDITO" in cell_upper:
-                                payment_columns["Cartão de Crédito"] = j
-                            elif "DÉBITO" in cell_upper or "DEBITO" in cell_upper:
-                                payment_columns["Cartão de Débito"] = j
-                            else:
-                                payment_columns["Cartão de Crédito"] = j
-                        elif "DINHEIRO" in cell_upper:
-                            payment_columns["Dinheiro"] = j
-                        elif "CREDIÁRIO" in cell_upper or "CREDIARIO" in cell_upper:
-                            payment_columns["Crediário"] = j
+                        cell_upper = cell.upper().strip()
+                        if any(keyword in cell_upper for keyword in ["PIX", "DINHEIRO", "CARTÃO", "CARTAO", "CREDIÁRIO", "CREDIARIO"]):
+                            if "PIX" in cell_upper:
+                                payment_columns["PIX"] = j
+                                header_row = i
+                            elif any(word in cell_upper for word in ["DINHEIRO", "ESPÉCIE", "ESPECIE"]):
+                                payment_columns["Dinheiro"] = j
+                                header_row = i
+                            elif "CARTÃO" in cell_upper or "CARTAO" in cell_upper:
+                                if "CRÉDITO" in cell_upper or "CREDITO" in cell_upper:
+                                    payment_columns["Cartão de Crédito"] = j
+                                elif "DÉBITO" in cell_upper or "DEBITO" in cell_upper:
+                                    payment_columns["Cartão de Débito"] = j
+                                else:
+                                    payment_columns["Cartão"] = j
+                                header_row = i
+                            elif "CREDIÁRIO" in cell_upper or "CREDIARIO" in cell_upper:
+                                payment_columns["Crediário"] = j
+                                header_row = i
+                        
+                        # Also check for common column patterns
+                        if j < 15:  # Usually payment columns are in the first 15 columns
+                            if any(pattern in cell_upper for pattern in ["FORMA", "PAGAMENTO", "MÉTODO", "METODO"]):
+                                # This might indicate a payment method column
+                                logger.info(f"Found potential payment column at {j}: {cell}")
+        
+        # If no specific columns found, try common positions
+        if not payment_columns:
+            logger.info("No payment columns found by header search, trying common positions")
+            # Common positions where payment methods might be
+            common_positions = [8, 9, 10, 11, 12, 13, 14, 15]
+            for pos in common_positions:
+                if pos < len(rows[2]) if len(rows) > 2 else 0:
+                    # Check if this column has currency values
+                    sample_values = []
+                    for row_idx in range(2, min(10, len(rows))):
+                        if pos < len(rows[row_idx]) and rows[row_idx][pos]:
+                            value = extract_currency_value(str(rows[row_idx][pos]))
+                            if value > 0:
+                                sample_values.append(value)
+                    
+                    if len(sample_values) >= 2:  # If we found some values
+                        payment_columns[f"Forma {pos}"] = pos
+                        header_row = 1
         
         logger.info(f"Found payment columns: {payment_columns}")
         
