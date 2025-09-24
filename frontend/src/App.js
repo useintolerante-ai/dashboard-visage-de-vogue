@@ -24,6 +24,8 @@ function App() {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
   const [clientesAtrasados, setClientesAtrasados] = useState(null);
   const [sortConfigAtraso, setSortConfigAtraso] = useState({ key: 'dias_sem_pagamento', direction: 'desc' });
+  const [showFormasPagamento, setShowFormasPagamento] = useState(false);
+  const [formasPagamentoData, setFormasPagamentoData] = useState(null);
 
   async function syncGoogleSheets() {
     setIsSyncing(true);
