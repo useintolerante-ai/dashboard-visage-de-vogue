@@ -1815,7 +1815,7 @@ async def get_formas_pagamento(mes: str):
         return {
             "success": True,
             "formas_pagamento": resultado,
-            "total": faturamento_total,
+            "total": total_real,
             "mes": mes
         }
         
