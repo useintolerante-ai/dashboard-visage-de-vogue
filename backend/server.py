@@ -1718,49 +1718,71 @@ async def get_formas_pagamento(mes: str):
         }
         
         # Search through the sheet for payment method data
-        # The data appears to be in a summary section, possibly at the bottom or in a specific area
+        # Look in different areas: summary sections, bottom of sheet, etc.
+        found_any_data = False
+        
+        # Search through all rows for payment method data
         for i, row in enumerate(rows):
             if len(row) < 2:
                 continue
                 
-            # Convert first column to string for searching
-            first_col = str(row[0]).strip().upper() if row[0] else ""
-            
-            # Look for payment method names in the first column
-            if "DINHEIRO" in first_col:
-                if len(row) > 1 and row[1]:
-                    valor = extract_currency_value(str(row[1]))
-                    if valor > 0:
-                        formas_pagamento_reais["Dinheiro"] = valor
-                        logger.info(f"Found Dinheiro: R$ {valor}")
-            
-            elif "CREDIÁRIO" in first_col or "CREDIARIO" in first_col:
-                if len(row) > 1 and row[1]:
-                    valor = extract_currency_value(str(row[1]))
-                    if valor > 0:
-                        formas_pagamento_reais["Crediário"] = valor
-                        logger.info(f"Found Crediário: R$ {valor}")
-            
-            elif "CRÉDITO" in first_col or "CREDITO" in first_col:
-                if len(row) > 1 and row[1]:
-                    valor = extract_currency_value(str(row[1]))
-                    if valor > 0:
-                        formas_pagamento_reais["Crédito"] = valor
-                        logger.info(f"Found Crédito: R$ {valor}")
-            
-            elif "PIX" in first_col:
-                if len(row) > 1 and row[1]:
-                    valor = extract_currency_value(str(row[1]))
-                    if valor > 0:
-                        formas_pagamento_reais["PIX"] = valor
-                        logger.info(f"Found PIX: R$ {valor}")
-            
-            elif "DÉBITO" in first_col or "DEBITO" in first_col:
-                if len(row) > 1 and row[1]:
-                    valor = extract_currency_value(str(row[1]))
-                    if valor > 0:
-                        formas_pagamento_reais["Débito"] = valor
-                        logger.info(f"Found Débito: R$ {valor}")
+            # Check multiple columns for payment method names and values
+            for col_idx in range(min(len(row), 10)):  # Check first 10 columns
+                cell_value = str(row[col_idx]).strip().upper() if row[col_idx] else ""
+                
+                # Look for payment method names
+                if "DINHEIRO" in cell_value:
+                    # Look for value in adjacent columns
+                    for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                        if val_col < len(row) and row[val_col]:
+                            valor = extract_currency_value(str(row[val_col]))
+                            if valor > 0:
+                                formas_pagamento_reais["Dinheiro"] = valor
+                                found_any_data = True
+                                logger.info(f"Found Dinheiro at row {i}, col {val_col}: R$ {valor}")
+                                break
+                
+                elif "CREDIÁRIO" in cell_value or "CREDIARIO" in cell_value:
+                    for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                        if val_col < len(row) and row[val_col]:
+                            valor = extract_currency_value(str(row[val_col]))
+                            if valor > 0:
+                                formas_pagamento_reais["Crediário"] = valor
+                                found_any_data = True
+                                logger.info(f"Found Crediário at row {i}, col {val_col}: R$ {valor}")
+                                break
+                
+                elif ("CRÉDITO" in cell_value or "CREDITO" in cell_value) and "CREDIÁRIO" not in cell_value:
+                    for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                        if val_col < len(row) and row[val_col]:
+                            valor = extract_currency_value(str(row[val_col]))
+                            if valor > 0:
+                                formas_pagamento_reais["Crédito"] = valor
+                                found_any_data = True
+                                logger.info(f"Found Crédito at row {i}, col {val_col}: R$ {valor}")
+                                break
+                
+                elif "PIX" in cell_value and len(cell_value) <= 10:  # Avoid false matches
+                    for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                        if val_col < len(row) and row[val_col]:
+                            valor = extract_currency_value(str(row[val_col]))
+                            if valor > 0:
+                                formas_pagamento_reais["PIX"] = valor
+                                found_any_data = True
+                                logger.info(f"Found PIX at row {i}, col {val_col}: R$ {valor}")
+                                break
+                
+                elif "DÉBITO" in cell_value or "DEBITO" in cell_value:
+                    for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                        if val_col < len(row) and row[val_col]:
+                            valor = extract_currency_value(str(row[val_col]))
+                            if valor > 0:
+                                formas_pagamento_reais["Débito"] = valor
+                                found_any_data = True
+                                logger.info(f"Found Débito at row {i}, col {val_col}: R$ {valor}")
+                                break
+        
+        logger.info(f"Search completed. Found any data: {found_any_data}. Payment methods found: {formas_pagamento_reais}")
         
         # Calculate total from real data
         total_real = sum(formas_pagamento_reais.values())
