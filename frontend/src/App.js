@@ -98,6 +98,7 @@ function App() {
   }
 
   useEffect(() => {
+    console.log('useEffect triggered, loading initial data...');
     loadDashboardData();
     loadSheetsStatus();
     loadMesesDisponiveis();
@@ -106,14 +107,18 @@ function App() {
     
     // Auto refresh every 5 minutes
     const interval = setInterval(() => {
+      console.log('Auto refresh triggered...');
       loadDashboardData();
       loadSheetsStatus();
       loadFaturamentoDiario();
       loadClientesAtrasados();
     }, 300000); // 5 minutes
     
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      console.log('Cleaning up interval...');
+      clearInterval(interval);
+    };
+  }, []); // Empty dependency array to run only once
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
