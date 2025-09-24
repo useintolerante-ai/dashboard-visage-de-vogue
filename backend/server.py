@@ -1578,6 +1578,123 @@ async def get_clientes_atrasados():
         logger.error(f"Error getting overdue clients: {str(e)}")
         return {"success": False, "error": f"Error: {str(e)}"}
 
+@api_router.get("/formas-pagamento/{mes}")
+async def get_formas_pagamento(mes: str):
+    """
+    Get payment methods breakdown for a specific month
+    """
+    try:
+        # Map month to sheet name
+        month_mapping = {
+            "janeiro": "JANEIRO25", "fevereiro": "FEVEREIRO25", "marco": "MARÇO25",
+            "abril": "ABRIL25", "maio": "MAIO25", "junho": "JUNHO25",
+            "julho": "JULHO25", "agosto": "AGOSTO25", "setembro": "SETEMBRO25",
+            "ano_inteiro": "ANO_INTEIRO"
+        }
+        
+        sheet_name = month_mapping.get(mes.lower(), "MARÇO25")
+        
+        # Get sheet data
+        sheets_result = fetch_google_sheets_data_cached(sheet_name)
+        if not sheets_result["success"]:
+            return {"success": False, "error": sheets_result["error"]}
+        
+        rows = sheets_result["data"]
+        
+        # Extract payment methods from the sheet
+        # Usually found in columns like: PIX, Cartão, Dinheiro, etc.
+        formas_pagamento = {
+            "PIX": 0.0,
+            "Cartão de Crédito": 0.0,
+            "Cartão de Débito": 0.0,
+            "Dinheiro": 0.0,
+            "Crediário": 0.0,
+            "Outros": 0.0
+        }
+        
+        # Look for payment method columns (usually in the first few rows)
+        header_row = None
+        payment_columns = {}
+        
+        # Find header row and identify payment method columns
+        for i, row in enumerate(rows[:5]):  # Check first 5 rows for headers
+            if len(row) > 10:
+                for j, cell in enumerate(row):
+                    if cell and isinstance(cell, str):
+                        cell_upper = cell.upper()
+                        if "PIX" in cell_upper:
+                            payment_columns["PIX"] = j
+                            header_row = i
+                        elif "CARTÃO" in cell_upper or "CARTAO" in cell_upper:
+                            if "CRÉDITO" in cell_upper or "CREDITO" in cell_upper:
+                                payment_columns["Cartão de Crédito"] = j
+                            elif "DÉBITO" in cell_upper or "DEBITO" in cell_upper:
+                                payment_columns["Cartão de Débito"] = j
+                            else:
+                                payment_columns["Cartão de Crédito"] = j
+                        elif "DINHEIRO" in cell_upper:
+                            payment_columns["Dinheiro"] = j
+                        elif "CREDIÁRIO" in cell_upper or "CREDIARIO" in cell_upper:
+                            payment_columns["Crediário"] = j
+        
+        logger.info(f"Found payment columns: {payment_columns}")
+        
+        # Process data rows to sum payment methods
+        if payment_columns and header_row is not None:
+            for i in range(header_row + 1, len(rows)):
+                row = rows[i]
+                if len(row) <= max(payment_columns.values()):
+                    continue
+                
+                # Skip total rows and invalid dates
+                if len(row) > 1:
+                    date_cell = str(row[1]).strip() if len(row) > 1 else ''
+                    if (not date_cell or 
+                        'total' in date_cell.lower() or 
+                        'subtotal' in date_cell.lower() or
+                        'soma' in date_cell.lower()):
+                        continue
+                
+                # Sum payment method values
+                for method_name, col_index in payment_columns.items():
+                    try:
+                        if col_index < len(row) and row[col_index]:
+                            value = extract_currency_value(str(row[col_index]))
+                            if value > 0:
+                                formas_pagamento[method_name] += value
+                    except Exception as e:
+                        continue
+        
+        # Calculate total for percentage
+        total_pagamentos = sum(formas_pagamento.values())
+        
+        # Format response with percentages
+        resultado = []
+        for forma, valor in formas_pagamento.items():
+            if valor > 0:  # Only include non-zero values
+                percentual = (valor / total_pagamentos * 100) if total_pagamentos > 0 else 0
+                resultado.append({
+                    "forma": forma,
+                    "valor": valor,
+                    "percentual": round(percentual, 1)
+                })
+        
+        # Sort by value (descending)
+        resultado.sort(key=lambda x: x["valor"], reverse=True)
+        
+        logger.info(f"Payment methods for {mes}: {resultado}")
+        
+        return {
+            "success": True,
+            "formas_pagamento": resultado,
+            "total": total_pagamentos,
+            "mes": mes
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting payment methods for {mes}: {str(e)}")
+        return {"success": False, "error": f"Error: {str(e)}"}
+
 @api_router.get("/crediario-data")
 async def get_crediario_data():
     """Get crediario data from Google Sheets"""
