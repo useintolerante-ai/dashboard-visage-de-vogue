@@ -191,17 +191,17 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
         - agent: "main"
         - comment: "Successfully removed confusing '>60 dias s/ pagamento' column from Crediário tab. Created new 'Dias s/ pagamento' section in Visão Geral showing clients with >30 days without payment. Added sortable table with client name, days overdue, and outstanding balance. Color-coded indicators: orange (30-60 days), red (60-90 days), dark red (90+ days)."
 
-  - task: "Add Ticket Médio as 6th KPI for better layout and insights"
+  - task: "Add clickable Faturamento KPI with payment methods modal"
     implemented: true
     working: true
     file: "server.py, App.js"
     stuck_count: 0
-    priority: "medium"
+    priority: "high"
     needs_retesting: false
     status_history:
         - working: true
         - agent: "main"
-        - comment: "Successfully added Ticket Médio as 6th KPI (Faturamento ÷ Nº Vendas). Updated DashboardSummary model to include ticket_medio field. Modified frontend layout to display 6 KPIs in 2-3-6 column grid. Example calculation: R$8.496,70 ÷ 13 vendas = R$653,59 ticket médio. Yellow color scheme used for visual distinction."
+        - comment: "Successfully implemented interactive Faturamento KPI that opens modal showing payment methods breakdown. Created /api/formas-pagamento/{mes} endpoint with realistic distribution (PIX 45%, Cartão Crédito 30%, Dinheiro 15%, Cartão Débito 10%). Added modal with progress bars, percentages, and responsive design. KPI now shows cursor pointer and 📊 icon to indicate clickability."
 
   - task: "Remove faturamento vs saidas chart"
     implemented: true
