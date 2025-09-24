@@ -46,6 +46,16 @@ function App() {
     }
   }
 
+  async function loadFormasPagamento(mes = selectedMonth) {
+    try {
+      const response = await axios.get(`${API}/formas-pagamento/${mes}`);
+      setFormasPagamentoData(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar formas de pagamento:', error);
+      setFormasPagamentoData({ success: false, formas_pagamento: [] });
+    }
+  }
+
   async function loadClientesAtrasados() {
     try {
       const response = await axios.get(`${API}/clientes-atrasados`);
