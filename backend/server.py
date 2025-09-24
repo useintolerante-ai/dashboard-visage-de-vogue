@@ -1586,13 +1586,22 @@ async def get_formas_pagamento(mes: str):
     try:
         # Map month to sheet name
         month_mapping = {
-            "janeiro": "JANEIRO25", "fevereiro": "FEVEREIRO25", "marco": "MARÇO25",
-            "abril": "ABRIL25", "maio": "MAIO25", "junho": "JUNHO25",
-            "julho": "JULHO25", "agosto": "AGOSTO25", "setembro": "SETEMBRO25",
-            "ano_inteiro": "ANO_INTEIRO"
+            "janeiro": "JANEIRO25", 
+            "fevereiro": "FEVEREIRO25", 
+            "março": "MARÇO25",
+            "marco": "MARÇO25",  # Handle URL encoding
+            "abril": "ABRIL25", 
+            "maio": "MAIO25", 
+            "junho": "JUNHO25",
+            "julho": "JULHO25", 
+            "agosto": "AGOSTO25", 
+            "setembro": "SETEMBRO25",
+            "ano_inteiro": "SETEMBRO25",  # Use current month for year view
+            "anointeiro": "SETEMBRO25"   # Handle different formats
         }
         
-        sheet_name = month_mapping.get(mes.lower(), "MARÇO25")
+        sheet_name = month_mapping.get(mes.lower(), "SETEMBRO25")  # Default to September
+        logger.info(f"Searching payment methods in sheet: {sheet_name} for month: {mes}")
         
         # Get sheet data
         sheets_result = fetch_google_sheets_data_cached(sheet_name)
