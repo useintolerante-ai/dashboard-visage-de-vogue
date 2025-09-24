@@ -249,6 +249,13 @@ function App() {
     return '↕';
   };
 
+  const handleFaturamentoClick = async () => {
+    setShowFormasPagamento(true);
+    if (!formasPagamentoData) {
+      await loadFormasPagamento();
+    }
+  };
+
   const sortClientesAtrasados = (clientes, key, direction) => {
     if (!clientes || !key) return clientes;
     
