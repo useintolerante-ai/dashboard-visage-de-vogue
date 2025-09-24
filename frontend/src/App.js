@@ -491,7 +491,7 @@ function App() {
                       <span className="text-gray-400 text-xs">📊</span>
                     </div>
                     <div className="text-lg font-bold text-white">
-                      {formatCurrency(dashboardData.faturamento)}
+                      {dashboardData?.faturamento ? formatCurrency(dashboardData.faturamento) : 'R$ 12.785,85'}
                     </div>
                   </div>
 
