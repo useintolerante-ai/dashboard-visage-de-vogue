@@ -440,10 +440,14 @@ function App() {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                   {/* Faturamento */}
-                  <div className="bg-gray-800 p-4 rounded-lg text-center">
+                  <div 
+                    className="bg-gray-800 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-700 transition-colors"
+                    onClick={handleFaturamentoClick}
+                  >
                     <div className="flex items-center justify-center gap-2 mb-2">
                       {getKPIIcon('faturamento')}
                       <span className="text-orange-400 text-xs font-medium uppercase">Faturamento</span>
+                      <span className="text-gray-400 text-xs">📊</span>
                     </div>
                     <div className="text-lg font-bold text-white">
                       {formatCurrency(dashboardData.faturamento)}
