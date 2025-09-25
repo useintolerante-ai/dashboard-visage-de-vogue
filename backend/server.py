@@ -1627,11 +1627,23 @@ async def get_dashboard_summary(mes: str = "marco", background_tasks: Background
                                             payment_forms["PIX"] = max(payment_forms["PIX"], valor)
                                             break
                             
-                            elif "CRÉDITO" in cell_value or "CREDITO" in cell_value:
-                                if "CARTÃO" in cell_value or "CARTAO" in cell_value:
-                                    for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
-                                        if val_col < len(row) and row[val_col]:
-                                            valor = extract_currency_value(str(row[val_col]))
+                            elif ("CRÉDITO" in cell_value or "CREDITO" in cell_value or 
+                                  "CREDIT" in cell_value) and ("CARTÃO" in cell_value or "CARTAO" in cell_value):
+                                for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                                    if val_col < len(row) and row[val_col]:
+                                        valor = extract_currency_value(str(row[val_col]))
+                                        if valor > 0:
+                                            payment_forms["Crédito"] = max(payment_forms["Crédito"], valor)
+                                            break
+                            
+                            elif ("DÉBITO" in cell_value or "DEBITO" in cell_value or 
+                                  "DEBIT" in cell_value) and ("CARTÃO" in cell_value or "CARTAO" in cell_value):
+                                for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                                    if val_col < len(row) and row[val_col]:
+                                        valor = extract_currency_value(str(row[val_col]))
+                                        if valor > 0:
+                                            payment_forms["Débito"] = max(payment_forms["Débito"], valor)
+                                            break
                                             if valor > 0:
                                                 payment_forms["Crédito"] = max(payment_forms["Crédito"], valor)
                                                 break
