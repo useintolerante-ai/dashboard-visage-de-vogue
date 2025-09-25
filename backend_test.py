@@ -489,7 +489,7 @@ class SalesDashboardTester:
         return success, response
 
 def main():
-    print("🚀 Starting Sales Dashboard Backend API Tests")
+    print("🚀 Starting Sales Dashboard Backend API Tests - PRIORITY FOCUS")
     print("=" * 60)
     
     tester = SalesDashboardTester()
@@ -498,34 +498,51 @@ def main():
     print("\n📡 PHASE 1: Basic API Connectivity")
     tester.test_root_endpoint()
     
-    # Test 2: Dashboard Summary KPIs for different months
-    print("\n📊 PHASE 2: Dashboard Summary KPI Testing")
-    tester.test_dashboard_summary_janeiro()
-    tester.test_dashboard_summary_marco()
-    tester.test_dashboard_summary_setembro()
-    tester.test_dashboard_summary_anointeiro()
+    # PRIORITY TESTS - Focus on the three requested endpoints
+    print("\n🎯 PRIORITY TESTS: New Functionality Verification")
+    print("=" * 50)
     
-    # Test 3: NEW ENTRADAS R$ FUNCTIONALITY TESTING
-    print("\n💰 PHASE 3: Entradas R$ KPI Testing (NEW FUNCTIONALITY)")
-    tester.test_dashboard_summary_entradas_field()
+    # PRIORITY 1: Test new entradas endpoint
+    print("\n💰 PRIORITY 1: Test /api/entradas-pagamento/setembro")
     tester.test_entradas_pagamento_setembro()
+    
+    # PRIORITY 2: Test saidas agrupadas
+    print("\n📊 PRIORITY 2: Test /api/saidas-agrupadas/setembro")
+    tester.test_saidas_agrupadas_setembro()
+    
+    # PRIORITY 3: Test dashboard entradas field
+    print("\n🎯 PRIORITY 3: Test /api/dashboard-summary?mes=setembro entradas field")
+    tester.test_dashboard_summary_setembro()
+    tester.test_dashboard_summary_entradas_field()
+    tester.test_entradas_consistency_with_dashboard()
+    
+    # Additional tests for completeness
+    print("\n🔍 ADDITIONAL TESTS: Extended Coverage")
+    print("=" * 40)
+    
+    # Test other months for entradas endpoint
+    print("\n💰 Extended Entradas Testing")
     tester.test_entradas_pagamento_agosto()
     tester.test_entradas_pagamento_janeiro()
     tester.test_entradas_pagamento_invalid_month()
-    tester.test_entradas_consistency_with_dashboard()
     
-    # Test 4: Crediario Data (Purchase History)
-    print("\n💳 PHASE 4: Crediario Purchase History Testing")
+    # Test other months for saidas agrupadas
+    print("\n📊 Extended Saidas Agrupadas Testing")
+    tester.test_saidas_agrupadas_agosto()
+    tester.test_saidas_agrupadas_invalid_month()
+    
+    # Test other dashboard months
+    print("\n📈 Extended Dashboard Testing")
+    tester.test_dashboard_summary_janeiro()
+    tester.test_dashboard_summary_marco()
+    tester.test_dashboard_summary_anointeiro()
+    
+    # Test other endpoints
+    print("\n🔄 Other Endpoints Testing")
     tester.test_crediario_data()
-    
-    # Test 5: Other endpoints
-    print("\n📈 PHASE 5: Other Endpoints Testing")
     tester.test_saidas_data_anointeiro()
     tester.test_faturamento_diario_anointeiro()
     tester.test_meses_disponiveis()
-    
-    # Test 6: Google Sheets Integration
-    print("\n🔄 PHASE 6: Google Sheets Integration Testing")
     tester.test_sync_sheets()
     
     # Print final results
@@ -540,6 +557,12 @@ def main():
         print(f"\n❌ CRITICAL FAILURES:")
         for failure in tester.critical_failures:
             print(f"   • {failure}")
+    
+    # Priority test summary
+    print(f"\n🎯 PRIORITY TEST SUMMARY:")
+    print(f"   1. /api/entradas-pagamento/setembro - {'✅ TESTED' if tester.tests_run > 0 else '❌ NOT TESTED'}")
+    print(f"   2. /api/saidas-agrupadas/setembro - {'✅ TESTED' if tester.tests_run > 0 else '❌ NOT TESTED'}")
+    print(f"   3. /api/dashboard-summary?mes=setembro - {'✅ TESTED' if tester.tests_run > 0 else '❌ NOT TESTED'}")
     
     if tester.tests_passed == tester.tests_run:
         print("🎉 All backend tests passed!")
