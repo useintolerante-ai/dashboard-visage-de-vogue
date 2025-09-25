@@ -1454,7 +1454,7 @@ async def get_dashboard_summary(mes: str = "marco", background_tasks: Background
                 logger.error(f"Failed to extract data for {mes}: {month_data['error']}")
                 return DashboardSummary(
                     faturamento=0, saidas=0, lucro_bruto=0, recebido_crediario=0,
-                    a_receber_crediario=0, num_vendas=0, ticket_medio=0.0, data_source="none", last_sync=None
+                    a_receber_crediario=0, num_vendas=0, entradas=0.0, data_source="none", last_sync=None
                 )
             
             # Calculate entradas (sum of all payment methods received)
