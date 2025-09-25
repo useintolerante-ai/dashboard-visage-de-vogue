@@ -1587,6 +1587,188 @@ async def get_clientes_atrasados():
         logger.error(f"Error getting overdue clients: {str(e)}")
         return {"success": False, "error": f"Error: {str(e)}"}
 
+@api_router.get("/entradas-pagamento/{mes}")
+async def get_entradas_pagamento(mes: str):
+    """
+    Get breakdown of all payment forms received for "Entradas R$" KPI
+    """
+    try:
+        # Map month to sheet name
+        month_mapping = {
+            "janeiro": "JANEIRO25", 
+            "fevereiro": "FEVEREIRO25", 
+            "março": "MARÇO25",
+            "marco": "MARÇO25",  # Handle URL encoding
+            "abril": "ABRIL25", 
+            "maio": "MAIO25", 
+            "junho": "JUNHO25",
+            "julho": "JULHO25", 
+            "agosto": "AGOSTO25", 
+            "setembro": "SETEMBRO25",
+            "ano_inteiro": "SETEMBRO25",  # Use current month for year view
+            "anointeiro": "SETEMBRO25"   # Handle different formats
+        }
+        
+        sheet_name = month_mapping.get(mes.lower(), "SETEMBRO25")  # Default to September
+        logger.info(f"Searching entradas payment methods in sheet: {sheet_name} for month: {mes}")
+        
+        # Get sheet data
+        sheets_result = fetch_google_sheets_data_cached(sheet_name)
+        if not sheets_result["success"]:
+            return {"success": False, "error": sheets_result["error"]}
+        
+        rows = sheets_result["data"]
+        
+        # Extract payment forms for Entradas
+        entradas_formas = {
+            "Crediário Recebido": 0.0,
+            "Dinheiro": 0.0,
+            "PIX": 0.0,
+            "Crédito": 0.0,
+            "Débito": 0.0
+        }
+        
+        # Extract data from sheet
+        found_any_data = False
+        
+        # 1. Get Crediário Recebido from column 16
+        for i, row in enumerate(rows):
+            if i == 0 or len(row) < 17:  # Skip header and incomplete rows
+                continue
+                
+            try:
+                # Check for valid date first
+                data_cell = str(row[0]).strip().lower() if len(row) > 0 and row[0] else ''
+                if (not data_cell or 
+                    'total' in data_cell or 
+                    'soma' in data_cell or 
+                    'subtotal' in data_cell or
+                    '/' not in data_cell):
+                    continue
+                
+                # Column 16: PAGAMENTOS CREDIÁRIO
+                crediario_str = str(row[16]).strip() if len(row) > 16 and row[16] else ''
+                if crediario_str and 'R$' in crediario_str and 'R$  -' not in crediario_str:
+                    valor_crediario = extract_currency_value(crediario_str)
+                    if valor_crediario > 0:
+                        # Apply the same total line detection logic
+                        collected_values = []
+                        for temp_row_idx, temp_row in enumerate(rows):
+                            if temp_row_idx == 0 or not temp_row or temp_row_idx == i:
+                                continue
+                            temp_crediario_str = str(temp_row[16]).strip() if len(temp_row) > 16 and temp_row[16] else ''
+                            if temp_crediario_str and 'R$' in temp_crediario_str and 'R$  -' not in temp_crediario_str:
+                                temp_valor = extract_currency_value(temp_crediario_str)
+                                if temp_valor > 0 and temp_valor != valor_crediario:
+                                    collected_values.append(temp_valor)
+                        
+                        if collected_values:
+                            sum_others = sum(collected_values)
+                            if abs(valor_crediario - sum_others) < 0.50:  # Skip total lines
+                                continue
+                        
+                        entradas_formas["Crediário Recebido"] += valor_crediario
+                        found_any_data = True
+                        
+            except Exception as e:
+                logger.warning(f"Error processing crediario row {i}: {e}")
+                continue
+        
+        # 2. Search for other payment forms in the sheet (PIX, Dinheiro, etc.)
+        # Similar to the formas-pagamento endpoint
+        for i, row in enumerate(rows):
+            if len(row) < 2:
+                continue
+                
+            # Check multiple columns for payment method names and values
+            for col_idx in range(min(len(row), 15)):  # Check first 15 columns
+                cell_value = str(row[col_idx]).strip().upper() if row[col_idx] else ""
+                
+                # Look for payment method names
+                if "DINHEIRO" in cell_value:
+                    # Look for value in adjacent columns
+                    for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                        if val_col < len(row) and row[val_col]:
+                            valor = extract_currency_value(str(row[val_col]))
+                            if valor > 0:
+                                entradas_formas["Dinheiro"] = max(entradas_formas["Dinheiro"], valor)
+                                found_any_data = True
+                                logger.info(f"Found Dinheiro: R$ {valor}")
+                                break
+                
+                elif "PIX" in cell_value:
+                    for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                        if val_col < len(row) and row[val_col]:
+                            valor = extract_currency_value(str(row[val_col]))
+                            if valor > 0:
+                                entradas_formas["PIX"] = max(entradas_formas["PIX"], valor)
+                                found_any_data = True
+                                logger.info(f"Found PIX: R$ {valor}")
+                                break
+                
+                elif "CRÉDITO" in cell_value or "CREDITO" in cell_value:
+                    if "CARTÃO" in cell_value or "CARTAO" in cell_value:
+                        for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                            if val_col < len(row) and row[val_col]:
+                                valor = extract_currency_value(str(row[val_col]))
+                                if valor > 0:
+                                    entradas_formas["Crédito"] = max(entradas_formas["Crédito"], valor)
+                                    found_any_data = True
+                                    logger.info(f"Found Crédito: R$ {valor}")
+                                    break
+                
+                elif "DÉBITO" in cell_value or "DEBITO" in cell_value:
+                    if "CARTÃO" in cell_value or "CARTAO" in cell_value:
+                        for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                            if val_col < len(row) and row[val_col]:
+                                valor = extract_currency_value(str(row[val_col]))
+                                if valor > 0:
+                                    entradas_formas["Débito"] = max(entradas_formas["Débito"], valor)
+                                    found_any_data = True
+                                    logger.info(f"Found Débito: R$ {valor}")
+                                    break
+        
+        # Calculate total and percentages
+        total_entradas = sum(entradas_formas.values())
+        
+        # Prepare response in the same format as formas-pagamento
+        formas_entradas = []
+        for forma, valor in entradas_formas.items():
+            if valor > 0:  # Only include non-zero values
+                percentual = round((valor / total_entradas * 100), 1) if total_entradas > 0 else 0
+                formas_entradas.append({
+                    "forma": forma,
+                    "valor": valor,
+                    "percentual": percentual
+                })
+        
+        # Sort by value descending
+        formas_entradas.sort(key=lambda x: x["valor"], reverse=True)
+        
+        if not found_any_data or total_entradas == 0:
+            return {
+                "success": False,
+                "message": f"Nenhum dado de entradas encontrado para {mes}",
+                "formas_pagamento": [],
+                "total": 0.0
+            }
+        
+        return {
+            "success": True,
+            "formas_pagamento": formas_entradas,
+            "total": total_entradas,
+            "mes": mes
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting entradas pagamento for {mes}: {str(e)}")
+        return {
+            "success": False, 
+            "error": f"Erro interno: {str(e)}",
+            "formas_pagamento": [],
+            "total": 0.0
+        }
+
 @api_router.get("/formas-pagamento/{mes}")
 async def get_formas_pagamento(mes: str):
     """
