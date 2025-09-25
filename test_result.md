@@ -254,17 +254,17 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
         - agent: "main"
         - comment: "✅ ENTRADAS KPI IMPLEMENTADA E FUNCIONANDO: 1) Backend: Corrigido bug crítico no cálculo de entradas - agora usa mesma lógica do endpoint entradas-pagamento, 2) Dashboard summary retorna entradas=R$3.673,38 que bate exatamente com endpoint /api/entradas-pagamento/setembro, 3) Frontend: KPI 'Entradas' (removido R$ do nome) implementado com modal funcional, 4) Modal mostra breakdown correto: Crediário Recebido (72.4%), PIX (25.8%), Dinheiro (1.9%). Funcionalidade completa e operacional."
 
-  - task: "Implement Saídas Agrupadas with expandable details"
+  - task: "Implement KPI Drag and Drop Reordering"
     implemented: true
     working: true
-    file: "server.py, App.js"
+    file: "App.js, App.css"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
         - working: true
         - agent: "main"
-        - comment: "✅ SAÍDAS AGRUPADAS IMPLEMENTADAS: 1) Backend: Criado endpoint /api/saidas-agrupadas/{mes} que agrupa saídas por descrição em ordem alfabética, 2) Cada grupo mostra total e lista de detalhes (data, valor), 3) Frontend: Substituída tabela de saídas por interface expansível similar ao Crediário, 4) Clique na categoria expande detalhes por data, 5) Layout: cabeçalho com descrição/total, expansão para ver entradas individuais. Endpoint testado e funcionando para setembro."
+        - comment: "✅ DRAG AND DROP DE KPIs IMPLEMENTADO: 1) Frontend: Funcionalidade de segurar KPI por 3 segundos para ativar modo arrastar, 2) Estados de gerenciamento: isDragMode, draggedKPI, dragTimer, kpiOrder com localStorage, 3) Funções completas: handleMouseDown (timer 3s), handleDragStart/Drop/End, reordenação dinâmica, 4) CSS personalizado: animações, efeitos visuais, indicadores de drag, 5) Interface: instruções claras, feedback visual durante drag, persistência da ordem no localStorage, 6) Todos os 6 KPIs (Faturamento, Saídas, Lucro Bruto, Recebido Cred., Em Aberto, Entradas) funcionais com drag and drop."
 
 ## metadata:
   created_by: "main_agent"
