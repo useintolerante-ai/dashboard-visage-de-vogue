@@ -568,14 +568,18 @@ function App() {
                     </div>
                   </div>
 
-                  {/* Ticket Médio */}
-                  <div className="bg-gray-800 p-4 rounded-lg text-center">
+                  {/* Entradas R$ */}
+                  <div 
+                    className="bg-gray-800 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-700 transition-colors"
+                    onClick={handleEntradasClick}
+                  >
                     <div className="flex items-center justify-center gap-2 mb-2">
                       {getKPIIcon('faturamento')}
-                      <span className="text-yellow-400 text-xs font-medium uppercase">Ticket Médio</span>
+                      <span className="text-yellow-400 text-xs font-medium uppercase">Entradas R$</span>
+                      <span className="text-gray-400 text-xs">📊</span>
                     </div>
                     <div className="text-lg font-bold text-white">
-                      {formatCurrency(dashboardData.ticket_medio || 0)}
+                      {formatCurrency(dashboardData.entradas || 0)}
                     </div>
                   </div>
                 </div>
