@@ -1,61 +1,77 @@
 <analysis>
-The AI engineer's work primarily focused on iteratively refining a dynamic sales dashboard, moving from initial Excel support to a Google Sheets integration. A significant challenge involved precisely parsing complex, inconsistent data structures across multiple Google Sheet tabs and handling total lines that caused data duplication in KPIs. The process was highly iterative, with the user providing detailed, granular feedback on specific numerical discrepancies for months like January, and UI/UX improvements (sorting, layout). The AI systematically addressed these, improving data extraction logic in  to filter out erroneous sums, integrating  for better client matching, implementing caching to mitigate Google Sheets API rate limits, and enhancing frontend components in  for sorting and improved Crediário display. The most recent efforts revolve around further enhancing the Crediário tab with accurate  values, payment history, and a new feature for overdue clients.
+The AI engineer's work primarily involved iteratively building and refining a dynamic sales dashboard, transitioning from initial Excel support to Google Sheets integration. A significant focus was on accurately parsing complex, inconsistent data structures from various Google Sheet tabs, managing total lines to prevent KPI duplication, and handling API rate limits through caching. The development was highly iterative, driven by granular user feedback on numerical discrepancies and UI/UX improvements. Key achievements include implementing accurate  calculations with fuzzy matching (), adding  and  history, developing a dedicated Dias s/ Pagamento tab for overdue clients (initially a column, then revised), resolving data inconsistencies (e.g., client deduplication, specific client value corrections), and implementing an interactive modal for payment forms on the Faturamento KPI. The most recent task involves replacing the Ticket Médio KPI with Entradas R by aggregating all payment forms. Debugging  loops in the frontend was crucial for stable performance.
 </analysis>
 
 <product_requirements>
-The user required a dynamic sales dashboard, initially from Excel, then a specific Google Sheet (ID: ), updating automatically and manually. The UI should be a modern, dark-themed Visage de Vogue aesthetic with golden gradients. Key KPIs (Faturamento, Saídas, Lucro Bruto, Recebido Crediário, Nº de Vendas) must be displayed accurately, dynamically updating for selected months and Ano Inteiro. Multi-tabbed navigation (Visão Geral, Crediário, Saídas) is essential. The Crediário tab needs to list clients with accurate purchase history (date and value, not payments), dynamically fetch  from the original CREDIARIO sheet, display payment history, and highlight clients 60+ days overdue. Tables for daily sales and expenses should be sortable by clicking headers. A faturamento vs saída chart was requested to be removed. Specific January KPI values were targeted for accuracy: Faturamento R$ 5.339,80, Saídas R$ 11.420,02, Recebido Crediário R$ 3.503,14. The logic for filtering total lines and calculating monthly aggregates must be consistent across all months (January-September).
+The user required a dynamic sales dashboard, originally from Excel, now a specific Google Sheet (ID: ). The UI features a modern, dark Visage de Vogue theme with multi-tabbed navigation (Visão Geral, Crediário, Saídas, and a newly added Dias s/ Pagamento). Key KPIs (Faturamento, Saídas, Lucro Bruto, Recebido Crediário) must be accurate and dynamically update for selected months and Ano Inteiro. Nº de Vendas was replaced by Total em Aberto Cred. and Total de Clientes in the overview, and Ticket Médio was added as a 6th KPI, with a pending request to replace it with Entradas R. The Crediário tab needs to list clients with accurate  and display  and  history on click. Clients with  < R, zero, or negative should be excluded. A Dias s/ Pagamento tab was created to list clients > 30 days without payment, sortable, with visual indicators for overdue ranges (30-60, 60-90, 90+ days), using month-based payment logic. The Faturamento KPI in Visão Geral must be clickable to show a modal detailing payment forms (Crediário, PIX, Débito, Dinheiro, Crédito) by month, with values and percentages.
 </product_requirements>
 
 <key_technical_concepts>
-- **FastAPI**: Backend for API endpoints and Google Sheets integration.
-- **React**: Frontend framework for UI and data visualization.
-- **MongoDB**: Database for processed dashboard data.
-- **Google Sheets API**: Data fetching from spreadsheets.
-- ****: Python library for Google Sheets.
-- ****: Python library for fuzzy string matching (client names).
-- **Caching**: Implemented to mitigate Google Sheets API rate limits.
-- **Tailwind CSS**: Frontend styling.
+-   **FastAPI**: Backend for API endpoints, Google Sheets integration.
+-   **React**: Frontend framework for UI and data visualization.
+-   **MongoDB**: Database for processed dashboard data.
+-   **Google Sheets API & **: Data fetching from spreadsheets.
+-   ****: Python library for fuzzy string matching (client names).
+-   **Caching**: Implemented to mitigate Google Sheets API rate limits.
+-   **Tailwind CSS**: Frontend styling.
+-   **Pydantic**: Data validation and serialization.
+-   **React **: Managing component side effects and API calls, with careful dependency management to prevent loops.
 </key_technical_concepts>
 
 <code_architecture>
 
-- 
-    - **Summary of why important**: This file is the core backend, handling all API routes, data extraction, processing, aggregation from Google Sheets, and interactions with MongoDB. It defines the logic for calculating KPIs, fetching client data, and managing expenses.
-    - **Summary of changes made**:
-        - Extensive modifications for Google Sheets API integration and data parsing.
-        - Implemented  to accurately calculate Faturamento, Saídas, Lucro Bruto, Recebido Crediário, and Nº de Vendas, with complex logic to identify and exclude total lines in various columns and formats across different monthly sheets.
-        -  was heavily modified to fetch client names,  from the CREDIARIO sheet, and  from the CREDIARIO POR CONTRATO sheet, handling their distinct structures.
-        -  was updated to apply the same precise filtering logic for daily sales data.
-        - Introduced  for improved client name matching for .
-        - Implemented caching () to prevent Google Sheets API rate limiting (429 errors).
-        - Logic generalized to apply correct calculations and filtering across all months (January to September).
+-   
+    -   **Summary of why important**: This file is the core backend, handling all API routes, data extraction, processing, aggregation from Google Sheets, and interactions with MongoDB. It defines the logic for calculating KPIs, fetching client data, managing expenses, and extracting payment forms.
+    -   **Summary of changes made**:
+        -   **Data Extraction & Filtering**: Extensive modifications for Google Sheets API integration and data parsing. Implemented  to accurately calculate KPIs and  with complex logic to identify and exclude total lines.
+        -   **Crediário Data**:  was heavily modified to fetch client names, ,  from various sheets, and  ().
+        -   **Client Deduplication**: Added logic to prevent duplicate client entries (e.g., Catia Roth).
+        -   **Fuzzy Matching**: Introduced  for improved client name matching (e.g., Daiane Defante, ALEKSYA DALLABRIDA).
+        -   **Overdue Clients**: Implemented  (initially date-based, then month-based) and  (later ) to identify clients without recent payments.
+        -   **Client Filtering**: Filtered out clients with  less than R, zero, or negative.
+        -   **New KPIs**: Added  calculation (later to be replaced by ).
+        -   **Payment Forms**: Created  endpoint to extract payment method breakdown by month from Google Sheets, handling cases with no data and providing fallbacks.
+        -   **Caching**: Implemented caching () to prevent Google Sheets API rate limiting.
 
-- 
-    - **Summary of why important**: The main React component rendering the entire dashboard UI, managing state, making API calls to the backend, and presenting data.
-    - **Summary of changes made**:
-        - Applied Visage de Vogue dark theme, including specific fonts, color gradients, and layout adjustments.
-        - Implemented multi-tabbed navigation (Visão Geral, Crediário, Saídas).
-        - Removed the faturamento vs saída chart as per user request.
-        - Added interactive sorting functionality to table headers (Faturamento Diário, Saídas, Crediário clients) for ascending/descending order.
-        - Corrected text labels (e.g., pagamentos to compras, Histórico de Pagamentos to Histórico de Compras).
-        - Enhanced Crediário tab layout: added Clientes, Total Vendas, Compras, Saldo Devedor headers, and refined value alignment.
-        - Updated fetch calls to new backend endpoints and data structures.
+-   
+    -   **Summary of why important**: The main React component rendering the entire dashboard UI, managing state, making API calls to the backend, and presenting data. It defines the application's visual theme and user interactions.
+    -   **Summary of changes made**:
+        -   **Theming**: Applied Visage de Vogue dark theme with specific fonts and gradients.
+        -   **Navigation**: Implemented multi-tabbed navigation (Visão Geral, Crediário, Saídas, and added Dias s/ Pagamento).
+        -   **Crediário Tab**:
+            -   Displayed  alongside .
+            -   Simplified client list to show only Client and Saldo Devedor in line, with expanded details on click.
+            -   Corrected text labels (e.g., compras to vendas).
+            -   Decreased font sizes for better visualization.
+        -   **Dias s/ Pagamento Tab**:
+            -   Initially a panel in Visão Geral, then converted to a dedicated tab.
+            -   Displays clients > 30 days without payment, with sorting and visual overdue indicators.
+            -   Decreased font sizes.
+        -   **KPIs in Visão Geral**:
+            -   Removed faturamento vs saída chart and Resumo Crediário pillar.
+            -   Replaced Nº Vendas with Total em Aberto Cred. and Total de Clientes.
+            -   Added Ticket Médio as a 6th KPI (pending replacement).
+            -   Improved KPI layout with a compact, responsive grid.
+        -   **Faturamento KPI Interactivity**:
+            -   Made Faturamento KPI clickable.
+            -   Implemented a modal to display payment forms breakdown by month ().
+            -   Managed state for modal visibility and .
+            -   Fixed  dependency issues causing infinite loops and incorrect data fetching for the modal.
+            -   Adjusted month mapping for API calls (e.g., 'anointeiro' to 'setembro').
+        -   **Sorting**: Added interactive sorting to table headers across multiple tabs.
 
-- 
-    - **Summary of changes made**: Added  dependency.
-
+-   
+    -   **Summary of changes made**: Added  dependency.
 </code_architecture>
 
 <pending_tasks>
-- Correct  for specific clients (e.g., Daiane Defante).
-- Add  alongside purchase history in the Crediário tab.
-- Implement a feature to identify clients 60+ days without payment (overdue clients).
+-   Replace Ticket Médio KPI with Entradas R, which will sum the values from , , , , and  in the Visão Geral tab.
 </pending_tasks>
 
 <current_work>
-The AI engineer is currently addressing three explicit user requests related to the  tab. First, a correction is needed for the  calculation, as it's not updating correctly for some clients, specifically mentioned is Daiane Defante. The AI engineer's last action in  was an edit to  to refine  calculation, likely to improve client name matching or data retrieval logic. Second, the user requested to add  (payment history) to the  tab, to be displayed alongside the already implemented  (purchase history). Third, a new feature is required: a dedicated column or mechanism to identify  (clients overdue by more than 60 days). The AI has acknowledged these tasks and is planning the next steps to implement them, starting with verifying the  correction and then proceeding with the new features.
+The AI engineer is currently working on implementing the user's request to replace the Ticket Médio KPI with a new KPI called Entradas R. This new KPI is intended to aggregate the total received from all payment forms, specifically , , , , and , to display a comprehensive total of incoming funds. This change aims to provide a more relevant financial metric in the Visão Geral section. The last action taken was acknowledging this request and modifying the  model in . This is the initial step to update the backend data structure before implementing the calculation logic and updating the frontend to display the new KPI.
 </current_work>
 
 <optional_next_step>
-Test if the  correction (fuzzy matching) worked, then implement payment history and the overdue clients feature.
+Calculate the total Entradas R in  by summing all individual payment methods (Crediário, PIX, Débito, Dinheiro, Crédito).
 </optional_next_step>
