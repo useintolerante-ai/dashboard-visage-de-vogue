@@ -1927,7 +1927,24 @@ async def get_entradas_pagamento(mes: str):
                                 logger.info(f"Found Débito: R$ {valor}")
                                 break
         
-        # Calculate total and percentages
+        # Calculate total and percentages, including debito/credito from faturamento
+        # Get debito/credito values from formas-pagamento endpoint
+        try:
+            formas_pagamento_response = await get_formas_pagamento(mes)
+            if formas_pagamento_response.get("success") and formas_pagamento_response.get("formas_pagamento"):
+                for forma_pagamento in formas_pagamento_response["formas_pagamento"]:
+                    forma_nome = forma_pagamento.get("forma", "").upper()
+                    if "DÉBITO" in forma_nome or "DEBITO" in forma_nome:
+                        entradas_formas["Débito"] = forma_pagamento.get("valor", 0)
+                        found_any_data = True
+                        logger.info(f"Added Débito from faturamento: R$ {entradas_formas['Débito']}")
+                    elif "CRÉDITO" in forma_nome or "CREDITO" in forma_nome:
+                        entradas_formas["Crédito"] = forma_pagamento.get("valor", 0)
+                        found_any_data = True
+                        logger.info(f"Added Crédito from faturamento: R$ {entradas_formas['Crédito']}")
+        except Exception as e:
+            logger.warning(f"Could not get debito/credito from formas-pagamento: {e}")
+        
         total_entradas = sum(entradas_formas.values())
         
         # Prepare response in the same format as formas-pagamento
