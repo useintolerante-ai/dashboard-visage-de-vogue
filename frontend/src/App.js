@@ -290,7 +290,7 @@ function App() {
     try {
       const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/formas-pagamento/${apiMonth}`);
       const data = await response.json();
-      setFormasPagamentoData(data);
+      setPaymentFormsData(data);
     } catch (error) {
       console.error('Error fetching payment forms:', error);
       setFormasPagamentoData({ success: false, error: 'Erro ao carregar formas de pagamento' });
