@@ -1145,6 +1145,89 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Modal de Entradas R$ */}
+      {showEntradasModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-lg border border-gray-600 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-white">
+                  Entradas R$ - {selectedMonth === 'anointeiro' ? 'Ano Inteiro' : 
+                    mesesDisponiveis.find(m => m.value === selectedMonth)?.label || selectedMonth}
+                </h2>
+                <button
+                  onClick={() => setShowEntradasModal(false)}
+                  className="text-gray-400 hover:text-white text-2xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+              
+              {entradasFormsData ? (
+                entradasFormsData.success && entradasFormsData.formas_pagamento.length > 0 ? (
+                  <div>
+                    <div className="mb-4 p-4 bg-gray-800 rounded-lg">
+                      <div className="text-gray-300 text-sm mb-2">Total Entradas:</div>
+                      <div className="text-2xl font-bold text-yellow-400">
+                        {formatCurrency(entradasFormsData.total)}
+                      </div>
+                    </div>
+                    
+                    <div className="grid gap-4">
+                      {entradasFormsData.formas_pagamento.map((forma, index) => (
+                        <div key={index} className="bg-gray-800 p-4 rounded-lg">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-white font-semibold text-lg">
+                              {forma.forma}
+                            </div>
+                            <div className="text-right">
+                              <div className="text-green-400 font-bold text-lg">
+                                {formatCurrency(forma.valor)}
+                              </div>
+                              <div className="text-gray-400 text-sm">
+                                {forma.percentual}% do total
+                              </div>
+                            </div>
+                          </div>
+                          <div className="w-full bg-gray-700 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-yellow-500 to-green-500 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${forma.percentual}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400 text-lg mb-2">
+                      {entradasFormsData.message || "Nenhuma entrada encontrada para este período."}
+                    </div>
+                    <div className="text-gray-500 text-sm">
+                      Os dados de entradas podem não estar preenchidos para este mês.
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-gray-400">Carregando entradas...</div>
+                </div>
+              )}
+              
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setShowEntradasModal(false)}
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
