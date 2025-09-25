@@ -326,6 +326,7 @@ function App() {
   // Handle Entradas R$ KPI click
   const handleEntradasClick = async () => {
     setShowEntradasModal(true);
+    setEntradasFormsData(null); // Reset data first
     
     // Map selectedMonth to API format  
     const monthMapping = {
@@ -343,9 +344,12 @@ function App() {
     
     const apiMonth = monthMapping[selectedMonth] || selectedMonth;
     
+    console.log('Loading entradas data for month:', apiMonth);
+    
     try {
       const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/entradas-pagamento/${apiMonth}`);
       const data = await response.json();
+      console.log('Entradas data received:', data);
       setEntradasFormsData(data);
     } catch (error) {
       console.error('Error fetching entradas forms:', error);
