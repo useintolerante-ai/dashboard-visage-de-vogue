@@ -1569,7 +1569,7 @@ async def get_dashboard_summary(mes: str = "marco", background_tasks: Background
                 "setembro": "SETEMBRO25"
             }
             
-            sheet_name = month_mapping.get(mes.lower(), "MARÇO25")
+            sheet_name = month_mapping.get(mes.lower(), "SETEMBRO25")
             
             # Extract month data using improved function
             month_data = extract_current_month_data(sheet_name)
