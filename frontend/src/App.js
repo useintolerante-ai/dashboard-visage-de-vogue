@@ -576,7 +576,7 @@ function App() {
                   >
                     <div className="flex items-center justify-center gap-2 mb-2">
                       {getKPIIcon('faturamento')}
-                      <span className="text-yellow-400 text-xs font-medium uppercase">Entradas R$</span>
+                      <span className="text-yellow-400 text-xs font-medium uppercase">Entradas</span>
                       <span className="text-gray-400 text-xs">📊</span>
                     </div>
                     <div className="text-lg font-bold text-white">
