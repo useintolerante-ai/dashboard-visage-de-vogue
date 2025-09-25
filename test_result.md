@@ -259,12 +259,11 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
 
 ## test_plan:
   current_focus:
-    - "Fix saldo devedor calculation with improved fuzzy matching"
-    - "Add payment history alongside purchase history"
+    - "Replace Ticket Médio with Entradas R$ KPI"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 ## agent_communication:
     - agent: "main"
-    - message: "✅ FORMAS DE PAGAMENTO POR MÊS CORRIGIDAS: 1) Sistema agora busca na aba correta do mês selecionado (SETEMBRO25, JANEIRO25, etc.), 2) Setembro mostra dados reais: Crédito R$6.995,20 (60,6%), Crediário R$3.182,00 (27,6%), PIX R$946,55 (8,2%), Débito R$349,10 (3,0%), Dinheiro R$69,00 (0,6%), 3) Meses sem dados retornam vazio com mensagem explicativa, 4) Algoritmo aprimorado busca em múltiplas colunas e posições, 5) Frontend recarrega dados baseado no mês selecionado, 6) Modal funcional para todos os meses com dados precisos ou mensagem de ausência. Funcionalidade 100% operacional!"
+    - message: "✅ IMPLEMENTAÇÃO ENTRADAS R$ CONCLUÍDA: 1) Backend: Criado endpoint /api/entradas-pagamento/{mes} que agrega todas as formas de pagamento (Crediário Recebido, PIX, Débito, Dinheiro, Crédito), 2) Atualizado modelo DashboardSummary com campo 'entradas', 3) Frontend: Substituído 'Ticket Médio' por 'Entradas R$' com funcionalidade clicável, 4) Adicionado modal para exibir breakdown das formas de entrada, similar ao modal de faturamento, 5) Modal usa cores amarelo-verde para diferenciação visual. PRÓXIMO PASSO: Testar endpoint do backend e integração frontend-backend para validar se os dados estão sendo calculados e exibidos corretamente."
