@@ -25,9 +25,10 @@ function App() {
   const [clientesAtrasados, setClientesAtrasados] = useState(null);
   const [sortConfigAtraso, setSortConfigAtraso] = useState({ key: 'dias_sem_pagamento', direction: 'desc' });
   const [showFormasPagamento, setShowFormasPagamento] = useState(false);
-  const [formasPagamentoData, setFormasPagamentoData] = useState(null);
+  const [paymentFormsData, setPaymentFormsData] = useState(null);
   const [entradasFormsData, setEntradasFormsData] = useState(null);
   const [showEntradasModal, setShowEntradasModal] = useState(false);
+  const [expandedSaida, setExpandedSaida] = useState(null);
 
   async function syncGoogleSheets() {
     setIsSyncing(true);
