@@ -29,6 +29,18 @@ function App() {
   const [entradasFormsData, setEntradasFormsData] = useState(null);
   const [showEntradasModal, setShowEntradasModal] = useState(false);
   const [expandedSaida, setExpandedSaida] = useState(null);
+  
+  // Drag and Drop states
+  const [isDragMode, setIsDragMode] = useState(false);
+  const [draggedKPI, setDraggedKPI] = useState(null);
+  const [dragTimer, setDragTimer] = useState(null);
+  const [kpiOrder, setKpiOrder] = useState(() => {
+    // Load saved order from localStorage or use default
+    const savedOrder = localStorage.getItem('kpiOrder');
+    return savedOrder ? JSON.parse(savedOrder) : [
+      'faturamento', 'saidas', 'lucro', 'recebido', 'aberto', 'entradas'
+    ];
+  });
 
   async function syncGoogleSheets() {
     setIsSyncing(true);
