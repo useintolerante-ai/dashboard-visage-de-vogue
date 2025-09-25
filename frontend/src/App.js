@@ -347,7 +347,7 @@ function App() {
     console.log('Loading entradas data for month:', apiMonth);
     
     try {
-      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/entradas-pagamento/${apiMonth}`);
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/entradas-pagamento/${apiMonth}`);
       const data = await response.json();
       console.log('Entradas data received:', data);
       setEntradasFormsData(data);
