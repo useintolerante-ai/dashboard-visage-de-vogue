@@ -665,9 +665,17 @@ function App() {
                 <CardTitle className="text-white text-lg">
                   Indicadores Financeiros
                   {isDragMode && (
-                    <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded ml-2">
-                      Modo Arrastar Ativo - Arraste para reordenar
-                    </span>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">
+                        Modo Arrastar Ativo - Arraste para reordenar
+                      </span>
+                      <button
+                        onClick={() => setIsDragMode(false)}
+                        className="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
+                      >
+                        Sair do Modo Arrastar
+                      </button>
+                    </div>
                   )}
                 </CardTitle>
                 <div className="text-gray-400 text-sm">
