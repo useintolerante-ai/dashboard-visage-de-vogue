@@ -81,7 +81,7 @@ class DashboardSummary(BaseModel):
     recebido_crediario: float
     a_receber_crediario: float
     num_vendas: int
-    ticket_medio: float = 0.0
+    entradas: float = 0.0  # Soma de todas as formas de pagamento recebidas
     data_source: str = "unknown"
     last_sync: Optional[str] = None
 
