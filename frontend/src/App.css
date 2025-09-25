@@ -274,6 +274,15 @@ select {
   -ms-user-select: none;
 }
 
+.kpi-no-select {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
 .kpi-dragging {
   opacity: 0.5;
   transform: scale(1.05);
@@ -313,7 +322,7 @@ select {
 }
 
 .drag-timer-active {
-  animation: dragTimer 3s linear;
+  animation: dragTimer 2s linear;
   border: 2px solid transparent;
   background-image: linear-gradient(#1f2937, #1f2937), linear-gradient(45deg, #3b82f6, #8b5cf6, #f59e0b);
   background-origin: border-box;
