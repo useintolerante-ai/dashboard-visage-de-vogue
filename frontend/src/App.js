@@ -1082,8 +1082,8 @@ function App() {
                 </button>
               </div>
               
-              {formasPagamentoData ? (
-                formasPagamentoData.success && formasPagamentoData.formas_pagamento.length > 0 ? (
+              {paymentFormsData ? (
+                paymentFormsData.success && paymentFormsData.formas_pagamento.length > 0 ? (
                   <div>
                     <div className="mb-4 p-4 bg-gray-800 rounded-lg">
                       <div className="text-gray-300 text-sm mb-2">Total Faturamento:</div>
