@@ -266,42 +266,64 @@ function App() {
     return '↕';
   };
 
+  // Handle Faturamento KPI click
   const handleFaturamentoClick = async () => {
     setShowFormasPagamento(true);
-    // Use dados fixos para demonstração enquanto resolvemos o carregamento
-    const dadosFixos = {
-      success: true,
-      formas_pagamento: [
-        {
-          "forma": "Crédito",
-          "valor": 6995.20,
-          "percentual": 60.6
-        },
-        {
-          "forma": "Crediário", 
-          "valor": 3182.00,
-          "percentual": 27.6
-        },
-        {
-          "forma": "PIX",
-          "valor": 946.55,
-          "percentual": 8.2
-        },
-        {
-          "forma": "Débito",
-          "valor": 349.10,
-          "percentual": 3.0
-        },
-        {
-          "forma": "Dinheiro",
-          "valor": 69.00,
-          "percentual": 0.6
-        }
-      ],
-      total: 11541.85,
-      mes: "setembro"
+    
+    // Map selectedMonth to API format
+    const monthMapping = {
+      'janeiro': 'janeiro',
+      'fevereiro': 'fevereiro', 
+      'marco': 'março',
+      'abril': 'abril',
+      'maio': 'maio',
+      'junho': 'junho',
+      'julho': 'julho',
+      'agosto': 'agosto',
+      'setembro': 'setembro',
+      'anointeiro': 'anointeiro'
     };
-    setFormasPagamentoData(dadosFixos);
+    
+    const apiMonth = monthMapping[selectedMonth] || selectedMonth;
+    
+    try {
+      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/formas-pagamento/${apiMonth}`);
+      const data = await response.json();
+      setPaymentFormsData(data);
+    } catch (error) {
+      console.error('Error fetching payment forms:', error);
+      setPaymentFormsData({ success: false, error: 'Erro ao carregar formas de pagamento' });
+    }
+  };
+
+  // Handle Entradas R$ KPI click
+  const handleEntradasClick = async () => {
+    setShowEntradasModal(true);
+    
+    // Map selectedMonth to API format  
+    const monthMapping = {
+      'janeiro': 'janeiro',
+      'fevereiro': 'fevereiro', 
+      'marco': 'março',
+      'abril': 'abril',
+      'maio': 'maio',
+      'junho': 'junho',
+      'julho': 'julho',
+      'agosto': 'agosto',
+      'setembro': 'setembro',
+      'anointeiro': 'anointeiro'
+    };
+    
+    const apiMonth = monthMapping[selectedMonth] || selectedMonth;
+    
+    try {
+      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/entradas-pagamento/${apiMonth}`);
+      const data = await response.json();
+      setEntradasFormsData(data);
+    } catch (error) {
+      console.error('Error fetching entradas forms:', error);
+      setEntradasFormsData({ success: false, error: 'Erro ao carregar formas de entrada' });
+    }
   };
 
   const sortClientesAtrasados = (clientes, key, direction) => {
