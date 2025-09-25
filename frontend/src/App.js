@@ -339,6 +339,62 @@ function App() {
     }
   };
 
+  // Drag and Drop functions
+  const handleMouseDown = (kpiId) => {
+    const timer = setTimeout(() => {
+      setIsDragMode(true);
+      setDraggedKPI(kpiId);
+    }, 3000); // 3 seconds
+    setDragTimer(timer);
+  };
+
+  const handleMouseUp = () => {
+    if (dragTimer) {
+      clearTimeout(dragTimer);
+      setDragTimer(null);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (dragTimer) {
+      clearTimeout(dragTimer);
+      setDragTimer(null);
+    }
+  };
+
+  const handleDragStart = (e, kpiId) => {
+    setDraggedKPI(kpiId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, targetKpiId) => {
+    e.preventDefault();
+    if (draggedKPI && draggedKPI !== targetKpiId) {
+      const newOrder = [...kpiOrder];
+      const dragIndex = newOrder.indexOf(draggedKPI);
+      const targetIndex = newOrder.indexOf(targetKpiId);
+      
+      // Remove dragged item and insert at target position
+      newOrder.splice(dragIndex, 1);
+      newOrder.splice(targetIndex, 0, draggedKPI);
+      
+      setKpiOrder(newOrder);
+      localStorage.setItem('kpiOrder', JSON.stringify(newOrder));
+    }
+    setDraggedKPI(null);
+    setIsDragMode(false);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedKPI(null);
+    setIsDragMode(false);
+  };
+
   const sortClientesAtrasados = (clientes, key, direction) => {
     if (!clientes || !key) return clientes;
     
