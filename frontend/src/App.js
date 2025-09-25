@@ -948,14 +948,14 @@ function App() {
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader>
               <CardTitle className="text-white text-xl">
-                Detalhamento de Saídas - {mesesDisponiveis.find(m => m.value === selectedMonth)?.label || selectedMonth}
+                Saídas por Categoria - {mesesDisponiveis.find(m => m.value === selectedMonth)?.label || selectedMonth}
               </CardTitle>
               <CardDescription className="text-gray-400">
-                Análise detalhada de todas as saídas do mês
+                Saídas agrupadas por descrição com detalhamento expandível
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {saidasData && saidasData.saidas ? (
+              {saidasData && saidasData.saidas_agrupadas ? (
                 <>
                   <div className="mb-4 p-4 bg-gray-800 rounded-lg">
                     <div className="flex justify-between items-center">
@@ -965,72 +965,99 @@ function App() {
                       </span>
                     </div>
                     <div className="flex justify-between items-center mt-2">
-                      <span className="text-gray-300">Número de Saídas:</span>
+                      <span className="text-gray-300">Categorias:</span>
                       <span className="text-white font-semibold">
-                        {saidasData.total_saidas}
+                        {saidasData.total_grupos}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-gray-300">Total de Entradas:</span>
+                      <span className="text-gray-400 font-semibold">
+                        {saidasData.total_entradas}
                       </span>
                     </div>
                   </div>
 
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                      <thead>
-                        <tr className="border-b border-gray-700">
-                          <th 
-                            className="text-left p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
-                            onClick={() => handleSort('data', 'string')}
-                          >
-                            Data {getSortIcon('data')}
-                          </th>
-                          <th 
-                            className="text-left p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
-                            onClick={() => handleSort('descricao', 'string')}
-                          >
-                            Descrição {getSortIcon('descricao')}
-                          </th>
-                          <th 
-                            className="text-right p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
-                            onClick={() => handleSort('valor', 'currency')}
-                          >
-                            Valor {getSortIcon('valor')}
-                          </th>
-                          {selectedMonth === 'anointeiro' && (
-                            <th 
-                              className="text-left p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
-                              onClick={() => handleSort('mes_nome', 'string')}
-                            >
-                              Mês {getSortIcon('mes_nome')}
-                            </th>
-                          )}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sortData(saidasData.saidas, sortConfig.key, sortConfig.key === 'valor' ? 'currency' : 'string')
-                          .map((saida, index) => (
-                          <tr key={saida.id || index} className="border-b border-gray-800 hover:bg-gray-800 transition-colors">
-                            <td className="p-3 text-white">{saida.data}</td>
-                            <td className="p-3 text-white">{saida.descricao}</td>
-                            <td className="p-3 text-right text-red-400 font-semibold">
-                              {formatCurrency(saida.valor)}
-                            </td>
-                            {selectedMonth === 'anointeiro' && (
-                              <td className="p-3 text-cyan-400">{saida.mes_nome || 'N/A'}</td>
+                  {/* Column Headers */}
+                  <div className="bg-gray-900 p-3 rounded-lg border border-gray-600 mb-4">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <span className="text-gray-300 font-medium">Descrição/Categoria</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-gray-300 font-medium">Valor Total</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {saidasData.saidas_agrupadas.map((grupo) => (
+                      <div key={grupo.id} className="bg-gray-800 rounded-lg border border-gray-700">
+                        {/* Group Header - Clickable */}
+                        <div 
+                          className="p-3 hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-700"
+                          onClick={() => setExpandedSaida(expandedSaida === grupo.id ? null : grupo.id)}
+                        >
+                          <div className="flex justify-between items-center">
+                            {/* Description */}
+                            <div className="flex-1">
+                              <h3 className="text-white font-semibold text-sm">{grupo.descricao}</h3>
+                              <div className="text-gray-400 text-xs mt-1">
+                                {grupo.numero_entradas} entrada{grupo.numero_entradas !== 1 ? 's' : ''}
+                              </div>
+                            </div>
+                            
+                            {/* Total Value */}
+                            <div className="text-right">
+                              <div className="text-red-400 font-bold text-sm">
+                                {formatCurrency(grupo.total_valor)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Expanded Details */}
+                        {expandedSaida === grupo.id && (
+                          <div className="border-t border-gray-700 p-4 bg-gray-850">
+                            <h4 className="text-white font-semibold mb-3">Detalhamento por Data:</h4>
+                            {grupo.detalhes && grupo.detalhes.length > 0 ? (
+                              <div className="overflow-x-auto">
+                                <table className="w-full border-collapse">
+                                  <thead>
+                                    <tr className="border-b border-gray-600">
+                                      <th className="text-left p-3 text-gray-300 font-medium">Data</th>
+                                      <th className="text-right p-3 text-gray-300 font-medium">Valor</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {grupo.detalhes.map((detalhe, index) => (
+                                      <tr key={index} className="border-b border-gray-700 last:border-b-0">
+                                        <td className="p-3 text-white">{detalhe.data}</td>
+                                        <td className="p-3 text-right text-red-400 font-semibold">
+                                          {formatCurrency(detalhe.valor)}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                  <tfoot>
+                                    <tr className="border-t-2 border-gray-600 bg-gray-800">
+                                      <td className="p-3 text-white font-bold">TOTAL</td>
+                                      <td className="p-3 text-right text-red-400 font-bold text-lg">
+                                        {formatCurrency(grupo.total_valor)}
+                                      </td>
+                                    </tr>
+                                  </tfoot>
+                                </table>
+                              </div>
+                            ) : (
+                              <div className="text-gray-400 text-center py-4">
+                                Nenhum detalhe encontrado para esta categoria.
+                              </div>
                             )}
-                          </tr>
-                        ))}
-                      </tbody>
-                      <tfoot>
-                        <tr className="border-t-2 border-gray-600 bg-gray-800">
-                          <td className="p-3 text-white font-bold" colSpan={selectedMonth === 'anointeiro' ? "3" : "2"}>TOTAL</td>
-                          <td className="p-3 text-right text-red-400 font-bold text-lg">
-                            {formatCurrency(saidasData.total_valor)}
-                          </td>
-                          {selectedMonth === 'anointeiro' && (
-                            <td className="p-3"></td>
-                          )}
-                        </tr>
-                      </tfoot>
-                    </table>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </>
               ) : (
