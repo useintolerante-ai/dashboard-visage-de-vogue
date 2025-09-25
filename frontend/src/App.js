@@ -38,7 +38,7 @@ function App() {
     // Load saved order from localStorage or use default
     const savedOrder = localStorage.getItem('kpiOrder');
     return savedOrder ? JSON.parse(savedOrder) : [
-      'faturamento', 'saidas', 'lucro', 'recebido', 'aberto', 'entradas'
+      'faturamento', 'lucro', 'entradas', 'saidas', 'aberto', 'recebido'
     ];
   });
 
