@@ -357,26 +357,9 @@ function App() {
   };
 
   // Drag and Drop functions
-  const handleMouseDown = (kpiId) => {
-    const timer = setTimeout(() => {
-      setIsDragMode(true);
-      setDraggedKPI(kpiId);
-    }, 3000); // 3 seconds
-    setDragTimer(timer);
-  };
-
-  const handleMouseUp = () => {
-    if (dragTimer) {
-      clearTimeout(dragTimer);
-      setDragTimer(null);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (dragTimer) {
-      clearTimeout(dragTimer);
-      setDragTimer(null);
-    }
+  const handleDoubleClick = (kpiId) => {
+    setIsDragMode(true);
+    console.log('Drag mode activated for:', kpiId);
   };
 
   const handleDragStart = (e, kpiId) => {
@@ -402,6 +385,7 @@ function App() {
       
       setKpiOrder(newOrder);
       localStorage.setItem('kpiOrder', JSON.stringify(newOrder));
+      console.log('New KPI order:', newOrder);
     }
     setDraggedKPI(null);
     setIsDragMode(false);
