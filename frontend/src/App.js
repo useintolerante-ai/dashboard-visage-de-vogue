@@ -700,7 +700,7 @@ function App() {
                   )}
                 </CardTitle>
                 <div className="text-gray-400 text-sm">
-                  {!isDragMode && "Clique duplo em qualquer KPI para ativar modo reordenar"}
+                  {!isDragMode && "Segure qualquer KPI por 2 segundos para ativar modo reordenar"}
                 </div>
               </CardHeader>
               <CardContent>
