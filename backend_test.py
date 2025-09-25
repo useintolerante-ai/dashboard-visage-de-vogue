@@ -415,18 +415,27 @@ def main():
     tester.test_dashboard_summary_setembro()
     tester.test_dashboard_summary_anointeiro()
     
-    # Test 3: Crediario Data (Purchase History)
-    print("\n💳 PHASE 3: Crediario Purchase History Testing")
+    # Test 3: NEW ENTRADAS R$ FUNCTIONALITY TESTING
+    print("\n💰 PHASE 3: Entradas R$ KPI Testing (NEW FUNCTIONALITY)")
+    tester.test_dashboard_summary_entradas_field()
+    tester.test_entradas_pagamento_setembro()
+    tester.test_entradas_pagamento_agosto()
+    tester.test_entradas_pagamento_janeiro()
+    tester.test_entradas_pagamento_invalid_month()
+    tester.test_entradas_consistency_with_dashboard()
+    
+    # Test 4: Crediario Data (Purchase History)
+    print("\n💳 PHASE 4: Crediario Purchase History Testing")
     tester.test_crediario_data()
     
-    # Test 4: Other endpoints
-    print("\n📈 PHASE 4: Other Endpoints Testing")
+    # Test 5: Other endpoints
+    print("\n📈 PHASE 5: Other Endpoints Testing")
     tester.test_saidas_data_anointeiro()
     tester.test_faturamento_diario_anointeiro()
     tester.test_meses_disponiveis()
     
-    # Test 5: Google Sheets Integration
-    print("\n🔄 PHASE 5: Google Sheets Integration Testing")
+    # Test 6: Google Sheets Integration
+    print("\n🔄 PHASE 6: Google Sheets Integration Testing")
     tester.test_sync_sheets()
     
     # Print final results
