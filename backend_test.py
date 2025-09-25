@@ -398,6 +398,96 @@ class SalesDashboardTester:
             self.critical_failures.append(f"Entradas Consistency: Dashboard={dashboard_entradas}, Endpoint={entradas_total}")
             return False, {"dashboard": dashboard_entradas, "entradas": entradas_total}
 
+    def test_saidas_agrupadas_setembro(self):
+        """Test new saidas-agrupadas endpoint for setembro"""
+        success, response = self.run_test("Saidas Agrupadas - Setembro", "GET", "saidas-agrupadas/setembro", 200)
+        if success and isinstance(response, dict):
+            # Expected structure for grouped saidas
+            expected_keys = ['success', 'saidas_agrupadas', 'total_valor', 'mes']
+            missing_keys = [key for key in expected_keys if key not in response]
+            if missing_keys:
+                print(f"   ⚠️  Missing keys in response: {missing_keys}")
+                return False, response
+            
+            success_flag = response.get('success', False)
+            saidas_agrupadas = response.get('saidas_agrupadas', [])
+            total_valor = response.get('total_valor', 0)
+            total_grupos = response.get('total_grupos', 0)
+            total_entradas = response.get('total_entradas', 0)
+            
+            print(f"   ✅ All expected keys present")
+            print(f"   📊 Success: {success_flag}")
+            print(f"   📊 Total Valor: R$ {total_valor:,.2f}")
+            print(f"   📊 Total Grupos: {total_grupos}")
+            print(f"   📊 Total Entradas: {total_entradas}")
+            print(f"   📊 Saidas Agrupadas count: {len(saidas_agrupadas)}")
+            
+            if not success_flag:
+                error_msg = response.get('error', 'Unknown error')
+                print(f"   ❌ API returned success=false: {error_msg}")
+                self.critical_failures.append(f"Saidas Agrupadas: {error_msg}")
+                return False, response
+            
+            # Check structure of grouped saidas if any exist
+            if saidas_agrupadas and len(saidas_agrupadas) > 0:
+                first_group = saidas_agrupadas[0]
+                group_keys = ['descricao', 'total_valor', 'detalhes', 'numero_entradas']
+                missing_group_keys = [key for key in group_keys if key not in first_group]
+                if missing_group_keys:
+                    print(f"   ⚠️  Missing group keys: {missing_group_keys}")
+                    return False, response
+                
+                print(f"   ✅ Saidas group structure correct")
+                print(f"   📊 First group: {first_group.get('descricao')} - R$ {first_group.get('total_valor', 0):,.2f} ({first_group.get('numero_entradas', 0)} entradas)")
+                
+                # Check detalhes structure
+                detalhes = first_group.get('detalhes', [])
+                if detalhes and len(detalhes) > 0:
+                    first_detalhe = detalhes[0]
+                    if 'data' in first_detalhe and 'valor' in first_detalhe:
+                        print(f"   ✅ Detalhes structure correct: data + valor")
+                        print(f"   📊 First detail: {first_detalhe.get('data')} - R$ {first_detalhe.get('valor', 0):,.2f}")
+                    else:
+                        print(f"   ⚠️  Detalhes missing 'data' or 'valor' fields")
+                        return False, response
+            else:
+                print(f"   ⚠️  No grouped saidas found - may be normal for empty months")
+            
+            return True, response
+        return success, response
+
+    def test_saidas_agrupadas_agosto(self):
+        """Test saidas-agrupadas endpoint for agosto"""
+        success, response = self.run_test("Saidas Agrupadas - Agosto", "GET", "saidas-agrupadas/agosto", 200)
+        if success and isinstance(response, dict):
+            success_flag = response.get('success', False)
+            total_valor = response.get('total_valor', 0)
+            saidas_agrupadas = response.get('saidas_agrupadas', [])
+            
+            print(f"   ✅ Response received")
+            print(f"   📊 Success: {success_flag}")
+            print(f"   📊 Total Valor (Agosto): R$ {total_valor:,.2f}")
+            print(f"   📊 Groups count: {len(saidas_agrupadas)}")
+            
+            return True, response
+        return success, response
+
+    def test_saidas_agrupadas_invalid_month(self):
+        """Test saidas-agrupadas endpoint with invalid month"""
+        success, response = self.run_test("Saidas Agrupadas - Invalid Month", "GET", "saidas-agrupadas/invalidmonth", 200)
+        if success and isinstance(response, dict):
+            success_flag = response.get('success', False)
+            total_valor = response.get('total_valor', 0)
+            saidas_agrupadas = response.get('saidas_agrupadas', [])
+            
+            print(f"   ✅ Handled invalid month gracefully")
+            print(f"   📊 Success: {success_flag}")
+            print(f"   📊 Total Valor (Invalid): R$ {total_valor:,.2f}")
+            print(f"   📊 Groups count: {len(saidas_agrupadas)}")
+            
+            return True, response
+        return success, response
+
 def main():
     print("🚀 Starting Sales Dashboard Backend API Tests")
     print("=" * 60)
