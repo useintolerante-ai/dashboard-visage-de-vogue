@@ -358,9 +358,27 @@ function App() {
   };
 
   // Drag and Drop functions
-  const handleDoubleClick = (kpiId) => {
-    setIsDragMode(true);
-    console.log('Drag mode activated for:', kpiId);
+  const handleMouseDown = (kpiId) => {
+    const timer = setTimeout(() => {
+      setIsDragMode(true);
+      setDraggedKPI(kpiId);
+      console.log('Drag mode activated for:', kpiId);
+    }, 2000); // 2 seconds instead of 3
+    setDragTimer(timer);
+  };
+
+  const handleMouseUp = () => {
+    if (dragTimer) {
+      clearTimeout(dragTimer);
+      setDragTimer(null);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (dragTimer) {
+      clearTimeout(dragTimer);
+      setDragTimer(null);
+    }
   };
 
   const handleDragStart = (e, kpiId) => {
