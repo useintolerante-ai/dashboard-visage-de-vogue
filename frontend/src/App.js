@@ -95,6 +95,20 @@ function App() {
     try {
       const summaryResponse = await axios.get(`${API}/dashboard-summary?mes=${mes}`);
 
+      // If dashboard data is empty due to rate limiting, try to get entradas separately
+      if (summaryResponse.data.data_source === "none" || summaryResponse.data.entradas === 0) {
+        console.log('Dashboard data empty, trying to load entradas separately...');
+        try {
+          const entradasResponse = await axios.get(`${API}/entradas-pagamento/${mes}`);
+          if (entradasResponse.data.success && entradasResponse.data.total > 0) {
+            summaryResponse.data.entradas = entradasResponse.data.total;
+            console.log('Entradas loaded separately:', entradasResponse.data.total);
+          }
+        } catch (entradasError) {
+          console.error('Error loading entradas separately:', entradasError);
+        }
+      }
+
       setDashboardData(summaryResponse.data);
       
       console.log('Dashboard data loaded for month:', mes, summaryResponse.data);
