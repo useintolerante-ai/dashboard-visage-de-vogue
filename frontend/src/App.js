@@ -1181,7 +1181,7 @@ function App() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-white">
-                  Entradas R$ - {selectedMonth === 'anointeiro' ? 'Ano Inteiro' : 
+                  Entradas - {selectedMonth === 'anointeiro' ? 'Ano Inteiro' : 
                     mesesDisponiveis.find(m => m.value === selectedMonth)?.label || selectedMonth}
                 </h2>
                 <button
