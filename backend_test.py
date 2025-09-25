@@ -245,6 +245,159 @@ class SalesDashboardTester:
                 print(f"   📊 Timestamp: {response.get('timestamp', 'N/A')}")
         return success, response
 
+    def test_dashboard_summary_entradas_field(self):
+        """Test that dashboard summary includes 'entradas' field instead of 'ticket_medio'"""
+        success, response = self.run_test("Dashboard Summary - Entradas Field Check", "GET", "dashboard-summary", 200, {"mes": "setembro"})
+        if success and isinstance(response, dict):
+            # Check if 'entradas' field is present
+            if 'entradas' not in response:
+                print(f"   ❌ Missing 'entradas' field in dashboard summary")
+                self.critical_failures.append("Dashboard Summary: Missing 'entradas' field")
+                return False, response
+            
+            # Check if old 'ticket_medio' field is removed
+            if 'ticket_medio' in response:
+                print(f"   ⚠️  Old 'ticket_medio' field still present - should be removed")
+            
+            entradas_value = response.get('entradas', 0)
+            print(f"   ✅ 'entradas' field present with value: R$ {entradas_value:,.2f}")
+            
+            # Validate that entradas value is reasonable (should be > 0 for setembro)
+            if entradas_value <= 0:
+                print(f"   ⚠️  Entradas value is zero or negative - may indicate calculation issue")
+                return False, response
+            
+            print(f"   📊 Entradas R$: R$ {entradas_value:,.2f}")
+            return True, response
+        return success, response
+
+    def test_entradas_pagamento_setembro(self):
+        """Test new entradas-pagamento endpoint for setembro"""
+        success, response = self.run_test("Entradas Pagamento - Setembro", "GET", "entradas-pagamento/setembro", 200)
+        if success and isinstance(response, dict):
+            # Expected structure similar to formas-pagamento
+            expected_keys = ['formas_pagamento', 'total', 'mes']
+            missing_keys = [key for key in expected_keys if key not in response]
+            if missing_keys:
+                print(f"   ⚠️  Missing keys in response: {missing_keys}")
+                return False, response
+            
+            formas_pagamento = response.get('formas_pagamento', [])
+            total = response.get('total', 0)
+            
+            print(f"   ✅ All expected keys present")
+            print(f"   📊 Total Entradas: R$ {total:,.2f}")
+            print(f"   📊 Payment forms count: {len(formas_pagamento)}")
+            
+            # Check for expected payment forms
+            expected_forms = ['Crediário Recebido', 'PIX', 'Débito', 'Dinheiro', 'Crédito']
+            found_forms = [form.get('forma', '') for form in formas_pagamento if isinstance(form, dict)]
+            
+            print(f"   📊 Found payment forms: {found_forms}")
+            
+            # Validate that we have some payment forms
+            if not formas_pagamento:
+                print(f"   ⚠️  No payment forms found in response")
+                return False, response
+            
+            # Check structure of first payment form
+            if formas_pagamento and isinstance(formas_pagamento[0], dict):
+                first_form = formas_pagamento[0]
+                form_keys = ['forma', 'valor', 'percentual']
+                missing_form_keys = [key for key in form_keys if key not in first_form]
+                if missing_form_keys:
+                    print(f"   ⚠️  Missing payment form keys: {missing_form_keys}")
+                    return False, response
+                
+                print(f"   ✅ Payment form structure correct")
+                print(f"   📊 First form: {first_form.get('forma')} - R$ {first_form.get('valor', 0):,.2f} ({first_form.get('percentual', 0):.1f}%)")
+            
+            return True, response
+        return success, response
+
+    def test_entradas_pagamento_agosto(self):
+        """Test entradas-pagamento endpoint for agosto"""
+        success, response = self.run_test("Entradas Pagamento - Agosto", "GET", "entradas-pagamento/agosto", 200)
+        if success and isinstance(response, dict):
+            expected_keys = ['formas_pagamento', 'total', 'mes']
+            missing_keys = [key for key in expected_keys if key not in response]
+            if missing_keys:
+                print(f"   ⚠️  Missing keys in response: {missing_keys}")
+                return False, response
+            
+            total = response.get('total', 0)
+            formas_pagamento = response.get('formas_pagamento', [])
+            
+            print(f"   ✅ All expected keys present")
+            print(f"   📊 Total Entradas (Agosto): R$ {total:,.2f}")
+            print(f"   📊 Payment forms count: {len(formas_pagamento)}")
+            
+            return True, response
+        return success, response
+
+    def test_entradas_pagamento_janeiro(self):
+        """Test entradas-pagamento endpoint for janeiro"""
+        success, response = self.run_test("Entradas Pagamento - Janeiro", "GET", "entradas-pagamento/janeiro", 200)
+        if success and isinstance(response, dict):
+            expected_keys = ['formas_pagamento', 'total', 'mes']
+            missing_keys = [key for key in expected_keys if key not in response]
+            if missing_keys:
+                print(f"   ⚠️  Missing keys in response: {missing_keys}")
+                return False, response
+            
+            total = response.get('total', 0)
+            formas_pagamento = response.get('formas_pagamento', [])
+            
+            print(f"   ✅ All expected keys present")
+            print(f"   📊 Total Entradas (Janeiro): R$ {total:,.2f}")
+            print(f"   📊 Payment forms count: {len(formas_pagamento)}")
+            
+            return True, response
+        return success, response
+
+    def test_entradas_pagamento_invalid_month(self):
+        """Test entradas-pagamento endpoint with invalid month"""
+        success, response = self.run_test("Entradas Pagamento - Invalid Month", "GET", "entradas-pagamento/invalidmonth", 200)
+        if success and isinstance(response, dict):
+            # Should handle gracefully, possibly returning empty data or error message
+            total = response.get('total', 0)
+            formas_pagamento = response.get('formas_pagamento', [])
+            
+            print(f"   ✅ Handled invalid month gracefully")
+            print(f"   📊 Total Entradas (Invalid): R$ {total:,.2f}")
+            print(f"   📊 Payment forms count: {len(formas_pagamento)}")
+            
+            return True, response
+        return success, response
+
+    def test_entradas_consistency_with_dashboard(self):
+        """Test that entradas value in dashboard matches sum from entradas-pagamento endpoint"""
+        # Get dashboard summary
+        dashboard_success, dashboard_response = self.run_test("Dashboard Summary for Consistency Check", "GET", "dashboard-summary", 200, {"mes": "setembro"})
+        if not dashboard_success:
+            return False, {}
+        
+        # Get entradas breakdown
+        entradas_success, entradas_response = self.run_test("Entradas Pagamento for Consistency Check", "GET", "entradas-pagamento/setembro", 200)
+        if not entradas_success:
+            return False, {}
+        
+        dashboard_entradas = dashboard_response.get('entradas', 0)
+        entradas_total = entradas_response.get('total', 0)
+        
+        print(f"   📊 Dashboard Entradas: R$ {dashboard_entradas:,.2f}")
+        print(f"   📊 Entradas Endpoint Total: R$ {entradas_total:,.2f}")
+        
+        # Check if values match (allow small tolerance for rounding)
+        tolerance = 0.01  # 1 cent tolerance
+        if abs(dashboard_entradas - entradas_total) <= tolerance:
+            print(f"   ✅ Values match within tolerance")
+            return True, {"dashboard": dashboard_entradas, "entradas": entradas_total}
+        else:
+            print(f"   ❌ Values don't match - difference: R$ {abs(dashboard_entradas - entradas_total):,.2f}")
+            self.critical_failures.append(f"Entradas Consistency: Dashboard={dashboard_entradas}, Endpoint={entradas_total}")
+            return False, {"dashboard": dashboard_entradas, "entradas": entradas_total}
+
 def main():
     print("🚀 Starting Sales Dashboard Backend API Tests")
     print("=" * 60)
