@@ -127,8 +127,25 @@ async def get_saidas_agrupadas(mes: str):
     Get saídas data grouped by description with expandable details
     """
     try:
+        # Map month name to sheet name
+        month_mapping = {
+            "janeiro": "JANEIRO25",
+            "fevereiro": "FEVEREIRO25",
+            "março": "MARÇO25",
+            "marco": "MARÇO25",  # Handle common misspelling
+            "abril": "ABRIL25",
+            "maio": "MAIO25",
+            "junho": "JUNHO25",
+            "julho": "JULHO25",
+            "agosto": "AGOSTO25",
+            "setembro": "SETEMBRO25"
+        }
+        
+        sheet_name = month_mapping.get(mes.lower(), "SETEMBRO25")  # Default to September
+        logger.info(f"Getting saidas agrupadas for month: {mes} -> sheet: {sheet_name}")
+        
         # Get regular saidas data first
-        saidas_result = fetch_saidas_data(mes)
+        saidas_result = fetch_saidas_data(sheet_name)
         
         if not saidas_result.get("success"):
             return {
