@@ -1457,14 +1457,71 @@ async def get_dashboard_summary(mes: str = "marco", background_tasks: Background
                     a_receber_crediario=0, num_vendas=0, entradas=0.0, data_source="none", last_sync=None
                 )
             
-            # Calculate entradas (sum of all payment methods received)
-            entradas_total = (
-                month_data["recebido_crediario"] + 
-                month_data.get("pix", 0) + 
-                month_data.get("debito", 0) + 
-                month_data.get("dinheiro", 0) + 
-                month_data.get("credito", 0)
-            )
+            # Calculate entradas by making internal API call to get all payment methods
+            # This ensures consistency between dashboard and modal data
+            try:
+                # Use the same logic as the entradas-pagamento endpoint
+                sheets_result = fetch_google_sheets_data_cached(sheet_name)
+                entradas_total = month_data["recebido_crediario"]  # Start with crediario
+                
+                if sheets_result["success"]:
+                    rows = sheets_result["data"]
+                    
+                    # Extract other payment forms (same logic as entradas-pagamento endpoint)
+                    payment_forms = {"PIX": 0.0, "Dinheiro": 0.0, "Crédito": 0.0, "Débito": 0.0}
+                    
+                    # Search for payment method data in the sheet
+                    for i, row in enumerate(rows):
+                        if len(row) < 2:
+                            continue
+                            
+                        # Check multiple columns for payment method names and values
+                        for col_idx in range(min(len(row), 15)):  # Check first 15 columns
+                            cell_value = str(row[col_idx]).strip().upper() if row[col_idx] else ""
+                            
+                            # Look for payment method names
+                            if "DINHEIRO" in cell_value:
+                                # Look for value in adjacent columns
+                                for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                                    if val_col < len(row) and row[val_col]:
+                                        valor = extract_currency_value(str(row[val_col]))
+                                        if valor > 0:
+                                            payment_forms["Dinheiro"] = max(payment_forms["Dinheiro"], valor)
+                                            break
+                            
+                            elif "PIX" in cell_value:
+                                for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                                    if val_col < len(row) and row[val_col]:
+                                        valor = extract_currency_value(str(row[val_col]))
+                                        if valor > 0:
+                                            payment_forms["PIX"] = max(payment_forms["PIX"], valor)
+                                            break
+                            
+                            elif "CRÉDITO" in cell_value or "CREDITO" in cell_value:
+                                if "CARTÃO" in cell_value or "CARTAO" in cell_value:
+                                    for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                                        if val_col < len(row) and row[val_col]:
+                                            valor = extract_currency_value(str(row[val_col]))
+                                            if valor > 0:
+                                                payment_forms["Crédito"] = max(payment_forms["Crédito"], valor)
+                                                break
+                            
+                            elif "DÉBITO" in cell_value or "DEBITO" in cell_value:
+                                if "CARTÃO" in cell_value or "CARTAO" in cell_value:
+                                    for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                                        if val_col < len(row) and row[val_col]:
+                                            valor = extract_currency_value(str(row[val_col]))
+                                            if valor > 0:
+                                                payment_forms["Débito"] = max(payment_forms["Débito"], valor)
+                                                break
+                    
+                    # Add all payment forms to entradas total
+                    entradas_total += sum(payment_forms.values())
+                    logger.info(f"Entradas calculation for {sheet_name}: Crediario={month_data['recebido_crediario']}, PIX={payment_forms['PIX']}, Dinheiro={payment_forms['Dinheiro']}, Credito={payment_forms['Crédito']}, Debito={payment_forms['Débito']}, Total={entradas_total}")
+                
+            except Exception as e:
+                logger.warning(f"Error calculating entradas for {sheet_name}: {e}")
+                entradas_total = month_data["recebido_crediario"]  # Fallback to crediario only
 
             return DashboardSummary(
                 faturamento=month_data["faturamento"],
