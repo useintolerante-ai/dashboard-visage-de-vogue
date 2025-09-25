@@ -1457,6 +1457,15 @@ async def get_dashboard_summary(mes: str = "marco", background_tasks: Background
                     a_receber_crediario=0, num_vendas=0, ticket_medio=0.0, data_source="none", last_sync=None
                 )
             
+            # Calculate entradas (sum of all payment methods received)
+            entradas_total = (
+                month_data["recebido_crediario"] + 
+                month_data.get("pix", 0) + 
+                month_data.get("debito", 0) + 
+                month_data.get("dinheiro", 0) + 
+                month_data.get("credito", 0)
+            )
+
             return DashboardSummary(
                 faturamento=month_data["faturamento"],
                 saidas=month_data["saidas"],
@@ -1464,7 +1473,7 @@ async def get_dashboard_summary(mes: str = "marco", background_tasks: Background
                 recebido_crediario=month_data["recebido_crediario"],
                 a_receber_crediario=0,  # Will implement proper calculation later
                 num_vendas=month_data["num_vendas"],
-                ticket_medio=month_data["faturamento"] / month_data["num_vendas"] if month_data["num_vendas"] > 0 else 0.0,
+                entradas=entradas_total,
                 data_source="sheets",
                 last_sync=sheets_cache["last_updated"].isoformat() if sheets_cache["last_updated"] else None
             )
