@@ -395,6 +395,95 @@ function App() {
     setIsDragMode(false);
   };
 
+  // Function to render individual KPI
+  const renderKPI = (kpiId) => {
+    const kpiConfig = {
+      faturamento: {
+        icon: getKPIIcon('faturamento'),
+        label: 'FATURAMENTO',
+        value: dashboardData?.faturamento ? formatCurrency(dashboardData.faturamento) : 'R$ 12.785,85',
+        color: 'text-orange-400',
+        clickable: true,
+        onClick: handleFaturamentoClick,
+        badge: '📊'
+      },
+      saidas: {
+        icon: getKPIIcon('saidas'),
+        label: 'SAÍDAS',
+        value: formatCurrency(dashboardData.saidas),
+        color: 'text-green-400'
+      },
+      lucro: {
+        icon: getKPIIcon('lucro'),
+        label: 'LUCRO BRUTO',
+        value: formatCurrency(dashboardData.lucro_bruto),
+        color: 'text-blue-400',
+        valueColor: getKPIColor(dashboardData.lucro_bruto, 'lucro')
+      },
+      recebido: {
+        icon: getKPIIcon('recebido'),
+        label: 'RECEBIDO CRED.',
+        value: formatCurrency(dashboardData.recebido_crediario),
+        color: 'text-cyan-400'
+      },
+      aberto: {
+        icon: getKPIIcon('vendas'),
+        label: 'EM ABERTO',
+        value: crediarioData ? formatCurrency(crediarioData.clientes.reduce((sum, cliente) => sum + cliente.saldo_devedor, 0)) : '...',
+        color: 'text-purple-400'
+      },
+      entradas: {
+        icon: getKPIIcon('faturamento'),
+        label: 'ENTRADAS',
+        value: formatCurrency(dashboardData.entradas || 0),
+        color: 'text-yellow-400',
+        clickable: true,
+        onClick: handleEntradasClick,
+        badge: '📊'
+      }
+    };
+
+    const config = kpiConfig[kpiId];
+    if (!config) return null;
+
+    const isDragging = draggedKPI === kpiId;
+    const isClickable = config.clickable && !isDragMode;
+
+    return (
+      <div
+        key={kpiId}
+        className={`bg-gray-800 p-4 rounded-lg text-center transition-all duration-200 ${
+          isClickable ? 'cursor-pointer hover:bg-gray-700' : ''
+        } ${isDragMode ? 'cursor-move' : ''} ${
+          isDragging ? 'opacity-50 transform scale-105 shadow-lg' : ''
+        } ${isDragMode && !isDragging ? 'hover:bg-gray-600' : ''}`}
+        draggable={isDragMode}
+        onMouseDown={() => !isDragMode && handleMouseDown(kpiId)}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onDragStart={(e) => handleDragStart(e, kpiId)}
+        onDragOver={handleDragOver}
+        onDrop={(e) => handleDrop(e, kpiId)}
+        onDragEnd={handleDragEnd}
+        onClick={isClickable ? config.onClick : undefined}
+      >
+        {isDragMode && (
+          <div className="absolute top-1 right-1 text-xs bg-blue-500 text-white px-2 py-1 rounded">
+            ⚡ Arrastar
+          </div>
+        )}
+        <div className="flex items-center justify-center gap-2 mb-2">
+          {config.icon}
+          <span className={`${config.color} text-xs font-medium uppercase`}>{config.label}</span>
+          {config.badge && <span className="text-gray-400 text-xs">{config.badge}</span>}
+        </div>
+        <div className={`text-lg font-bold ${config.valueColor || 'text-white'}`}>
+          {config.value}
+        </div>
+      </div>
+    );
+  };
+
   const sortClientesAtrasados = (clientes, key, direction) => {
     if (!clientes || !key) return clientes;
     
