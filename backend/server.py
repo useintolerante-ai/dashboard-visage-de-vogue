@@ -114,6 +114,113 @@ class ClienteCrediario(BaseModel):
     dias_sem_pagamento: int = 0
     atrasado_60_dias: bool = False
 
+class SaidaAgrupada(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    descricao: str
+    total_valor: float
+    detalhes: List[Dict[str, Any]] = []  # Lista de {data, valor} para cada entrada
+    numero_entradas: int
+
+@api_router.get("/saidas-agrupadas/{mes}")
+async def get_saidas_agrupadas(mes: str):
+    """
+    Get saídas data grouped by description with expandable details
+    """
+    try:
+        # Get regular saidas data first
+        saidas_result = fetch_saidas_data(mes)
+        
+        if not saidas_result.get("success"):
+            return {
+                "success": False, 
+                "error": saidas_result.get("error", "Erro ao buscar saídas"),
+                "saidas_agrupadas": [],
+                "total_valor": 0
+            }
+        
+        saidas_raw = saidas_result.get("saidas", [])
+        
+        if not saidas_raw:
+            return {
+                "success": True,
+                "saidas_agrupadas": [],
+                "total_valor": 0,
+                "mes": mes
+            }
+        
+        # Group saidas by description
+        agrupamento = {}
+        
+        for saida in saidas_raw:
+            descricao = saida.get("descricao", "").strip()
+            valor = saida.get("valor", 0)
+            data = saida.get("data", "")
+            
+            if not descricao:
+                descricao = "Sem descrição"
+            
+            # Normalize description for better grouping
+            descricao_key = descricao.upper().strip()
+            
+            if descricao_key not in agrupamento:
+                agrupamento[descricao_key] = {
+                    "descricao": descricao,  # Keep original formatting
+                    "total_valor": 0,
+                    "detalhes": [],
+                    "numero_entradas": 0
+                }
+            
+            # Add to group
+            agrupamento[descricao_key]["total_valor"] += valor
+            agrupamento[descricao_key]["numero_entradas"] += 1
+            agrupamento[descricao_key]["detalhes"].append({
+                "data": data,
+                "valor": valor
+            })
+        
+        # Convert to list and sort alphabetically
+        saidas_agrupadas = []
+        for key, group_data in agrupamento.items():
+            # Sort details by date (most recent first)
+            try:
+                group_data["detalhes"].sort(key=lambda x: x["data"], reverse=True)
+            except:
+                pass  # If date sorting fails, keep original order
+            
+            saida_agrupada = SaidaAgrupada(
+                descricao=group_data["descricao"],
+                total_valor=group_data["total_valor"],
+                detalhes=group_data["detalhes"],
+                numero_entradas=group_data["numero_entradas"]
+            )
+            saidas_agrupadas.append(saida_agrupada)
+        
+        # Sort alphabetically by description
+        saidas_agrupadas.sort(key=lambda x: x.descricao.upper())
+        
+        # Calculate total
+        total_valor = sum(saida.total_valor for saida in saidas_agrupadas)
+        
+        logger.info(f"Grouped {len(saidas_raw)} saidas into {len(saidas_agrupadas)} groups for {mes}")
+        
+        return {
+            "success": True,
+            "saidas_agrupadas": [saida.dict() for saida in saidas_agrupadas],
+            "total_valor": total_valor,
+            "total_grupos": len(saidas_agrupadas),
+            "total_entradas": len(saidas_raw),
+            "mes": mes
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting saidas agrupadas for {mes}: {str(e)}")
+        return {
+            "success": False,
+            "error": f"Erro interno: {str(e)}",
+            "saidas_agrupadas": [],
+            "total_valor": 0
+        }
+
 class SaidaData(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     data: str
