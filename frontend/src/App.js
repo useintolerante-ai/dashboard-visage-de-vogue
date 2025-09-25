@@ -1088,7 +1088,7 @@ function App() {
                     <div className="mb-4 p-4 bg-gray-800 rounded-lg">
                       <div className="text-gray-300 text-sm mb-2">Total Faturamento:</div>
                       <div className="text-2xl font-bold text-orange-400">
-                        {formatCurrency(formasPagamentoData.total)}
+                        {formatCurrency(paymentFormsData.total)}
                       </div>
                     </div>
                     
