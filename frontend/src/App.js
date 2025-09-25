@@ -150,7 +150,7 @@ function App() {
 
   async function loadSaidasData(mes) {
     try {
-      const response = await axios.get(`${API}/saidas-data/${mes}`);
+      const response = await axios.get(`${API}/saidas-agrupadas/${mes}`);
       setSaidasData(response.data);
     } catch (error) {
       console.error('Erro ao carregar dados de saídas:', error);
