@@ -65,7 +65,7 @@ function App() {
       setPaymentFormsData(response.data);
     } catch (error) {
       console.error('Erro ao carregar formas de pagamento:', error);
-      setFormasPagamentoData({ success: false, formas_pagamento: [] });
+      setPaymentFormsData({ success: false, formas_pagamento: [] });
     }
   }
 
