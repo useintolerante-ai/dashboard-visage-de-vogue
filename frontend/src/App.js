@@ -472,13 +472,15 @@ function App() {
     return (
       <div
         key={kpiId}
-        className={`bg-gray-800 p-4 rounded-lg text-center transition-all duration-200 relative ${
+        className={`bg-gray-800 p-4 rounded-lg text-center transition-all duration-200 relative select-none ${
           isClickable ? 'cursor-pointer hover:bg-gray-700' : ''
         } ${isDragMode ? 'cursor-move' : ''} ${
           isDragging ? 'opacity-50 transform scale-105 shadow-lg' : ''
         } ${isDragMode && !isDragging ? 'hover:bg-gray-600' : ''}`}
         draggable={isDragMode}
-        onDoubleClick={() => handleDoubleClick(kpiId)}
+        onMouseDown={() => !isDragMode && handleMouseDown(kpiId)}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
         onDragStart={(e) => handleDragStart(e, kpiId)}
         onDragOver={handleDragOver}
         onDrop={(e) => handleDrop(e, kpiId)}
