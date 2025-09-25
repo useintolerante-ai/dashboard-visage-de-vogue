@@ -1093,7 +1093,7 @@ function App() {
                     </div>
                     
                     <div className="grid gap-4">
-                      {formasPagamentoData.formas_pagamento.map((forma, index) => (
+                      {paymentFormsData.formas_pagamento.map((forma, index) => (
                         <div key={index} className="bg-gray-800 p-4 rounded-lg">
                           <div className="flex justify-between items-center mb-2">
                             <div className="text-white font-semibold text-lg">
