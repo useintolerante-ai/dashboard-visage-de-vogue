@@ -1905,27 +1905,27 @@ async def get_entradas_pagamento(mes: str):
                                 logger.info(f"Found PIX: R$ {valor}")
                                 break
                 
-                elif "CRÉDITO" in cell_value or "CREDITO" in cell_value:
-                    if "CARTÃO" in cell_value or "CARTAO" in cell_value:
-                        for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
-                            if val_col < len(row) and row[val_col]:
-                                valor = extract_currency_value(str(row[val_col]))
-                                if valor > 0:
-                                    entradas_formas["Crédito"] = max(entradas_formas["Crédito"], valor)
-                                    found_any_data = True
-                                    logger.info(f"Found Crédito: R$ {valor}")
-                                    break
+                elif ("CRÉDITO" in cell_value or "CREDITO" in cell_value or 
+                      "CREDIT" in cell_value) and ("CARTÃO" in cell_value or "CARTAO" in cell_value):
+                    for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                        if val_col < len(row) and row[val_col]:
+                            valor = extract_currency_value(str(row[val_col]))
+                            if valor > 0:
+                                entradas_formas["Crédito"] = max(entradas_formas["Crédito"], valor)
+                                found_any_data = True
+                                logger.info(f"Found Crédito: R$ {valor}")
+                                break
                 
-                elif "DÉBITO" in cell_value or "DEBITO" in cell_value:
-                    if "CARTÃO" in cell_value or "CARTAO" in cell_value:
-                        for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
-                            if val_col < len(row) and row[val_col]:
-                                valor = extract_currency_value(str(row[val_col]))
-                                if valor > 0:
-                                    entradas_formas["Débito"] = max(entradas_formas["Débito"], valor)
-                                    found_any_data = True
-                                    logger.info(f"Found Débito: R$ {valor}")
-                                    break
+                elif ("DÉBITO" in cell_value or "DEBITO" in cell_value or 
+                      "DEBIT" in cell_value) and ("CARTÃO" in cell_value or "CARTAO" in cell_value):
+                    for val_col in range(col_idx + 1, min(len(row), col_idx + 3)):
+                        if val_col < len(row) and row[val_col]:
+                            valor = extract_currency_value(str(row[val_col]))
+                            if valor > 0:
+                                entradas_formas["Débito"] = max(entradas_formas["Débito"], valor)
+                                found_any_data = True
+                                logger.info(f"Found Débito: R$ {valor}")
+                                break
         
         # Calculate total and percentages
         total_entradas = sum(entradas_formas.values())
