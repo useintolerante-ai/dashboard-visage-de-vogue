@@ -666,12 +666,12 @@ function App() {
                   Indicadores Financeiros
                   {isDragMode && (
                     <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded ml-2">
-                      Modo Arrastar Ativo - Solte para reordenar
+                      Modo Arrastar Ativo - Arraste para reordenar
                     </span>
                   )}
                 </CardTitle>
                 <div className="text-gray-400 text-sm">
-                  {!isDragMode && "Segure qualquer KPI por 3 segundos para reordenar"}
+                  {!isDragMode && "Clique duplo em qualquer KPI para ativar modo reordenar"}
                 </div>
               </CardHeader>
               <CardContent>
