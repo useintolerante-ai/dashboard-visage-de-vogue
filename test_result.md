@@ -262,7 +262,7 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
 
 ## test_plan:
   current_focus:
-    - "Replace Ticket Médio with Entradas R$ KPI"
+    - "Fix saldo devedor calculation with improved fuzzy matching"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
