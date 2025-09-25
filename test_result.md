@@ -239,6 +239,18 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
         - agent: "main"
         - comment: "All dashboard functionality working perfectly. Navigation between tabs (Visão Geral, Crediário, Saídas) working. Month selection working. Crediário showing 30+ clients properly. KPIs displaying correctly."
 
+  - task: "Replace Ticket Médio with Entradas R$ KPI"
+    implemented: true
+    working: false
+    file: "server.py, App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+        - agent: "main"
+        - comment: "Implemented Entradas R$ KPI to replace Ticket Médio. Backend: Created new /api/entradas-pagamento/{mes} endpoint to aggregate all payment forms (Crediário, PIX, Débito, Dinheiro, Crédito). Updated DashboardSummary model to include 'entradas' field. Frontend: Replaced Ticket Médio KPI with Entradas R$, made it clickable, added modal similar to payment forms. Need to test backend endpoint and frontend integration."
+
 ## metadata:
   created_by: "main_agent"
   version: "1.1"
