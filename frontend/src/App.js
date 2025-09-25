@@ -452,7 +452,7 @@ function App() {
     return (
       <div
         key={kpiId}
-        className={`bg-gray-800 p-4 rounded-lg text-center transition-all duration-200 ${
+        className={`bg-gray-800 p-4 rounded-lg text-center transition-all duration-200 relative ${
           isClickable ? 'cursor-pointer hover:bg-gray-700' : ''
         } ${isDragMode ? 'cursor-move' : ''} ${
           isDragging ? 'opacity-50 transform scale-105 shadow-lg' : ''
