@@ -459,9 +459,7 @@ function App() {
           isDragging ? 'opacity-50 transform scale-105 shadow-lg' : ''
         } ${isDragMode && !isDragging ? 'hover:bg-gray-600' : ''}`}
         draggable={isDragMode}
-        onMouseDown={() => !isDragMode && handleMouseDown(kpiId)}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
+        onDoubleClick={() => handleDoubleClick(kpiId)}
         onDragStart={(e) => handleDragStart(e, kpiId)}
         onDragOver={handleDragOver}
         onDrop={(e) => handleDrop(e, kpiId)}
