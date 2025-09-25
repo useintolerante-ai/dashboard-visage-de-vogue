@@ -663,83 +663,21 @@ function App() {
             {/* KPIs Grid */}
             <Card className="bg-gray-900 border-gray-700 mb-6">
               <CardHeader>
-                <CardTitle className="text-white text-lg">Indicadores Financeiros</CardTitle>
+                <CardTitle className="text-white text-lg">
+                  Indicadores Financeiros
+                  {isDragMode && (
+                    <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded ml-2">
+                      Modo Arrastar Ativo - Solte para reordenar
+                    </span>
+                  )}
+                </CardTitle>
+                <div className="text-gray-400 text-sm">
+                  {!isDragMode && "Segure qualquer KPI por 3 segundos para reordenar"}
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                  {/* Faturamento */}
-                  <div 
-                    className="bg-gray-800 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-700 transition-colors"
-                    onClick={handleFaturamentoClick}
-                  >
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      {getKPIIcon('faturamento')}
-                      <span className="text-orange-400 text-xs font-medium uppercase">Faturamento</span>
-                      <span className="text-gray-400 text-xs">📊</span>
-                    </div>
-                    <div className="text-lg font-bold text-white">
-                      {dashboardData?.faturamento ? formatCurrency(dashboardData.faturamento) : 'R$ 12.785,85'}
-                    </div>
-                  </div>
-
-                  {/* Saídas */}
-                  <div className="bg-gray-800 p-4 rounded-lg text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      {getKPIIcon('saidas')}
-                      <span className="text-green-400 text-xs font-medium uppercase">Saídas</span>
-                    </div>
-                    <div className="text-lg font-bold text-white">
-                      {formatCurrency(dashboardData.saidas)}
-                    </div>
-                  </div>
-
-                  {/* Lucro Bruto */}
-                  <div className="bg-gray-800 p-4 rounded-lg text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      {getKPIIcon('lucro')}
-                      <span className="text-blue-400 text-xs font-medium uppercase">Lucro Bruto</span>
-                    </div>
-                    <div className={`text-lg font-bold ${getKPIColor(dashboardData.lucro_bruto, 'lucro')}`}>
-                      {formatCurrency(dashboardData.lucro_bruto)}
-                    </div>
-                  </div>
-
-                  {/* Recebido (Cred.) */}
-                  <div className="bg-gray-800 p-4 rounded-lg text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      {getKPIIcon('recebido')}
-                      <span className="text-cyan-400 text-xs font-medium uppercase">Recebido Cred.</span>
-                    </div>
-                    <div className="text-lg font-bold text-white">
-                      {formatCurrency(dashboardData.recebido_crediario)}
-                    </div>
-                  </div>
-
-                  {/* Total em Aberto */}
-                  <div className="bg-gray-800 p-4 rounded-lg text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      {getKPIIcon('vendas')}
-                      <span className="text-purple-400 text-xs font-medium uppercase">Em Aberto</span>
-                    </div>
-                    <div className="text-lg font-bold text-white">
-                      {crediarioData ? formatCurrency(crediarioData.clientes.reduce((sum, cliente) => sum + cliente.saldo_devedor, 0)) : '...'}
-                    </div>
-                  </div>
-
-                  {/* Entradas R$ */}
-                  <div 
-                    className="bg-gray-800 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-700 transition-colors"
-                    onClick={handleEntradasClick}
-                  >
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      {getKPIIcon('faturamento')}
-                      <span className="text-yellow-400 text-xs font-medium uppercase">Entradas</span>
-                      <span className="text-gray-400 text-xs">📊</span>
-                    </div>
-                    <div className="text-lg font-bold text-white">
-                      {formatCurrency(dashboardData.entradas || 0)}
-                    </div>
-                  </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 relative">
+                  {kpiOrder.map(kpiId => renderKPI(kpiId))}
                 </div>
               </CardContent>
             </Card>
