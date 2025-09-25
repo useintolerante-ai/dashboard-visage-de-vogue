@@ -292,7 +292,7 @@ function App() {
       setFormasPagamentoData(data);
     } catch (error) {
       console.error('Error fetching payment forms:', error);
-      setPaymentFormsData({ success: false, error: 'Erro ao carregar formas de pagamento' });
+      setFormasPagamentoData({ success: false, error: 'Erro ao carregar formas de pagamento' });
     }
   };
 
