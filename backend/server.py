@@ -169,9 +169,15 @@ async def get_saidas_agrupadas(mes: str):
         agrupamento = {}
         
         for saida in saidas_raw:
-            descricao = saida.get("descricao", "").strip()
-            valor = saida.get("valor", 0)
-            data = saida.get("data", "")
+            # Handle both dict and SaidaData object
+            if hasattr(saida, 'descricao'):  # SaidaData object
+                descricao = saida.descricao.strip()
+                valor = saida.valor
+                data = saida.data
+            else:  # Dictionary
+                descricao = saida.get("descricao", "").strip()
+                valor = saida.get("valor", 0)
+                data = saida.get("data", "")
             
             if not descricao:
                 descricao = "Sem descrição"
