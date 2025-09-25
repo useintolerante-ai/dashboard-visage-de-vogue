@@ -33,7 +33,6 @@ function App() {
   // Drag and Drop states
   const [isDragMode, setIsDragMode] = useState(false);
   const [draggedKPI, setDraggedKPI] = useState(null);
-  const [dragTimer, setDragTimer] = useState(null);
   const [kpiOrder, setKpiOrder] = useState(() => {
     // Load saved order from localStorage or use default
     const savedOrder = localStorage.getItem('kpiOrder');
