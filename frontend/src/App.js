@@ -1306,9 +1306,7 @@ function App() {
               </div>
               
               {entradasFormsData ? (
-                <>
-                  {console.log('EntradasFormsData in modal:', entradasFormsData)}
-                  {entradasFormsData.success && entradasFormsData.formas_pagamento && entradasFormsData.formas_pagamento.length > 0 ? (
+                entradasFormsData.success && entradasFormsData.formas_pagamento && entradasFormsData.formas_pagamento.length > 0 ? (
                   <div>
                     <div className="mb-4 p-4 bg-gray-800 rounded-lg">
                       <div className="text-gray-300 text-sm mb-2">Total Entradas:</div>
