@@ -314,7 +314,7 @@ function App() {
     const apiMonth = monthMapping[selectedMonth] || selectedMonth;
     
     try {
-      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/formas-pagamento/${apiMonth}`);
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/formas-pagamento/${apiMonth}`);
       const data = await response.json();
       setPaymentFormsData(data);
     } catch (error) {
