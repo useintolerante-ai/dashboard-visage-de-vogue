@@ -596,10 +596,7 @@ function App() {
                         <div className="space-y-2">
                           {cliente.compras.map((compra, index) => (
                             <div key={index} className="flex justify-between items-center bg-gray-600 rounded p-2 text-sm">
-                              <div>
-                                <span className="text-white">{compra.produto}</span>
-                                <span className="text-gray-400 ml-2">({compra.data})</span>
-                              </div>
+                              <span className="text-gray-300">{compra.data}</span>
                               <span className="text-green-400 font-medium">
                                 {formatCurrency(compra.valor)}
                               </span>
