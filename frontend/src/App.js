@@ -165,12 +165,24 @@ function App() {
 
   useEffect(() => {
     console.log('useEffect triggered, loading initial data...');
-    loadDashboardData();
-    loadSheetsStatus();
-    loadMesesDisponiveis();
-    loadFaturamentoDiario();
-    loadClientesAtrasados();
-    loadMetasData();
+    setIsLoading(true);
+    
+    const loadInitialData = async () => {
+      try {
+        await loadDashboardData();
+        await loadSheetsStatus();
+        await loadMesesDisponiveis();
+        await loadFaturamentoDiario();
+        await loadClientesAtrasados();
+        await loadMetasData();
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadInitialData();
     
     // Auto refresh every 5 minutes
     const interval = setInterval(() => {
