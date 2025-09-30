@@ -552,36 +552,64 @@ function App() {
             <h2 className="text-xl font-bold text-white mb-4 text-center">Clientes do Crediário</h2>
             
             {crediarioData && crediarioData.success ? (
-              <div className="space-y-4">
-                {crediarioData.clientes.map((cliente) => (
-                  <div key={cliente.id} className="bg-gray-700 rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-3">
-                      <h3 className="text-white font-bold text-lg">{cliente.nome}</h3>
-                      <span className="text-red-400 font-bold">
-                        {formatCurrency(cliente.saldo_devedor)}
-                      </span>
-                    </div>
-                    
-                    <div className="text-sm text-gray-400 mb-3">
-                      Última compra: {cliente.data_ultima_compra}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <h4 className="text-white font-medium">Histórico de Compras:</h4>
-                      {cliente.compras.map((compra, index) => (
-                        <div key={index} className="flex justify-between items-center bg-gray-600 rounded p-2 text-sm">
-                          <div>
-                            <span className="text-white">{compra.produto}</span>
-                            <span className="text-gray-400 ml-2">({compra.data})</span>
-                          </div>
-                          <span className="text-green-400 font-medium">
-                            {formatCurrency(compra.valor)}
+              <div>
+                {/* Header with sorting */}
+                <div className="bg-gray-700 p-3 rounded-lg mb-4">
+                  <div className="grid grid-cols-4 gap-4">
+                    <button 
+                      onClick={() => sortCrediario('nome')}
+                      className="text-left text-white font-medium hover:text-yellow-400 transition-colors flex items-center"
+                    >
+                      Nome do Cliente {getSortIcon('crediario', 'nome')}
+                    </button>
+                    <button 
+                      onClick={() => sortCrediario('saldo_devedor')}
+                      className="text-right text-white font-medium hover:text-yellow-400 transition-colors flex items-center justify-end"
+                    >
+                      Saldo Devedor {getSortIcon('crediario', 'saldo_devedor')}
+                    </button>
+                    <div className="text-center text-gray-300 font-medium">Último Pagamento</div>
+                    <div className="text-center text-gray-300 font-medium">Última Compra</div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {getSortedCrediarioData(crediarioData.clientes).map((cliente) => (
+                    <div key={cliente.id} className="bg-gray-700 rounded-lg p-4">
+                      <div className="grid grid-cols-4 gap-4 items-center mb-3">
+                        <h3 className="text-white font-bold text-sm">{cliente.nome}</h3>
+                        <div className="text-right">
+                          <span className="text-red-400 font-bold text-lg">
+                            {formatCurrency(cliente.saldo_devedor)}
                           </span>
                         </div>
-                      ))}
+                        <div className="text-center text-gray-300 text-sm">
+                          {cliente.data_ultimo_pagamento}
+                        </div>
+                        <div className="text-center text-gray-300 text-sm">
+                          {cliente.data_ultima_compra}
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 pt-3 border-t border-gray-600">
+                        <h4 className="text-white font-medium mb-2">Histórico de Compras:</h4>
+                        <div className="space-y-2">
+                          {cliente.compras.map((compra, index) => (
+                            <div key={index} className="flex justify-between items-center bg-gray-600 rounded p-2 text-sm">
+                              <div>
+                                <span className="text-white">{compra.produto}</span>
+                                <span className="text-gray-400 ml-2">({compra.data})</span>
+                              </div>
+                              <span className="text-green-400 font-medium">
+                                {formatCurrency(compra.valor)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="text-center text-gray-400">
