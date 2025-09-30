@@ -29,6 +29,7 @@ function App() {
   const [entradasFormsData, setEntradasFormsData] = useState(null);
   const [showEntradasModal, setShowEntradasModal] = useState(false);
   const [expandedSaida, setExpandedSaida] = useState(null);
+  const [metasData, setMetasData] = useState(null);
   
   // Drag and Drop states
   const [isDragMode, setIsDragMode] = useState(false);
