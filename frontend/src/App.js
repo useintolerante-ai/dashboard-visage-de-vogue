@@ -338,6 +338,10 @@ function App() {
       <span className="text-white ml-1">↓</span>;
   };
 
+  const toggleClienteDetails = (clienteId) => {
+    setExpandedCliente(expandedCliente === clienteId ? null : clienteId);
+  };
+
   useEffect(() => {
     console.log('Loading initial data...');
     loadDashboardData();
