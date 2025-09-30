@@ -48,10 +48,21 @@ function App() {
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-yellow-400 mb-4">
+          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent">
             Dashboard de Gestão 2025 | Visage de Vogue
           </h1>
-          <p className="text-gray-400">Sistema de gestão empresarial</p>
+          
+          {/* Status Indicators */}
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-green-500 text-sm">Google Sheets: Conectado</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span className="text-blue-500 text-sm">Sistema: Online</span>
+            </div>
+          </div>
         </div>
 
         {/* Navigation Tabs - Compact Single Line */}
