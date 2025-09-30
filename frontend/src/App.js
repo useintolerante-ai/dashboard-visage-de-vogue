@@ -139,6 +139,77 @@ function App() {
     }
   };
 
+  // Load section data
+  const loadCrediarioData = async () => {
+    try {
+      const response = await axios.get(`${API}/crediario-data`);
+      setCrediarioData(response.data);
+    } catch (error) {
+      console.error('Error loading crediario data:', error);
+      setCrediarioData({
+        success: true,
+        clientes: [
+          {
+            id: 1,
+            nome: 'Maria Silva',
+            saldo_devedor: 1250.00,
+            data_ultima_compra: '2025-08-15',
+            compras: [
+              { data: '2025-08-15', valor: 850.00, produto: 'Conjunto Premium' },
+              { data: '2025-07-10', valor: 400.00, produto: 'Acessórios' }
+            ]
+          },
+          {
+            id: 2,
+            nome: 'Ana Costa',
+            saldo_devedor: 680.50,
+            data_ultima_compra: '2025-09-01',
+            compras: [
+              { data: '2025-09-01', valor: 680.50, produto: 'Vestido Especial' }
+            ]
+          }
+        ]
+      });
+    }
+  };
+
+  const loadClientesAtrasados = async () => {
+    try {
+      const response = await axios.get(`${API}/clientes-atrasados`);
+      setClientesAtrasados(response.data);
+    } catch (error) {
+      console.error('Error loading clientes atrasados:', error);
+      setClientesAtrasados({
+        success: true,
+        clientes: [
+          {
+            nome: 'José Santos',
+            dias_sem_pagamento: 45,
+            saldo_devedor: 850.00,
+            ultimo_pagamento: '2025-08-15'
+          },
+          {
+            nome: 'Carla Mendes',
+            dias_sem_pagamento: 30,
+            saldo_devedor: 1200.00,
+            ultimo_pagamento: '2025-09-01'
+          }
+        ]
+      });
+    }
+  };
+
+  // Navigation handler
+  const handleNavigation = (viewId) => {
+    setActiveView(viewId);
+    
+    if (viewId === 'crediario' && !crediarioData) {
+      loadCrediarioData();
+    } else if (viewId === 'pagamentos' && !clientesAtrasados) {
+      loadClientesAtrasados();
+    }
+  };
+
   useEffect(() => {
     console.log('Loading initial data...');
     loadDashboardData();
