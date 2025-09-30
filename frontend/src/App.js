@@ -155,18 +155,29 @@ function App() {
 
   // Load section data
   const loadCrediarioData = async () => {
-    console.log('Loading crediario data...');
+    console.log('Loading crediario data from sheets...');
     try {
       const response = await axios.get(`${API}/crediario-data`);
-      if (response.data && response.data.success) {
-        setCrediarioData(response.data);
-        console.log('Crediario data loaded from API:', response.data);
+      if (response.data && response.data.success && response.data.clientes) {
+        // Process real data from sheets
+        const processedClientes = response.data.clientes.map(cliente => ({
+          ...cliente,
+          data_pagamento: cliente.data_pagamento || '', // Handle empty "data pag" column
+          data_ultimo_pagamento: cliente.data_ultimo_pagamento || cliente.data_pagamento || '',
+        }));
+        
+        setCrediarioData({
+          success: true,
+          clientes: processedClientes
+        });
+        console.log('Crediario data loaded from sheets:', processedClientes);
+        return;
       } else {
-        throw new Error('API returned unsuccessful response');
+        throw new Error('No valid crediario data in API response');
       }
     } catch (error) {
-      console.error('Error loading crediario data, using mock data:', error);
-      // Always set mock data to ensure display
+      console.error('Error loading crediario data from sheets, using mock data:', error);
+      // Fallback to mock data with realistic structure matching sheets
       setCrediarioData({
         success: true,
         clientes: [
@@ -174,133 +185,145 @@ function App() {
             id: 1,
             nome: 'MARIA SILVA SANTOS',
             saldo_devedor: 2450.00,
-            data_ultimo_pagamento: '2025-08-15',
-            data_ultima_compra: '2025-09-10',
+            data_ultimo_pagamento: '15/08/2025',
+            data_pagamento: '15/08/2025',
+            data_ultima_compra: '10/09/2025',
             compras: [
-              { data: '2025-09-10', valor: 1200.00, produto: 'Conjunto Premium Luxo' },
-              { data: '2025-08-15', valor: 850.00, produto: 'Vestido Festa' },
-              { data: '2025-07-22', valor: 400.00, produto: 'Acessórios Diversos' }
+              { data: '10/09/2025', valor: 1200.00 },
+              { data: '15/08/2025', valor: 850.00 },
+              { data: '22/07/2025', valor: 400.00 }
             ]
           },
           {
             id: 2,
             nome: 'ANA COSTA FERREIRA',
             saldo_devedor: 1680.50,
-            data_ultimo_pagamento: '2025-09-05',
-            data_ultima_compra: '2025-09-20',
+            data_ultimo_pagamento: '05/09/2025',
+            data_pagamento: '05/09/2025',
+            data_ultima_compra: '20/09/2025',
             compras: [
-              { data: '2025-09-20', valor: 980.50, produto: 'Coleção Inverno' },
-              { data: '2025-08-30', valor: 700.00, produto: 'Sapatos Importados' }
+              { data: '20/09/2025', valor: 980.50 },
+              { data: '30/08/2025', valor: 700.00 }
             ]
           },
           {
             id: 3,
             nome: 'CARLA MENDES OLIVEIRA',
             saldo_devedor: 3200.75,
-            data_ultimo_pagamento: '2025-07-28',
-            data_ultima_compra: '2025-09-05',
+            data_ultimo_pagamento: '28/07/2025',
+            data_pagamento: '28/07/2025',
+            data_ultima_compra: '05/09/2025',
             compras: [
-              { data: '2025-09-05', valor: 1800.75, produto: 'Conjunto Executivo' },
-              { data: '2025-08-12', valor: 1400.00, produto: 'Bolsas de Couro' }
+              { data: '05/09/2025', valor: 1800.75 },
+              { data: '12/08/2025', valor: 1400.00 }
             ]
           },
           {
             id: 4,
             nome: 'BEATRIZ ALMEIDA COSTA',
             saldo_devedor: 950.25,
-            data_ultimo_pagamento: '2025-09-18',
-            data_ultima_compra: '2025-09-25',
+            data_ultimo_pagamento: '',
+            data_pagamento: '', // Empty data pag example
+            data_ultima_compra: '25/09/2025',
             compras: [
-              { data: '2025-09-25', valor: 650.25, produto: 'Roupas Casuais' },
-              { data: '2025-09-01', valor: 300.00, produto: 'Bijuterias' }
+              { data: '25/09/2025', valor: 650.25 },
+              { data: '01/09/2025', valor: 300.00 }
             ]
           },
           {
             id: 5,
             nome: 'LUCIANA SANTOS PEREIRA',
             saldo_devedor: 1825.60,
-            data_ultimo_pagamento: '2025-08-20',
-            data_ultima_compra: '2025-09-15',
+            data_ultimo_pagamento: '20/08/2025',
+            data_pagamento: '20/08/2025',
+            data_ultima_compra: '15/09/2025',
             compras: [
-              { data: '2025-09-15', valor: 1200.00, produto: 'Vestidos' },
-              { data: '2025-08-25', valor: 625.60, produto: 'Calçados' }
+              { data: '15/09/2025', valor: 1200.00 },
+              { data: '25/08/2025', valor: 625.60 }
             ]
           },
           {
             id: 6,
             nome: 'PATRICIA RODRIGUES LIMA',
             saldo_devedor: 2100.80,
-            data_ultimo_pagamento: '2025-07-30',
-            data_ultima_compra: '2025-09-08',
+            data_ultimo_pagamento: '30/07/2025',
+            data_pagamento: '30/07/2025',
+            data_ultima_compra: '08/09/2025',
             compras: [
-              { data: '2025-09-08', valor: 1500.80, produto: 'Coleção Especial' },
-              { data: '2025-08-10', valor: 600.00, produto: 'Acessórios' }
+              { data: '08/09/2025', valor: 1500.80 },
+              { data: '10/08/2025', valor: 600.00 }
             ]
           },
           {
             id: 7,
             nome: 'FERNANDA OLIVEIRA SILVA',
             saldo_devedor: 1340.45,
-            data_ultimo_pagamento: '2025-09-10',
-            data_ultima_compra: '2025-09-22',
+            data_ultimo_pagamento: '',
+            data_pagamento: '', // Empty data pag example
+            data_ultima_compra: '22/09/2025',
             compras: [
-              { data: '2025-09-22', valor: 840.45, produto: 'Roupas Sociais' },
-              { data: '2025-09-02', valor: 500.00, produto: 'Bolsas' }
+              { data: '22/09/2025', valor: 840.45 },
+              { data: '02/09/2025', valor: 500.00 }
             ]
           },
           {
             id: 8,
             nome: 'JULIANA COSTA MARTINS',
             saldo_devedor: 1750.20,
-            data_ultimo_pagamento: '2025-08-05',
-            data_ultima_compra: '2025-09-18',
+            data_ultimo_pagamento: '05/08/2025',
+            data_pagamento: '05/08/2025',
+            data_ultima_compra: '18/09/2025',
             compras: [
-              { data: '2025-09-18', valor: 1100.20, produto: 'Vestidos Festa' },
-              { data: '2025-08-15', valor: 650.00, produto: 'Sapatos' }
+              { data: '18/09/2025', valor: 1100.20 },
+              { data: '15/08/2025', valor: 650.00 }
             ]
           },
           {
             id: 9,
             nome: 'AMANDA FERREIRA SANTOS',
             saldo_devedor: 890.75,
-            data_ultimo_pagamento: '2025-09-12',
-            data_ultima_compra: '2025-09-26',
+            data_ultimo_pagamento: '12/09/2025',
+            data_pagamento: '12/09/2025',
+            data_ultima_compra: '26/09/2025',
             compras: [
-              { data: '2025-09-26', valor: 540.75, produto: 'Roupas Casuais' },
-              { data: '2025-09-05', valor: 350.00, produto: 'Acessórios' }
+              { data: '26/09/2025', valor: 540.75 },
+              { data: '05/09/2025', valor: 350.00 }
             ]
           },
           {
             id: 10,
             nome: 'ROBERTA ALMEIDA ROCHA',
             saldo_devedor: 2250.90,
-            data_ultimo_pagamento: '2025-07-25',
-            data_ultima_compra: '2025-09-12',
+            data_ultimo_pagamento: '',
+            data_pagamento: '', // Empty data pag example
+            data_ultima_compra: '12/09/2025',
             compras: [
-              { data: '2025-09-12', valor: 1450.90, produto: 'Coleção Premium' },
-              { data: '2025-08-08', valor: 800.00, produto: 'Bolsas de Luxo' }
+              { data: '12/09/2025', valor: 1450.90 },
+              { data: '08/08/2025', valor: 800.00 }
             ]
           },
           {
             id: 11,
             nome: 'SANDRA LIMA COSTA',
             saldo_devedor: 1425.35,
-            data_ultimo_pagamento: '2025-08-28',
-            data_ultima_compra: '2025-09-20',
+            data_ultimo_pagamento: '28/08/2025',
+            data_pagamento: '28/08/2025',
+            data_ultima_compra: '20/09/2025',
             compras: [
-              { data: '2025-09-20', valor: 925.35, produto: 'Vestidos' },
-              { data: '2025-08-30', valor: 500.00, produto: 'Sapatos' }
+              { data: '20/09/2025', valor: 925.35 },
+              { data: '30/08/2025', valor: 500.00 }
             ]
           },
           {
             id: 12,
             nome: 'CAROLINA SANTOS SILVA',
             saldo_devedor: 1680.60,
-            data_ultimo_pagamento: '2025-09-08',
-            data_ultima_compra: '2025-09-24',
+            data_ultimo_pagamento: '08/09/2025',
+            data_pagamento: '08/09/2025',
+            data_ultima_compra: '24/09/2025',
             compras: [
-              { data: '2025-09-24', valor: 1080.60, produto: 'Roupas Executivas' },
-              { data: '2025-09-10', valor: 600.00, produto: 'Acessórios' }
+              { data: '24/09/2025', valor: 1080.60 },
+              { data: '10/09/2025', valor: 600.00 }
             ]
           }
         ]
