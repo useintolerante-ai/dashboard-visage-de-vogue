@@ -795,7 +795,7 @@ function App() {
         </div>
 
         {/* Month Filter */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center items-center gap-4 mb-8">
           <select
             value={selectedMonth}
             onChange={(e) => handleMonthChange(e.target.value)}
@@ -807,6 +807,16 @@ function App() {
               </option>
             ))}
           </select>
+          
+          {/* Refresh Data Button */}
+          <button
+            onClick={() => forceRefreshData()}
+            disabled={isLoading}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2"
+          >
+            <span>🔄</span>
+            <span className="hidden sm:inline">{isLoading ? 'Atualizando...' : 'Atualizar'}</span>
+          </button>
         </div>
 
         {/* Visão Geral View */}
