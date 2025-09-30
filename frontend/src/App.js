@@ -1255,6 +1255,99 @@ function App() {
           </Card>
         )}
 
+        {/* Metas View */}
+        {activeView === 'metas' && (
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-xl">
+                Metas - {mesesDisponiveis.find(m => m.value === selectedMonth)?.label || selectedMonth}
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                Acompanhamento de metas mensais
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {metasData ? (
+                metasData.success && metasData.metas && metasData.metas.length > 0 ? (
+                  <div className="space-y-4">
+                    {metasData.metas.map((meta, index) => (
+                      <div key={index} className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <h3 className="text-white font-semibold text-lg mb-1">{meta.titulo}</h3>
+                            {meta.descricao && (
+                              <p className="text-gray-400 text-sm">{meta.descricao}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => toggleMetaStatus(meta.id, selectedMonth)}
+                              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                                meta.concluida 
+                                  ? 'bg-green-600 text-white hover:bg-green-700' 
+                                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                              }`}
+                            >
+                              {meta.concluida ? '✓ Concluída' : 'Pendente'}
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {meta.valor_meta && (
+                          <div className="mb-3">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-gray-300 text-sm">Progresso:</span>
+                              <span className="text-white font-semibold">
+                                {formatCurrency(meta.valor_atual || 0)} / {formatCurrency(meta.valor_meta)}
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-700 rounded-full h-3">
+                              <div 
+                                className={`h-3 rounded-full transition-all duration-300 ${
+                                  meta.concluida ? 'bg-green-500' : 'bg-blue-500'
+                                }`}
+                                style={{ 
+                                  width: `${Math.min(((meta.valor_atual || 0) / meta.valor_meta) * 100, 100)}%` 
+                                }}
+                              ></div>
+                            </div>
+                            <div className="text-right mt-1">
+                              <span className={`text-sm font-medium ${
+                                meta.concluida ? 'text-green-400' : 'text-blue-400'
+                              }`}>
+                                {Math.round(((meta.valor_atual || 0) / meta.valor_meta) * 100)}%
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {meta.prazo && (
+                          <div className="text-gray-400 text-sm">
+                            <span>Prazo: {meta.prazo}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400 text-lg mb-2">
+                      Nenhuma meta encontrada para este período.
+                    </div>
+                    <div className="text-gray-500 text-sm">
+                      As metas podem não estar configuradas para este mês.
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-gray-400">Carregando metas...</div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Empty State */}
         {!dashboardData && !isLoading && (
           <Card className="bg-gray-900 border-gray-700 text-center py-12">
