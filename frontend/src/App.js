@@ -709,49 +709,45 @@ function App() {
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex justify-center mb-8">
-          <div className="flex gap-2 bg-gray-800 rounded-lg p-1">
-            <button
-              onClick={() => showView('visaoGeral')}
-              className={`px-6 py-3 rounded-md font-medium transition-colors ${
-                activeView === 'visaoGeral' 
-                  ? 'bg-pink-600 text-white' 
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
-              }`}
-            >
-              Visão Geral
-            </button>
-            <button
-              onClick={() => showView('crediario')}
-              className={`px-6 py-3 rounded-md font-medium transition-colors ${
-                activeView === 'crediario' 
-                  ? 'bg-pink-600 text-white' 
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
-              }`}
-            >
-              Crediário
-            </button>
-            <button
-              onClick={() => showView('diasPagamento')}
-              className={`px-6 py-3 rounded-md font-medium transition-colors ${
-                activeView === 'diasPagamento' 
-                  ? 'bg-pink-600 text-white' 
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
-              }`}
-            >
-              Dias s/ Pagamento
-            </button>
-            <button
-              onClick={() => showView('metas')}
-              className={`px-6 py-3 rounded-md font-medium transition-colors ${
-                activeView === 'metas' 
-                  ? 'bg-pink-600 text-white' 
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
-              }`}
-            >
-              Metas
-            </button>
+        {/* Navigation Tabs - Modern Design */}
+        <div className="flex justify-center mb-8 px-4">
+          <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-2xl p-2 shadow-2xl border border-gray-600">
+            <div className="flex flex-wrap justify-center gap-2">
+              {[
+                { id: 'visaoGeral', label: 'Visão Geral', icon: '📊', gradient: 'from-blue-500 to-purple-600' },
+                { id: 'crediario', label: 'Crediário', icon: '💳', gradient: 'from-green-500 to-emerald-600' },
+                { id: 'diasPagamento', label: 'Dias s/ Pagamento', icon: '⏰', gradient: 'from-orange-500 to-red-600' },
+                { id: 'metas', label: 'Metas', icon: '🎯', gradient: 'from-purple-500 to-pink-600' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => showView(tab.id)}
+                  className={`group relative px-6 py-4 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 ${
+                    activeView === tab.id 
+                      ? `bg-gradient-to-r ${tab.gradient} text-white shadow-lg shadow-pink-500/25` 
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700/50 backdrop-blur-sm'
+                  }`}
+                >
+                  {/* Icon and Label */}
+                  <div className="flex items-center gap-2">
+                    <span className={`text-lg transition-transform duration-300 ${activeView === tab.id ? 'animate-pulse' : 'group-hover:scale-110'}`}>
+                      {tab.icon}
+                    </span>
+                    <span className="hidden sm:block">
+                      {tab.label}
+                    </span>
+                  </div>
+                  
+                  {/* Active Indicator */}
+                  {activeView === tab.id && (
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
+                  )}
+                  
+                  {/* Hover Glow Effect */}
+                  <div className={`absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r ${tab.gradient} blur-xl -z-10`}></div>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
