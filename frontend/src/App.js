@@ -28,6 +28,7 @@ function App() {
   const [clientesAtrasados, setClientesAtrasados] = useState(null);
   const [crediarioSort, setCrediarioSort] = useState({ key: null, direction: 'asc' });
   const [pagamentosSort, setPagamentosSort] = useState({ key: 'dias_sem_pagamento', direction: 'desc' });
+  const [expandedCliente, setExpandedCliente] = useState(null);
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
