@@ -30,6 +30,13 @@ function App() {
   const [pagamentosSort, setPagamentosSort] = useState({ key: 'dias_sem_pagamento', direction: 'desc' });
   const [expandedCliente, setExpandedCliente] = useState(null);
 
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value || 0);
+  };
+
   // Date formatting function
   const formatDateBR = (dateString) => {
     if (!dateString) return '';
