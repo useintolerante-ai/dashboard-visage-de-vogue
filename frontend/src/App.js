@@ -769,10 +769,10 @@ function App() {
           </div>
         </div>
 
-        {/* Navigation Tabs - Modern Design */}
-        <div className="flex justify-center mb-8 px-4">
-          <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-2xl p-2 shadow-2xl border border-gray-600">
-            <div className="flex flex-wrap justify-center gap-2">
+        {/* Navigation Tabs - Compact Single Line */}
+        <div className="flex justify-center mb-4 px-2">
+          <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-xl p-1 shadow-xl border border-gray-600">
+            <div className="flex justify-center gap-1">
               {[
                 { id: 'visaoGeral', label: 'Visão Geral', icon: '📊', gradient: 'from-blue-500 to-purple-600' },
                 { id: 'crediario', label: 'Crediário', icon: '💳', gradient: 'from-green-500 to-emerald-600' },
@@ -782,29 +782,26 @@ function App() {
                 <button
                   key={tab.id}
                   onClick={() => showView(tab.id)}
-                  className={`group relative px-6 py-4 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 ${
+                  className={`group relative px-3 py-2 rounded-lg font-medium text-xs transition-all duration-300 ${
                     activeView === tab.id 
-                      ? `bg-gradient-to-r ${tab.gradient} text-white shadow-lg shadow-pink-500/25` 
-                      : 'text-gray-300 hover:text-white hover:bg-gray-700/50 backdrop-blur-sm'
+                      ? `bg-gradient-to-r ${tab.gradient} text-white shadow-md` 
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
                   }`}
                 >
-                  {/* Icon and Label */}
-                  <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
-                    <span className={`text-lg transition-transform duration-300 ${activeView === tab.id ? 'animate-pulse' : 'group-hover:scale-110'}`}>
+                  {/* Icon and Label in one line */}
+                  <div className="flex items-center gap-1">
+                    <span className={`text-sm ${activeView === tab.id ? 'animate-pulse' : ''}`}>
                       {tab.icon}
                     </span>
-                    <span className="text-xs sm:text-sm font-medium">
+                    <span className="hidden xs:inline sm:inline">
                       {tab.label}
                     </span>
                   </div>
                   
                   {/* Active Indicator */}
                   {activeView === tab.id && (
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
+                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
                   )}
-                  
-                  {/* Hover Glow Effect */}
-                  <div className={`absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r ${tab.gradient} blur-xl -z-10`}></div>
                 </button>
               ))}
             </div>
