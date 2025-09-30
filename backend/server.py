@@ -1960,6 +1960,9 @@ async def get_formas_pagamento(mes: str):
             "julho": "JULHO25", 
             "agosto": "AGOSTO25", 
             "setembro": "SETEMBRO25",
+            "outubro": "OUTUBRO25",
+            "novembro": "NOVEMBRO25",
+            "dezembro": "DEZEMBRO25",
             "ano_inteiro": "SETEMBRO25",  # Use current month for year view
             "anointeiro": "SETEMBRO25"   # Handle different formats
         }
