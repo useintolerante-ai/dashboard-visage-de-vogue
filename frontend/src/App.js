@@ -828,38 +828,37 @@ function App() {
           {/* Refresh Button Removed */}
         </div>
 
-        {/* Visão Geral View */}
-        {activeView === 'visaoGeral' && dashboardData && (
-          <div className="space-y-8">
-            {/* KPIs Grid */}
-            <Card className="bg-gray-900 border-gray-700 mb-6">
-              <CardHeader>
-                <CardTitle className="text-white text-lg">
-                  Indicadores Financeiros
-                  {isDragMode && (
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">
-                        Modo Arrastar Ativo - Arraste para reordenar
-                      </span>
-                      <button
-                        onClick={() => setIsDragMode(false)}
-                        className="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
-                      >
-                        Sair do Modo Arrastar
-                      </button>
-                    </div>
-                  )}
-                </CardTitle>
-                <div className="text-gray-400 text-sm">
-                  {!isDragMode && "Segure qualquer KPI por 2 segundos para ativar modo reordenar"}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 relative">
-                  {kpiOrder.map(kpiId => renderKPI(kpiId))}
-                </div>
-              </CardContent>
-            </Card>
+        {/* All Sections View - Single Page Layout */}
+        <div className="space-y-8">
+          {/* KPIs Grid - Always Visible */}
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-lg">
+                Indicadores Financeiros
+                {isDragMode && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">
+                      Modo Arrastar Ativo - Arraste para reordenar
+                    </span>
+                    <button
+                      onClick={() => setIsDragMode(false)}
+                      className="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
+                    >
+                      Sair do Modo Arrastar
+                    </button>
+                  </div>
+                )}
+              </CardTitle>
+              <div className="text-gray-400 text-sm">
+                {!isDragMode && "Segue qualquer KPI por 2 segundos para ativar modo reordenar"}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 relative">
+                {kpiOrder.map(kpiId => renderKPI(kpiId))}
+              </div>
+            </CardContent>
+          </Card>
 
             {/* Chart removed per user request */}
 
