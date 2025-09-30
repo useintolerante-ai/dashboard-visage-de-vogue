@@ -120,6 +120,40 @@ function App() {
     }
   }
 
+  async function forceRefreshData() {
+    console.log('Force refresh triggered...');
+    setIsLoading(true);
+    
+    try {
+      // Clear existing data first to prevent cache issues
+      setDashboardData({
+        faturamento: 0,
+        saidas: 0,
+        lucro_bruto: 0,
+        recebido_crediario: 0,
+        entradas: 0
+      });
+      
+      // Load fresh data for current month
+      await loadDashboardData(selectedMonth);
+      await loadSheetsStatus();
+      await loadFaturamentoDiario(selectedMonth);
+      await loadClientesAtrasados();
+      await loadMetasData(selectedMonth);
+      
+      // If we're in crediario view, refresh that too
+      if (activeView === 'crediario') {
+        await loadCrediarioData();
+      }
+      
+      console.log('Force refresh completed');
+    } catch (error) {
+      console.error('Error during force refresh:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   async function loadSheetsStatus() {
     try {
       const response = await axios.get(`${API}/sheets-status`);
