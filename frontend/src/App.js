@@ -194,10 +194,36 @@ function App() {
 
   async function loadMesesDisponiveis() {
     try {
-      const response = await axios.get(`${API}/meses-disponiveis`);
-      setMesesDisponiveis(response.data.meses);
+      // Try automatic detection first
+      const response = await axios.get(`${API}/meses-disponiveis-auto`);
+      if (response.data.success && response.data.meses.length > 0) {
+        // Transform data for the dropdown
+        const mesesFormatted = response.data.meses.map(mes => ({
+          label: mes.display_name,
+          value: mes.value
+        }));
+        setMesesDisponiveis(mesesFormatted);
+        console.log('Meses detected automatically:', mesesFormatted);
+      } else {
+        // Fallback to manual list
+        throw new Error('Auto detection failed');
+      }
     } catch (error) {
       console.error('Erro ao carregar meses disponíveis:', error);
+      // Fallback to current static months
+      const fallbackMeses = [
+        { label: "Janeiro", value: "janeiro" },
+        { label: "Fevereiro", value: "fevereiro" },
+        { label: "Março", value: "marco" },
+        { label: "Abril", value: "abril" },
+        { label: "Maio", value: "maio" },
+        { label: "Junho", value: "junho" },
+        { label: "Julho", value: "julho" },
+        { label: "Agosto", value: "agosto" },
+        { label: "Setembro", value: "setembro" },
+        { label: "Ano Inteiro", value: "anointeiro" }
+      ];
+      setMesesDisponiveis(fallbackMeses);
     }
   }
 
