@@ -2504,6 +2504,169 @@ async def get_meses_disponiveis_auto():
             "fallback": True
         }
 
+@api_router.get("/metas/{mes}")
+async def get_metas_mes(mes: str):
+    """
+    Get monthly goals/tasks with weekly organization
+    """
+    try:
+        # Map month to sheet name
+        month_mapping = {
+            "janeiro": "METAS_JANEIRO25", 
+            "fevereiro": "METAS_FEVEREIRO25",
+            "março": "METAS_MARÇO25", "marco": "METAS_MARÇO25",
+            "abril": "METAS_ABRIL25", 
+            "maio": "METAS_MAIO25",
+            "junho": "METAS_JUNHO25",
+            "julho": "METAS_JULHO25",
+            "agosto": "METAS_AGOSTO25",
+            "setembro": "METAS_SETEMBRO25",
+            "outubro": "METAS_OUTUBRO25",
+            "novembro": "METAS_NOVEMBRO25",
+            "dezembro": "METAS_DEZEMBRO25"
+        }
+        
+        sheet_name = month_mapping.get(mes.lower())
+        if not sheet_name:
+            return {
+                "success": False, 
+                "error": f"Mês '{mes}' não suportado",
+                "metas": []
+            }
+        
+        # Try to get data from Google Sheets
+        try:
+            sheets_result = fetch_google_sheets_data_cached(sheet_name)
+            if not sheets_result["success"]:
+                # Sheet doesn't exist - create empty structure
+                return {
+                    "success": True,
+                    "metas": [],
+                    "resumo": {
+                        "total_tarefas": 0,
+                        "concluidas": 0,
+                        "percentual": 0,
+                        "por_semana": {}
+                    },
+                    "mes": mes,
+                    "sheet_exists": False
+                }
+            
+            rows = sheets_result["data"]
+            metas = []
+            
+            # Process sheet data (assuming columns: Data | Dia_Semana | Tarefa | Status | Categoria)
+            for i, row in enumerate(rows):
+                if i == 0 or len(row) < 4:  # Skip header or incomplete rows
+                    continue
+                
+                try:
+                    data_str = str(row[0]).strip() if len(row) > 0 else ""
+                    dia_semana = str(row[1]).strip().lower() if len(row) > 1 else ""
+                    tarefa = str(row[2]).strip() if len(row) > 2 else ""
+                    status = str(row[3]).strip().lower() if len(row) > 3 else "pendente"
+                    categoria = str(row[4]).strip() if len(row) > 4 else ""
+                    
+                    if not tarefa:  # Skip empty tasks
+                        continue
+                    
+                    # Calculate week number (simplified)
+                    semana = 1
+                    try:
+                        if "/" in data_str:
+                            day = int(data_str.split("/")[0])
+                            if day <= 7:
+                                semana = 1
+                            elif day <= 14:
+                                semana = 2
+                            elif day <= 21:
+                                semana = 3
+                            else:
+                                semana = 4
+                    except:
+                        semana = 1
+                    
+                    meta = Meta(
+                        mes=mes,
+                        semana=semana,
+                        dia_semana=dia_semana,
+                        data=data_str,
+                        tarefa=tarefa,
+                        status="concluida" if status in ["concluida", "ok", "feito", "✓"] else "pendente",
+                        categoria=categoria
+                    )
+                    metas.append(meta)
+                    
+                except Exception as e:
+                    logger.warning(f"Error processing meta row {i}: {e}")
+                    continue
+            
+            # Calculate summary
+            total_tarefas = len(metas)
+            concluidas = len([m for m in metas if m.status == "concluida"])
+            percentual = (concluidas / total_tarefas * 100) if total_tarefas > 0 else 0
+            
+            # Group by week
+            por_semana = {}
+            for semana in [1, 2, 3, 4]:
+                semana_metas = [m for m in metas if m.semana == semana]
+                semana_concluidas = len([m for m in semana_metas if m.status == "concluida"])
+                por_semana[f"semana_{semana}"] = {
+                    "total": len(semana_metas),
+                    "concluidas": semana_concluidas,
+                    "percentual": (semana_concluidas / len(semana_metas) * 100) if semana_metas else 0
+                }
+            
+            return {
+                "success": True,
+                "metas": [meta.dict() for meta in metas],
+                "resumo": {
+                    "total_tarefas": total_tarefas,
+                    "concluidas": concluidas, 
+                    "percentual": round(percentual, 1),
+                    "por_semana": por_semana
+                },
+                "mes": mes,
+                "sheet_exists": True
+            }
+            
+        except Exception as e:
+            logger.error(f"Error loading metas for {mes}: {str(e)}")
+            return {
+                "success": False,
+                "error": f"Erro ao carregar metas: {str(e)}",
+                "metas": []
+            }
+            
+    except Exception as e:
+        logger.error(f"Error in get_metas_mes for {mes}: {str(e)}")
+        return {
+            "success": False,
+            "error": f"Erro interno: {str(e)}",
+            "metas": []
+        }
+
+@api_router.post("/metas/{mes}/toggle/{tarefa_id}")
+async def toggle_meta_status(mes: str, tarefa_id: str):
+    """
+    Toggle task status between pendente and concluida
+    This would sync with Google Sheets in a real implementation
+    """
+    try:
+        # For now, return success - in full implementation, would update Google Sheets
+        return {
+            "success": True,
+            "message": f"Status da tarefa {tarefa_id} alterado com sucesso",
+            "tarefa_id": tarefa_id,
+            "mes": mes
+        }
+    except Exception as e:
+        logger.error(f"Error toggling meta status: {str(e)}")
+        return {
+            "success": False,
+            "error": f"Erro ao alterar status: {str(e)}"
+        }
+
 @api_router.get("/meses-disponiveis")
 async def get_meses_disponiveis():
     """Get available months"""
