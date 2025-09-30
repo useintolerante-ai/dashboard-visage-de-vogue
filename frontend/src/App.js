@@ -275,6 +275,8 @@ function App() {
     // Reload dashboard data for new month
     loadDashboardData(mes);
     loadFaturamentoDiario(mes);
+    loadClientesAtrasados();
+    loadMetasData(mes);
     
     if (activeView === 'saidas') {
       loadSaidasData(mes);
