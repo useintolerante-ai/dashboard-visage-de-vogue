@@ -860,93 +860,351 @@ function App() {
             </CardContent>
           </Card>
 
-            {/* Chart removed per user request */}
-
-            {/* Faturamento Diário Table */}
-            {faturamentoDiario && faturamentoDiario.vendas_diarias && faturamentoDiario.vendas_diarias.length > 0 && (
-              <Card className="bg-gray-900 border-gray-700">
-                <CardHeader>
-                  <CardTitle className="text-white text-xl">
-                    Faturamento Diário - {faturamentoDiario.mes === "Ano Inteiro (2025)" ? faturamentoDiario.mes : mesesDisponiveis.find(m => m.value === selectedMonth)?.label || selectedMonth}
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    Detalhamento do faturamento por dia
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4 p-4 bg-gray-800 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-300">Total do Faturamento:</span>
-                      <span className="text-green-400 font-bold text-xl">
-                        {formatCurrency(faturamentoDiario.total_valor)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center mt-2">
-                      <span className="text-gray-300">Dias com Vendas:</span>
-                      <span className="text-white font-semibold">
-                        {faturamentoDiario.total_vendas}
-                      </span>
-                    </div>
+          {/* Faturamento Diário Table */}
+          {faturamentoDiario && faturamentoDiario.vendas_diarias && faturamentoDiario.vendas_diarias.length > 0 && (
+            <Card className="bg-gray-900 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-white text-xl">
+                  Faturamento Diário - {faturamentoDiario.mes === "Ano Inteiro (2025)" ? faturamentoDiario.mes : mesesDisponiveis.find(m => m.value === selectedMonth)?.label || selectedMonth}
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  Detalhamento do faturamento por dia
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-4 p-4 bg-gray-800 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Total do Faturamento:</span>
+                    <span className="text-green-400 font-bold text-xl">
+                      {formatCurrency(faturamentoDiario.total_valor)}
+                    </span>
                   </div>
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-gray-300">Dias com Vendas:</span>
+                    <span className="text-white font-semibold">
+                      {faturamentoDiario.total_vendas}
+                    </span>
+                  </div>
+                </div>
 
-                  <div className="overflow-x-auto max-h-96">
-                    <table className="w-full border-collapse">
-                      <thead className="sticky top-0 bg-gray-900">
-                        <tr className="border-b border-gray-700">
+                <div className="overflow-x-auto max-h-96">
+                  <table className="w-full border-collapse">
+                    <thead className="sticky top-0 bg-gray-900">
+                      <tr className="border-b border-gray-700">
+                        <th 
+                          className="text-left p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                          onClick={() => handleSort('data', 'string')}
+                        >
+                          Data {getSortIcon('data')}
+                        </th>
+                        <th 
+                          className="text-right p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                          onClick={() => handleSort('valor', 'currency')}
+                        >
+                          Faturamento {getSortIcon('valor')}
+                        </th>
+                        {faturamentoDiario.mes === "Ano Inteiro (2025)" && (
                           <th 
                             className="text-left p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
-                            onClick={() => handleSort('data', 'string')}
+                            onClick={() => handleSort('mes', 'string')}
                           >
-                            Data {getSortIcon('data')}
+                            Mês {getSortIcon('mes')}
                           </th>
-                          <th 
-                            className="text-right p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
-                            onClick={() => handleSort('valor', 'currency')}
-                          >
-                            Faturamento {getSortIcon('valor')}
-                          </th>
-                          {faturamentoDiario.mes === "Ano Inteiro (2025)" && (
-                            <th 
-                              className="text-left p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
-                              onClick={() => handleSort('mes', 'string')}
-                            >
-                              Mês {getSortIcon('mes')}
-                            </th>
-                          )}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sortData(faturamentoDiario.vendas_diarias, sortConfig.key, sortConfig.key === 'valor' ? 'currency' : 'string')
-                          .map((venda, index) => (
-                          <tr key={index} className="border-b border-gray-800 hover:bg-gray-800 transition-colors">
-                            <td className="p-3 text-white">{venda.data}</td>
-                            <td className="p-3 text-right text-green-400 font-semibold">
-                              {formatCurrency(venda.valor)}
-                            </td>
-                            {faturamentoDiario.mes === "Ano Inteiro (2025)" && (
-                              <td className="p-3 text-cyan-400">{venda.mes}</td>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                      <tfoot>
-                        <tr className="border-t-2 border-gray-600 bg-gray-800">
-                          <td className="p-3 text-white font-bold">TOTAL</td>
-                          <td className="p-3 text-right text-green-400 font-bold text-lg">
-                            {formatCurrency(faturamentoDiario.total_valor)}
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortData(faturamentoDiario.vendas_diarias, sortConfig.key, sortConfig.key === 'valor' ? 'currency' : 'string')
+                        .map((venda, index) => (
+                        <tr key={index} className="border-b border-gray-800 hover:bg-gray-800 transition-colors">
+                          <td className="p-3 text-white">{venda.data}</td>
+                          <td className="p-3 text-right text-green-400 font-semibold">
+                            {formatCurrency(venda.valor)}
                           </td>
                           {faturamentoDiario.mes === "Ano Inteiro (2025)" && (
-                            <td className="p-3"></td>
+                            <td className="p-3 text-cyan-400">{venda.mes}</td>
                           )}
                         </tr>
-                      </tfoot>
-                    </table>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="border-t-2 border-gray-600 bg-gray-800">
+                        <td className="p-3 text-white font-bold">TOTAL</td>
+                        <td className="p-3 text-right text-green-400 font-bold text-lg">
+                          {formatCurrency(faturamentoDiario.total_valor)}
+                        </td>
+                        {faturamentoDiario.mes === "Ano Inteiro (2025)" && (
+                          <td className="p-3"></td>
+                        )}
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Crediário Section */}
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-xl">Clientes Crediário</CardTitle>
+              <CardDescription className="text-gray-400">
+                Gestão de clientes e histórico de compras
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {crediarioData ? (
+                <div className="space-y-4">
+                  <div className="text-gray-300 mb-4">
+                    Total de clientes: <span className="text-white font-semibold">{crediarioData.total_clientes}</span>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        )}
+                  
+                  {/* Column Headers */}
+                  <div className="bg-gray-900 p-3 rounded-lg border border-gray-600">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <button 
+                          className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
+                          onClick={() => handleSort('nome', 'string')}
+                        >
+                          Clientes {getSortIcon('nome')}
+                        </button>
+                      </div>
+                      <div className="text-right">
+                        <button 
+                          className="text-gray-300 font-medium hover:text-white transition-colors cursor-pointer"
+                          onClick={() => handleSort('saldo_devedor', 'currency')}
+                        >
+                          Saldo Devedor {getSortIcon('saldo_devedor')}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {sortCrediarioData(crediarioData.clientes, sortConfig.key, sortConfig.key === 'vendas_totais' || sortConfig.key === 'saldo_devedor' ? 'currency' : sortConfig.key === 'compras' ? 'number' : 'string')
+                      .slice(0, 10).map((cliente) => (
+                      <div key={cliente.id} className="bg-gray-800 rounded-lg border border-gray-700">
+                        {/* Client Header */}
+                        <div 
+                          className="p-3 hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-700"
+                          onClick={() => setExpandedCliente(expandedCliente === cliente.id ? null : cliente.id)}
+                        >
+                          <div className="flex justify-between items-center">
+                            {/* Client Name */}
+                            <div className="flex-1">
+                              <h3 className="text-white font-semibold text-sm">{cliente.nome}</h3>
+                            </div>
+                            
+                            {/* Outstanding Balance */}
+                            <div className="text-right">
+                              <div className="text-red-400 font-bold text-sm">
+                                {formatCurrency(cliente.saldo_devedor)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {crediarioData.clientes.length > 10 && (
+                      <div className="text-center text-gray-400 text-sm">
+                        Mostrando 10 de {crediarioData.clientes.length} clientes. Acesse a aba Crediário para ver todos.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-gray-400">Carregando dados do crediário...</div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Dias s/ Pagamento Section */}
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-xl">Dias s/ Pagamento</CardTitle>
+              <CardDescription className="text-gray-400">
+                Clientes com mais de 30 dias sem pagamento (para cobrança)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {clientesAtrasados ? (
+                clientesAtrasados.clientes && clientesAtrasados.clientes.length > 0 ? (
+                  <div>
+                    <div className="mb-4 p-4 bg-gray-800 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">Total de Clientes em Atraso:</span>
+                        <span className="text-red-400 font-bold text-xl">
+                          {clientesAtrasados.clientes.length}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="overflow-x-auto max-h-64">
+                      <table className="w-full border-collapse">
+                        <thead className="sticky top-0 bg-gray-900">
+                          <tr className="border-b border-gray-700">
+                            <th 
+                              className="text-left p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                              onClick={() => handleSortAtraso('nome')}
+                            >
+                              Cliente {getSortIconAtraso('nome')}
+                            </th>
+                            <th 
+                              className="text-right p-3 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                              onClick={() => handleSortAtraso('dias_sem_pagamento')}
+                            >
+                              Dias s/ Pagamento {getSortIconAtraso('dias_sem_pagamento')}
+                            </th>
+                            <th className="text-right p-3 text-gray-300 font-medium">
+                              Saldo Devedor
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sortClientesAtrasados(clientesAtrasados.clientes, sortConfigAtraso.key, sortConfigAtraso.direction)
+                            .slice(0, 5).map((cliente, index) => (
+                            <tr key={index} className="border-b border-gray-700 hover:bg-gray-800">
+                              <td className="p-3 text-white text-sm">{cliente.nome}</td>
+                              <td className="p-3 text-right">
+                                <span className={`font-bold text-sm ${
+                                  cliente.dias_sem_pagamento > 90 ? 'text-red-600' : 
+                                  cliente.dias_sem_pagamento > 60 ? 'text-red-400' : 
+                                  'text-orange-400'
+                                }`}>
+                                  {cliente.dias_sem_pagamento} dias
+                                </span>
+                              </td>
+                              <td className="p-3 text-right text-yellow-400 font-semibold text-sm">
+                                {formatCurrency(cliente.saldo_devedor)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {clientesAtrasados.clientes.length > 5 && (
+                        <div className="text-center text-gray-400 text-sm mt-2">
+                          Mostrando 5 de {clientesAtrasados.clientes.length} clientes em atraso. Acesse a aba Pagamentos para ver todos.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-green-400 text-lg font-semibold">
+                      🎉 Nenhum cliente com atraso!
+                    </div>
+                    <div className="text-gray-400 mt-2">
+                      Todos os clientes estão em dia.
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-gray-400">Carregando dados de atraso...</div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Metas Section */}
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-xl">
+                Metas - {mesesDisponiveis.find(m => m.value === selectedMonth)?.label || selectedMonth}
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                Acompanhamento de metas mensais
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {metasData ? (
+                metasData.success && metasData.metas && metasData.metas.length > 0 ? (
+                  <div className="space-y-4 max-h-64 overflow-y-auto">
+                    {metasData.metas.slice(0, 3).map((meta, index) => (
+                      <div key={index} className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <h3 className="text-white font-semibold text-lg mb-1">{meta.titulo}</h3>
+                            {meta.descricao && (
+                              <p className="text-gray-400 text-sm">{meta.descricao}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => toggleMetaStatus(meta.id, selectedMonth)}
+                              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                                meta.concluida 
+                                  ? 'bg-green-600 text-white hover:bg-green-700' 
+                                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                              }`}
+                            >
+                              {meta.concluida ? '✓ Concluída' : 'Pendente'}
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {meta.valor_meta && (
+                          <div className="mb-3">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-gray-300 text-sm">Progresso:</span>
+                              <span className="text-white font-semibold">
+                                {formatCurrency(meta.valor_atual || 0)} / {formatCurrency(meta.valor_meta)}
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-700 rounded-full h-3">
+                              <div 
+                                className={`h-3 rounded-full transition-all duration-300 ${
+                                  meta.concluida ? 'bg-green-500' : 'bg-blue-500'
+                                }`}
+                                style={{ 
+                                  width: `${Math.min(((meta.valor_atual || 0) / meta.valor_meta) * 100, 100)}%` 
+                                }}
+                              ></div>
+                            </div>
+                            <div className="text-right mt-1">
+                              <span className={`text-sm font-medium ${
+                                meta.concluida ? 'text-green-400' : 'text-blue-400'
+                              }`}>
+                                {Math.round(((meta.valor_atual || 0) / meta.valor_meta) * 100)}%
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {meta.prazo && (
+                          <div className="text-gray-400 text-sm">
+                            <span>Prazo: {meta.prazo}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {metasData.metas.length > 3 && (
+                      <div className="text-center text-gray-400 text-sm">
+                        Mostrando 3 de {metasData.metas.length} metas. Acesse a aba Metas para ver todas.
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400 text-lg mb-2">
+                      Nenhuma meta encontrada para este período.
+                    </div>
+                    <div className="text-gray-500 text-sm">
+                      As metas podem não estar configuradas para este mês.
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-gray-400">Carregando metas...</div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Crediário View */}
         {activeView === 'crediario' && (
