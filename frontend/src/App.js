@@ -144,8 +144,8 @@ function App() {
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-4">
-          <h1 className="text-4xl font-bold text-yellow-400 mb-4">
-            Dashboard de Gestão 2025 | Visage de Vogue
+          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-400 bg-clip-text text-transparent drop-shadow-lg">
+            Visage de Vogue
           </h1>
           
           {/* Update Button - Right below title */}
@@ -157,6 +157,42 @@ function App() {
             >
               {isLoading ? '⏳ Atualizando...' : '🔄 Atualizar'}
             </button>
+          </div>
+        </div>
+
+        {/* Navigation Icons */}
+        <div className="flex justify-center mb-6">
+          <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-xl p-1 shadow-xl border border-gray-600">
+            <div className="flex justify-center gap-1">
+              {[
+                { id: 'visaoGeral', label: 'Visão Geral', icon: '📊', gradient: 'from-blue-500 to-purple-600', active: true },
+                { id: 'crediario', label: 'Crediário', icon: '💳', gradient: 'from-green-500 to-emerald-600', active: false },
+                { id: 'pagamentos', label: 'Pagamentos', icon: '⏰', gradient: 'from-orange-500 to-red-600', active: false },
+                { id: 'metas', label: 'Metas', icon: '🎯', gradient: 'from-purple-500 to-pink-600', active: false }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  className={`group relative px-3 py-2 rounded-lg font-medium text-xs transition-all duration-300 ${
+                    tab.active 
+                      ? `bg-gradient-to-r ${tab.gradient} text-white shadow-md` 
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-1">
+                    <span className={`text-sm ${tab.active ? 'animate-pulse' : ''}`}>
+                      {tab.icon}
+                    </span>
+                    <span className="hidden xs:inline sm:inline">
+                      {tab.label}
+                    </span>
+                  </div>
+                  
+                  {tab.active && (
+                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
