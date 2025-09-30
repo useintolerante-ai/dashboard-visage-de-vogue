@@ -738,11 +738,11 @@ function App() {
                   }`}
                 >
                   {/* Icon and Label */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
                     <span className={`text-lg transition-transform duration-300 ${activeView === tab.id ? 'animate-pulse' : 'group-hover:scale-110'}`}>
                       {tab.icon}
                     </span>
-                    <span className="hidden sm:block">
+                    <span className="text-xs sm:text-sm font-medium">
                       {tab.label}
                     </span>
                   </div>
