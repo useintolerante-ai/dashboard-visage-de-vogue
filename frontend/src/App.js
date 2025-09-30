@@ -189,19 +189,13 @@ function App() {
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex justify-center gap-4 mt-8">
+        {/* Action Button */}
+        <div className="flex justify-center mt-8">
           <button 
             onClick={() => loadDashboardData()}
             className="bg-yellow-500 hover:bg-yellow-600 text-black px-6 py-2 rounded-lg font-medium"
           >
             🔄 Atualizar Dados
-          </button>
-          <button 
-            onClick={() => window.location.reload()}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium"
-          >
-            ↻ Recarregar Página
           </button>
         </div>
       </div>
