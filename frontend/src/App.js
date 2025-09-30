@@ -307,26 +307,43 @@ function App() {
     }
   };
 
-  const handleMonthChange = (newMonth) => {
+  const handleMonthChange = async (newMonth) => {
     console.log('Month changing to:', newMonth);
     setSelectedMonth(newMonth);
     
     if (newMonth) {
-      // Clear existing data first to prevent cache issues
+      // Force complete data reset
+      setIsLoading(true);
+      
+      // Clear ALL existing data first to prevent cache issues
       setDashboardData({
         faturamento: 0,
         saidas: 0,
         lucro_bruto: 0,
         recebido_crediario: 0,
-        entradas: 0
+        a_receber_crediario: 0,
+        num_vendas: 0,
+        entradas: 0,
+        data_source: "none"
       });
       
-      // Load fresh data
-      loadDashboardData(newMonth);
-      loadCrediarioData(newMonth);
-      loadFaturamentoDiario(newMonth);
-      loadClientesAtrasados();
-      loadMetasData(newMonth);
+      // Add small delay to ensure state is cleared
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      try {
+        // Load fresh data sequentially to avoid race conditions
+        await loadDashboardData(newMonth);
+        await loadCrediarioData(newMonth);
+        await loadFaturamentoDiario(newMonth);
+        await loadClientesAtrasados();
+        await loadMetasData(newMonth);
+        
+        console.log(`Data loaded for ${newMonth}`);
+      } catch (error) {
+        console.error(`Error loading data for ${newMonth}:`, error);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
