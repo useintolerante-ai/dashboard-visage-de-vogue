@@ -54,12 +54,41 @@ function App() {
           <p className="text-gray-400">Sistema de gestão empresarial</p>
         </div>
 
-        {/* Success Status */}
-        <div className="mb-8 p-4 bg-gray-800 rounded-lg text-center">
-          <div className="space-y-2">
-            <p className="text-green-400">✅ Marca "Made with Emergent" removida</p>
-            <p className="text-green-400">✅ Dashboard funcionando</p>
-            <p className="text-green-400">✅ Backend conectado - versão com KPIs</p>
+        {/* Navigation Tabs - Compact Single Line */}
+        <div className="flex justify-center mb-6">
+          <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-xl p-1 shadow-xl border border-gray-600">
+            <div className="flex justify-center gap-1">
+              {[
+                { id: 'visaoGeral', label: 'Visão Geral', icon: '📊', gradient: 'from-blue-500 to-purple-600', active: true },
+                { id: 'crediario', label: 'Crediário', icon: '💳', gradient: 'from-green-500 to-emerald-600', active: false },
+                { id: 'pagamentos', label: 'Pagamentos', icon: '⏰', gradient: 'from-orange-500 to-red-600', active: false },
+                { id: 'metas', label: 'Metas', icon: '🎯', gradient: 'from-purple-500 to-pink-600', active: false }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  className={`group relative px-3 py-2 rounded-lg font-medium text-xs transition-all duration-300 ${
+                    tab.active 
+                      ? `bg-gradient-to-r ${tab.gradient} text-white shadow-md` 
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  }`}
+                >
+                  {/* Icon and Label in one line */}
+                  <div className="flex items-center gap-1">
+                    <span className={`text-sm ${tab.active ? 'animate-pulse' : ''}`}>
+                      {tab.icon}
+                    </span>
+                    <span className="hidden xs:inline sm:inline">
+                      {tab.label}
+                    </span>
+                  </div>
+                  
+                  {/* Active Indicator */}
+                  {tab.active && (
+                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
