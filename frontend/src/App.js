@@ -263,11 +263,78 @@ function App() {
   const handleNavigation = (viewId) => {
     setActiveView(viewId);
     
-    if (viewId === 'crediario' && !crediarioData) {
+    if (viewId === 'crediario') {
       loadCrediarioData();
-    } else if (viewId === 'pagamentos' && !clientesAtrasados) {
+    } else if (viewId === 'pagamentos') {
       loadClientesAtrasados();
     }
+  };
+
+  // Sorting functions
+  const sortCrediario = (key) => {
+    const direction = crediarioSort.key === key && crediarioSort.direction === 'asc' ? 'desc' : 'asc';
+    setCrediarioSort({ key, direction });
+  };
+
+  const sortPagamentos = (key) => {
+    const direction = pagamentosSort.key === key && pagamentosSort.direction === 'asc' ? 'desc' : 'asc';
+    setPagamentosSort({ key, direction });
+  };
+
+  const getSortedCrediarioData = (clientes) => {
+    if (!crediarioSort.key) return clientes;
+    
+    return [...clientes].sort((a, b) => {
+      let aVal = a[crediarioSort.key];
+      let bVal = b[crediarioSort.key];
+      
+      if (crediarioSort.key === 'saldo_devedor') {
+        aVal = parseFloat(aVal);
+        bVal = parseFloat(bVal);
+      } else {
+        aVal = String(aVal).toLowerCase();
+        bVal = String(bVal).toLowerCase();
+      }
+      
+      if (crediarioSort.direction === 'asc') {
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      } else {
+        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+      }
+    });
+  };
+
+  const getSortedPagamentosData = (clientes) => {
+    if (!pagamentosSort.key) return clientes;
+    
+    return [...clientes].sort((a, b) => {
+      let aVal = a[pagamentosSort.key];
+      let bVal = b[pagamentosSort.key];
+      
+      if (pagamentosSort.key === 'saldo_devedor' || pagamentosSort.key === 'dias_sem_pagamento') {
+        aVal = parseFloat(aVal);
+        bVal = parseFloat(bVal);
+      } else {
+        aVal = String(aVal).toLowerCase();
+        bVal = String(bVal).toLowerCase();
+      }
+      
+      if (pagamentosSort.direction === 'asc') {
+        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      } else {
+        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+      }
+    });
+  };
+
+  const getSortIcon = (section, columnName) => {
+    const sortState = section === 'crediario' ? crediarioSort : pagamentosSort;
+    if (sortState.key !== columnName) {
+      return <span className="text-gray-500 ml-1">↕</span>;
+    }
+    return sortState.direction === 'asc' ? 
+      <span className="text-white ml-1">↑</span> : 
+      <span className="text-white ml-1">↓</span>;
   };
 
   useEffect(() => {
