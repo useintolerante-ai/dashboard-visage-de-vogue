@@ -751,8 +751,12 @@ function App() {
     });
   };
 
+  // Debug: Simple test render
+  console.log('About to render, isLoading:', isLoading, 'dashboardData:', dashboardData);
+  
   // Add loading state for initial render
   if (isLoading && !dashboardData) {
+    console.log('Rendering loading state');
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
@@ -764,6 +768,7 @@ function App() {
     );
   }
 
+  console.log('Rendering main dashboard');
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-6 py-8">
