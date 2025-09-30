@@ -656,47 +656,47 @@ function App() {
             
             {clientesAtrasados && clientesAtrasados.success ? (
               <div>
-                {/* Header with sorting */}
+                {/* Header with sorting - Mobile friendly */}
                 <div className="bg-gray-700 p-3 rounded-lg mb-4">
-                  <div className="grid grid-cols-4 gap-4">
+                  <div className="grid grid-cols-4 gap-2 text-xs sm:text-sm">
                     <button 
                       onClick={() => sortPagamentos('nome')}
                       className="text-left text-white font-medium hover:text-yellow-400 transition-colors flex items-center"
                     >
-                      Nome do Cliente {getSortIcon('pagamentos', 'nome')}
+                      Cliente {getSortIcon('pagamentos', 'nome')}
                     </button>
                     <button 
                       onClick={() => sortPagamentos('saldo_devedor')}
                       className="text-right text-white font-medium hover:text-yellow-400 transition-colors flex items-center justify-end"
                     >
-                      Saldo Devedor {getSortIcon('pagamentos', 'saldo_devedor')}
+                      Saldo {getSortIcon('pagamentos', 'saldo_devedor')}
                     </button>
                     <button 
                       onClick={() => sortPagamentos('dias_sem_pagamento')}
                       className="text-center text-white font-medium hover:text-yellow-400 transition-colors flex items-center justify-center"
                     >
-                      Dias em Atraso {getSortIcon('pagamentos', 'dias_sem_pagamento')}
+                      Dias {getSortIcon('pagamentos', 'dias_sem_pagamento')}
                     </button>
-                    <div className="text-center text-gray-300 font-medium">Último Pagamento</div>
+                    <div className="text-center text-gray-300 font-medium">Ult.Pag</div>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   {getSortedPagamentosData(clientesAtrasados.clientes).map((cliente, index) => (
-                    <div key={index} className="bg-gray-700 rounded-lg p-4">
-                      <div className="grid grid-cols-4 gap-4 items-center">
-                        <h3 className="text-white font-bold text-sm">{cliente.nome}</h3>
+                    <div key={index} className="bg-gray-700 rounded-lg p-3">
+                      <div className="grid grid-cols-4 gap-2 items-center text-xs sm:text-sm">
+                        <h3 className="text-white font-bold truncate">{cliente.nome}</h3>
                         <div className="text-right">
-                          <div className="text-red-400 font-bold text-lg">
+                          <div className="text-red-400 font-bold">
                             {formatCurrency(cliente.saldo_devedor)}
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-orange-400 font-bold text-lg">
-                            {cliente.dias_sem_pagamento} dias
+                          <div className="text-orange-400 font-bold">
+                            {cliente.dias_sem_pagamento}
                           </div>
                         </div>
-                        <div className="text-center text-gray-300 text-sm">
+                        <div className="text-center text-gray-300 text-xs">
                           {cliente.data_ultimo_pagamento}
                         </div>
                       </div>
