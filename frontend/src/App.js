@@ -21,30 +21,16 @@ function App() {
   const loadDashboardData = async (mes = selectedMonth) => {
     try {
       console.log('Loading dashboard data for:', mes);
-      console.log('API URL:', `${API}/dashboard-summary?mes=${mes}`);
       setIsLoading(true);
       setError(null);
       
-      // Add timeout to prevent hanging
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
-      const response = await axios.get(`${API}/dashboard-summary?mes=${mes}`, {
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      console.log('Dashboard data loaded successfully:', response.data);
+      const response = await axios.get(`${API}/dashboard-summary?mes=${mes}`);
+      console.log('Dashboard data loaded:', response.data);
       setDashboardData(response.data);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
-      if (error.name === 'AbortError') {
-        setError('Timeout: API demorou mais de 10 segundos para responder');
-      } else {
-        setError(`Erro ao carregar dados: ${error.message}`);
-      }
+      setError('Erro ao carregar dados do dashboard');
     } finally {
-      console.log('Setting isLoading to false');
       setIsLoading(false);
     }
   };
