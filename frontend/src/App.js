@@ -1380,10 +1380,10 @@ function App() {
           </Card>
         )}
 
-        {/* Modal de Saídas */}
+        {/* Modal de Saídas Expandível */}
         {showSaidasModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-900 rounded-lg border border-gray-600 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="bg-gray-900 rounded-lg border border-gray-600 max-w-5xl w-full max-h-[85vh] overflow-hidden">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-white">
@@ -1402,37 +1402,96 @@ function App() {
                   saidasModalData.success && saidasModalData.saidas_agrupadas && saidasModalData.saidas_agrupadas.length > 0 ? (
                     <div>
                       <div className="mb-4 p-4 bg-gray-800 rounded-lg">
-                        <div className="text-gray-300 text-sm mb-2">Total de Saídas:</div>
-                        <div className="text-2xl font-bold text-red-400">
-                          {formatCurrency(saidasModalData.total_valor)}
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-300">Total de Saídas:</span>
+                          <span className="text-red-400 font-bold text-xl">
+                            {formatCurrency(saidasModalData.total_valor)}
+                          </span>
                         </div>
-                        <div className="text-gray-400 text-sm mt-2">
-                          {saidasModalData.total_grupos} categorias • {saidasModalData.total_entradas} entradas
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-gray-300">Categorias:</span>
+                          <span className="text-white font-semibold">
+                            {saidasModalData.total_grupos}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-gray-300">Total de Entradas:</span>
+                          <span className="text-gray-400 font-semibold">
+                            {saidasModalData.total_entradas}
+                          </span>
                         </div>
                       </div>
-                      
-                      <div className="grid gap-4 max-h-96 overflow-y-auto">
-                        {saidasModalData.saidas_agrupadas.map((grupo, index) => (
-                          <div key={grupo.id || index} className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                            <div className="flex justify-between items-center mb-2">
-                              <div className="text-white font-semibold text-lg">
-                                {grupo.descricao}
-                              </div>
-                              <div className="text-right">
-                                <div className="text-red-400 font-bold text-lg">
-                                  {formatCurrency(grupo.total_valor)}
+
+                      <div className="space-y-3 max-h-96 overflow-y-auto">
+                        {saidasModalData.saidas_agrupadas.map((grupo) => (
+                          <div key={grupo.id} className="bg-gray-800 rounded-lg border border-gray-700">
+                            {/* Group Header - Clickable */}
+                            <div 
+                              className="p-3 hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-700"
+                              onClick={() => setExpandedSaida(expandedSaida === grupo.id ? null : grupo.id)}
+                            >
+                              <div className="flex justify-between items-center">
+                                {/* Description */}
+                                <div className="flex-1">
+                                  <h3 className="text-white font-semibold text-sm">{grupo.descricao}</h3>
+                                  <div className="text-gray-400 text-xs mt-1">
+                                    {grupo.numero_entradas} entrada{grupo.numero_entradas !== 1 ? 's' : ''}
+                                    {expandedSaida === grupo.id ? ' (clique para recolher)' : ' (clique para expandir)'}
+                                  </div>
                                 </div>
-                                <div className="text-gray-400 text-sm">
-                                  {grupo.numero_entradas} entrada{grupo.numero_entradas !== 1 ? 's' : ''}
+                                
+                                {/* Total Value */}
+                                <div className="text-right">
+                                  <div className="text-red-400 font-bold text-sm">
+                                    {formatCurrency(grupo.total_valor)}
+                                  </div>
+                                  <div className="text-gray-500 text-xs">
+                                    {((grupo.total_valor / saidasModalData.total_valor) * 100).toFixed(1)}%
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                            <div className="w-full bg-gray-700 rounded-full h-2">
-                              <div 
-                                className="bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${(grupo.total_valor / saidasModalData.total_valor) * 100}%` }}
-                              ></div>
-                            </div>
+                            
+                            {/* Expanded Details */}
+                            {expandedSaida === grupo.id && (
+                              <div className="border-t border-gray-700 p-4 bg-gray-850">
+                                <h4 className="text-white font-semibold mb-3">Detalhamento por Data:</h4>
+                                {grupo.detalhes && grupo.detalhes.length > 0 ? (
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full border-collapse">
+                                      <thead>
+                                        <tr className="border-b border-gray-600">
+                                          <th className="text-left p-3 text-gray-300 font-medium">Data</th>
+                                          <th className="text-right p-3 text-gray-300 font-medium">Valor</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {grupo.detalhes.map((detalhe, index) => (
+                                          <tr key={index} className="border-b border-gray-700 last:border-b-0">
+                                            <td className="p-3 text-white">{detalhe.data}</td>
+                                            <td className="p-3 text-right text-red-400 font-semibold">
+                                              {formatCurrency(detalhe.valor)}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                      <tfoot>
+                                        <tr className="border-t-2 border-gray-600 bg-gray-800">
+                                          <td className="p-3 text-white font-bold">TOTAL</td>
+                                          <td className="p-3 text-right text-red-400 font-bold text-lg">
+                                            {formatCurrency(grupo.total_valor)}
+                                          </td>
+                                        </tr>
+                                      </tfoot>
+                                    </table>
+                                  </div>
+                                ) : (
+                                  <div className="text-gray-400 text-center py-4">
+                                    Nenhum detalhe encontrado para esta categoria.
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
