@@ -11,7 +11,7 @@ function App() {
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedMonth, setSelectedMonth] = useState('setembro');
+  const [selectedMonth, setSelectedMonth] = useState('outubro');
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
