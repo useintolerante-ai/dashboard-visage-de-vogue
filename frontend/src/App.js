@@ -134,6 +134,7 @@ function App() {
     loadMesesDisponiveis();
     loadFaturamentoDiario();
     loadClientesAtrasados();
+    loadMetasData();
     
     // Auto refresh every 5 minutes
     const interval = setInterval(() => {
