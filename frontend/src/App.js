@@ -487,7 +487,7 @@ function App() {
                   }`}
                 >
                   <div className="flex items-center gap-1">
-                    <span className={`text-sm ${activeView === tab.id ? 'animate-pulse' : ''}`}>
+                    <span className={`text-base sm:text-lg ${activeView === tab.id ? 'animate-pulse' : ''}`}>
                       {tab.icon}
                     </span>
                     <span className="hidden xs:inline sm:inline">
