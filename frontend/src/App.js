@@ -776,7 +776,7 @@ function App() {
               {[
                 { id: 'visaoGeral', label: 'Visão Geral', icon: '📊', gradient: 'from-blue-500 to-purple-600' },
                 { id: 'crediario', label: 'Crediário', icon: '💳', gradient: 'from-green-500 to-emerald-600' },
-                { id: 'diasPagamento', label: 'Dias s/ Pagamento', icon: '⏰', gradient: 'from-orange-500 to-red-600' },
+                { id: 'diasPagamento', label: 'Pagamentos', icon: '⏰', gradient: 'from-orange-500 to-red-600' },
                 { id: 'metas', label: 'Metas', icon: '🎯', gradient: 'from-purple-500 to-pink-600' }
               ].map((tab) => (
                 <button
