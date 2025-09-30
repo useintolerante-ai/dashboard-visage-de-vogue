@@ -273,17 +273,26 @@ function App() {
     }
   };
 
-  const handleMonthChange = (mes) => {
-    setSelectedMonth(mes);
+  const handleMonthChange = (newMonth) => {
+    console.log('Month changing to:', newMonth);
+    setSelectedMonth(newMonth);
     
-    // Reload dashboard data for new month
-    loadDashboardData(mes);
-    loadFaturamentoDiario(mes);
-    loadClientesAtrasados();
-    loadMetasData(mes);
-    
-    if (activeView === 'saidas') {
-      loadSaidasData(mes);
+    if (newMonth) {
+      // Clear existing data first to prevent cache issues
+      setDashboardData({
+        faturamento: 0,
+        saidas: 0,
+        lucro_bruto: 0,
+        recebido_crediario: 0,
+        entradas: 0
+      });
+      
+      // Load fresh data
+      loadDashboardData(newMonth);
+      loadCrediarioData(newMonth);
+      loadFaturamentoDiario(newMonth);
+      loadClientesAtrasados();
+      loadMetasData(newMonth);
     }
   };
 
