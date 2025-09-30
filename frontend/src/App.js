@@ -569,9 +569,9 @@ function App() {
             
             {crediarioData && crediarioData.success ? (
               <div>
-                {/* Header with sorting - Mobile friendly */}
+                {/* Header with sorting - Mobile friendly - 3 columns */}
                 <div className="bg-gray-700 p-3 rounded-lg mb-4">
-                  <div className="grid grid-cols-4 gap-2 text-xs sm:text-sm">
+                  <div className="grid grid-cols-3 gap-4 text-xs sm:text-sm">
                     <button 
                       onClick={() => sortCrediario('nome')}
                       className="text-left text-white font-medium hover:text-yellow-400 transition-colors flex items-center"
@@ -585,7 +585,6 @@ function App() {
                       Saldo {getSortIcon('crediario', 'saldo_devedor')}
                     </button>
                     <div className="text-center text-gray-300 font-medium">Ult.Pag</div>
-                    <div className="text-center text-gray-300 font-medium">Ult.Compra</div>
                   </div>
                 </div>
 
@@ -597,10 +596,10 @@ function App() {
                         className="p-3 hover:bg-gray-600 cursor-pointer transition-colors"
                         onClick={() => toggleClienteDetails(cliente.id)}
                       >
-                        <div className="grid grid-cols-4 gap-2 items-center text-xs sm:text-sm">
+                        <div className="grid grid-cols-3 gap-4 items-center text-xs sm:text-sm">
                           <div className="flex items-center">
-                            <span className="text-white font-bold truncate">{cliente.nome}</span>
-                            <span className="text-gray-400 ml-1">
+                            <span className="text-white font-bold">{cliente.nome}</span>
+                            <span className="text-gray-400 ml-2">
                               {expandedCliente === cliente.id ? '▼' : '▶'}
                             </span>
                           </div>
@@ -610,10 +609,7 @@ function App() {
                             </span>
                           </div>
                           <div className="text-center text-gray-300 text-xs">
-                            {cliente.data_ultimo_pagamento}
-                          </div>
-                          <div className="text-center text-gray-300 text-xs">
-                            {cliente.data_ultima_compra}
+                            {formatDateBR(cliente.data_ultimo_pagamento)}
                           </div>
                         </div>
                       </div>
@@ -625,7 +621,7 @@ function App() {
                           <div className="space-y-1">
                             {cliente.compras.map((compra, index) => (
                               <div key={index} className="flex justify-between items-center bg-gray-600 rounded p-2 text-xs">
-                                <span className="text-gray-300">{compra.data}</span>
+                                <span className="text-gray-300">{formatDateBR(compra.data)}</span>
                                 <span className="text-green-400 font-medium">
                                   {formatCurrency(compra.valor)}
                                 </span>
