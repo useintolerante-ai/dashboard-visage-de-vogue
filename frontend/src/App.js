@@ -287,26 +287,51 @@ function App() {
           </div>
         )}
 
-        {/* Info Section */}
+        {/* Vendas Diárias */}
         {dashboardData && !isLoading && (
-          <div className="bg-gray-800 rounded-lg p-6 text-center mb-8">
-            <h2 className="text-xl font-bold text-white mb-4">Resumo do Mês</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <p className="text-gray-400">Vendas Realizadas</p>
-                <p className="text-white font-bold text-lg">{dashboardData.num_vendas || 0}</p>
+          <div className="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 className="text-xl font-bold text-white mb-4 text-center">
+              Vendas Diárias - {selectedMonth === 'anointeiro' ? 'Ano Inteiro' : 
+              selectedMonth.charAt(0).toUpperCase() + selectedMonth.slice(1)}
+            </h2>
+            
+            <div className="max-h-64 overflow-y-auto">
+              <div className="grid gap-2">
+                {/* Mock daily sales data - this would come from API */}
+                {[
+                  { data: '30/09/2025', vendas: 3, valor: 1285.50 },
+                  { data: '29/09/2025', vendas: 2, valor: 890.25 },
+                  { data: '28/09/2025', vendas: 4, valor: 1650.75 },
+                  { data: '27/09/2025', vendas: 1, valor: 425.00 },
+                  { data: '26/09/2025', vendas: 5, valor: 2100.90 },
+                  { data: '25/09/2025', vendas: 0, valor: 0.00 },
+                  { data: '24/09/2025', vendas: 3, valor: 975.80 },
+                  { data: '23/09/2025', vendas: 2, valor: 1340.25 }
+                ].map((dia, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="text-gray-400 text-sm font-medium">{dia.data}</div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-blue-400 text-xs">📊</span>
+                        <span className="text-white text-sm">{dia.vendas} vendas</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className={`font-bold ${dia.valor > 0 ? 'text-green-400' : 'text-gray-400'}`}>
+                        {formatCurrency(dia.valor)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div>
-                <p className="text-gray-400">Status</p>
-                <p className="text-green-400">✅ Online</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Funcionalidades</p>
-                <p className="text-yellow-400">📊 KPIs Clicáveis</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Sistema</p>
-                <p className="text-blue-400">🔄 Atualizado</p>
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-gray-600">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">Total do período mostrado:</span>
+                <span className="text-white font-bold">
+                  {formatCurrency(1285.50 + 890.25 + 1650.75 + 425.00 + 2100.90 + 975.80 + 1340.25)}
+                </span>
               </div>
             </div>
           </div>
