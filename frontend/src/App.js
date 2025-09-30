@@ -558,59 +558,87 @@ function App() {
             
             {crediarioData && crediarioData.success ? (
               <div>
-                {/* Header with sorting */}
+                {/* Header with sorting - Mobile friendly */}
                 <div className="bg-gray-700 p-3 rounded-lg mb-4">
-                  <div className="grid grid-cols-4 gap-4">
+                  <div className="grid grid-cols-4 gap-2 text-xs sm:text-sm">
                     <button 
                       onClick={() => sortCrediario('nome')}
                       className="text-left text-white font-medium hover:text-yellow-400 transition-colors flex items-center"
                     >
-                      Nome do Cliente {getSortIcon('crediario', 'nome')}
+                      Cliente {getSortIcon('crediario', 'nome')}
                     </button>
                     <button 
                       onClick={() => sortCrediario('saldo_devedor')}
                       className="text-right text-white font-medium hover:text-yellow-400 transition-colors flex items-center justify-end"
                     >
-                      Saldo Devedor {getSortIcon('crediario', 'saldo_devedor')}
+                      Saldo {getSortIcon('crediario', 'saldo_devedor')}
                     </button>
-                    <div className="text-center text-gray-300 font-medium">Último Pagamento</div>
-                    <div className="text-center text-gray-300 font-medium">Última Compra</div>
+                    <div className="text-center text-gray-300 font-medium">Ult.Pag</div>
+                    <div className="text-center text-gray-300 font-medium">Ult.Compra</div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {getSortedCrediarioData(crediarioData.clientes).map((cliente) => (
-                    <div key={cliente.id} className="bg-gray-700 rounded-lg p-4">
-                      <div className="grid grid-cols-4 gap-4 items-center mb-3">
-                        <h3 className="text-white font-bold text-sm">{cliente.nome}</h3>
-                        <div className="text-right">
-                          <span className="text-red-400 font-bold text-lg">
-                            {formatCurrency(cliente.saldo_devedor)}
-                          </span>
-                        </div>
-                        <div className="text-center text-gray-300 text-sm">
-                          {cliente.data_ultimo_pagamento}
-                        </div>
-                        <div className="text-center text-gray-300 text-sm">
-                          {cliente.data_ultima_compra}
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4 pt-3 border-t border-gray-600">
-                        <h4 className="text-white font-medium mb-2">Histórico de Compras:</h4>
-                        <div className="space-y-2">
-                          {cliente.compras.map((compra, index) => (
-                            <div key={index} className="flex justify-between items-center bg-gray-600 rounded p-2 text-sm">
-                              <span className="text-gray-300">{compra.data}</span>
-                              <span className="text-green-400 font-medium">
-                                {formatCurrency(compra.valor)}
-                              </span>
-                            </div>
-                          ))}
+                    <div key={cliente.id} className="bg-gray-700 rounded-lg">
+                      {/* Client summary row - clickable */}
+                      <div 
+                        className="p-3 hover:bg-gray-600 cursor-pointer transition-colors"
+                        onClick={() => toggleClienteDetails(cliente.id)}
+                      >
+                        <div className="grid grid-cols-4 gap-2 items-center text-xs sm:text-sm">
+                          <div className="flex items-center">
+                            <span className="text-white font-bold truncate">{cliente.nome}</span>
+                            <span className="text-gray-400 ml-1">
+                              {expandedCliente === cliente.id ? '▼' : '▶'}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-red-400 font-bold">
+                              {formatCurrency(cliente.saldo_devedor)}
+                            </span>
+                          </div>
+                          <div className="text-center text-gray-300 text-xs">
+                            {cliente.data_ultimo_pagamento}
+                          </div>
+                          <div className="text-center text-gray-300 text-xs">
+                            {cliente.data_ultima_compra}
+                          </div>
                         </div>
                       </div>
+
+                      {/* Expanded history - only shows when clicked */}
+                      {expandedCliente === cliente.id && (
+                        <div className="px-3 pb-3 border-t border-gray-600">
+                          <h4 className="text-white font-medium mb-2 text-sm mt-2">Histórico:</h4>
+                          <div className="space-y-1">
+                            {cliente.compras.map((compra, index) => (
+                              <div key={index} className="flex justify-between items-center bg-gray-600 rounded p-2 text-xs">
+                                <span className="text-gray-300">{compra.data}</span>
+                                <span className="text-green-400 font-medium">
+                                  {formatCurrency(compra.valor)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
+                </div>
+
+                {/* Summary */}
+                <div className="mt-6 pt-4 border-t border-gray-600">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">Total de clientes:</span>
+                    <span className="text-white font-bold">{crediarioData.clientes.length}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm mt-2">
+                    <span className="text-gray-400">Saldo total em aberto:</span>
+                    <span className="text-red-400 font-bold">
+                      {formatCurrency(crediarioData.clientes.reduce((total, cliente) => total + cliente.saldo_devedor, 0))}
+                    </span>
+                  </div>
                 </div>
               </div>
             ) : (
