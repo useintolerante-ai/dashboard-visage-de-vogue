@@ -1577,12 +1577,16 @@ async def get_dashboard_summary(mes: str = "marco", background_tasks: Background
                 "janeiro": "JANEIRO25",
                 "fevereiro": "FEVEREIRO25", 
                 "marco": "MARÇO25",
+                "março": "MARÇO25",
                 "abril": "ABRIL25",
                 "maio": "MAIO25",
                 "junho": "JUNHO25",
                 "julho": "JULHO25",
                 "agosto": "AGOSTO25",
-                "setembro": "SETEMBRO25"
+                "setembro": "SETEMBRO25",
+                "outubro": "OUTUBRO25",
+                "novembro": "NOVEMBRO25",
+                "dezembro": "DEZEMBRO25"
             }
             
             sheet_name = month_mapping.get(mes.lower(), "SETEMBRO25")
