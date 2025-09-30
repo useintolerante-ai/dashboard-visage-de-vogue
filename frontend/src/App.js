@@ -11,6 +11,7 @@ function App() {
   const [dashboardData, setDashboardData] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState('setembro');
   const [isLoading, setIsLoading] = useState(true);
+  const [activeView, setActiveView] = useState('visaoGeral');
   
   // Modal states
   const [showFaturamentoModal, setShowFaturamentoModal] = useState(false);
@@ -21,6 +22,10 @@ function App() {
   const [faturamentoData, setFaturamentoData] = useState(null);
   const [saidasData, setSaidasData] = useState(null);
   const [entradasData, setEntradasData] = useState(null);
+  
+  // Section data
+  const [crediarioData, setCrediarioData] = useState(null);
+  const [clientesAtrasados, setClientesAtrasados] = useState(null);
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
