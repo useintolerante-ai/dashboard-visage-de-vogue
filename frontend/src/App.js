@@ -663,9 +663,9 @@ function App() {
             
             {clientesAtrasados && clientesAtrasados.success ? (
               <div>
-                {/* Header with sorting - Mobile friendly */}
+                {/* Header with sorting - Mobile friendly - 3 columns */}
                 <div className="bg-gray-700 p-3 rounded-lg mb-4">
-                  <div className="grid grid-cols-4 gap-2 text-xs sm:text-sm">
+                  <div className="grid grid-cols-3 gap-4 text-xs sm:text-sm">
                     <button 
                       onClick={() => sortPagamentos('nome')}
                       className="text-left text-white font-medium hover:text-yellow-400 transition-colors flex items-center"
@@ -684,15 +684,14 @@ function App() {
                     >
                       Dias {getSortIcon('pagamentos', 'dias_sem_pagamento')}
                     </button>
-                    <div className="text-center text-gray-300 font-medium">Ult.Pag</div>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   {getSortedPagamentosData(clientesAtrasados.clientes).map((cliente, index) => (
                     <div key={index} className="bg-gray-700 rounded-lg p-3">
-                      <div className="grid grid-cols-4 gap-2 items-center text-xs sm:text-sm">
-                        <h3 className="text-white font-bold truncate">{cliente.nome}</h3>
+                      <div className="grid grid-cols-3 gap-4 items-center text-xs sm:text-sm">
+                        <h3 className="text-white font-bold">{cliente.nome}</h3>
                         <div className="text-right">
                           <div className="text-red-400 font-bold">
                             {formatCurrency(cliente.saldo_devedor)}
@@ -702,9 +701,6 @@ function App() {
                           <div className="text-orange-400 font-bold">
                             {cliente.dias_sem_pagamento}
                           </div>
-                        </div>
-                        <div className="text-center text-gray-300 text-xs">
-                          {cliente.data_ultimo_pagamento}
                         </div>
                       </div>
                     </div>
