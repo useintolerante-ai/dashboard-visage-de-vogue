@@ -296,11 +296,11 @@ function App() {
     // Load specific data for each view
     if (viewName === 'crediario') {
       loadCrediarioData();
-    } else if (viewName === 'diasPagamento') {
+    } else if (viewName === 'dias-sem-pagamento') {
       loadClientesAtrasados();
     } else if (viewName === 'saidas') {
       loadSaidasData(selectedMonth);
-    } else if (viewName === 'visaoGeral') {
+    } else if (viewName === 'visao-geral') {
       loadFaturamentoDiario(selectedMonth);
     } else if (viewName === 'metas') {
       loadMetasData(selectedMonth);
