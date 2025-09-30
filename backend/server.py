@@ -2410,6 +2410,97 @@ async def get_faturamento_diario(mes: str):
         logger.error(f"Error getting daily sales data: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting daily sales data: {str(e)}")
 
+@api_router.get("/meses-disponiveis-auto")
+async def get_meses_disponiveis_auto():
+    """
+    Automatically detect available months from Google Sheets tabs
+    """
+    try:
+        import gspread
+        from google.oauth2.service_account import Credentials
+        
+        # Set up credentials and connect to Google Sheets
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive"
+        ]
+        
+        service_account_info = json.loads(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON'))
+        credentials = Credentials.from_service_account_info(service_account_info, scopes=scopes)
+        client = gspread.authorize(credentials)
+        
+        # Open the spreadsheet
+        spreadsheet = client.open_by_key(GOOGLE_SHEETS_ID)
+        
+        # Get all worksheet names
+        worksheets = spreadsheet.worksheets()
+        all_sheet_names = [sheet.title for sheet in worksheets]
+        
+        logger.info(f"Found sheets: {all_sheet_names}")
+        
+        # Filter sheets that match month pattern (JANEIRO25, OUTUBRO25, etc.)
+        meses_brasileiros = {
+            "JANEIRO": 1, "FEVEREIRO": 2, "MARÇO": 3, "ABRIL": 4, 
+            "MAIO": 5, "JUNHO": 6, "JULHO": 7, "AGOSTO": 8,
+            "SETEMBRO": 9, "OUTUBRO": 10, "NOVEMBRO": 11, "DEZEMBRO": 12
+        }
+        
+        month_sheets = []
+        for sheet_name in all_sheet_names:
+            # Check if sheet name matches pattern: MES + YEAR (e.g., JANEIRO25, OUTUBRO25)
+            for mes_nome, mes_num in meses_brasileiros.items():
+                if sheet_name.startswith(mes_nome) and len(sheet_name) > len(mes_nome):
+                    # Extract year part
+                    year_part = sheet_name[len(mes_nome):]
+                    if year_part.isdigit() and len(year_part) == 2:  # Assuming YY format like 25, 26
+                        full_year = 2000 + int(year_part)
+                        month_sheets.append({
+                            "sheet_name": sheet_name,
+                            "mes_nome": mes_nome,
+                            "mes_num": mes_num,
+                            "year": full_year,
+                            "display_name": f"{mes_nome.capitalize()} {full_year}",
+                            "value": mes_nome.lower()
+                        })
+                        break
+        
+        # Sort by year and month
+        month_sheets.sort(key=lambda x: (x["year"], x["mes_num"]))
+        
+        # Add "Ano Inteiro" option
+        if month_sheets:
+            month_sheets.append({
+                "sheet_name": "ANO_INTEIRO",
+                "mes_nome": "ANO INTEIRO", 
+                "mes_num": 13,
+                "year": month_sheets[-1]["year"],  # Use latest year
+                "display_name": "Ano Inteiro",
+                "value": "anointeiro"
+            })
+        
+        logger.info(f"Detected months: {[m['display_name'] for m in month_sheets]}")
+        
+        return {
+            "success": True,
+            "meses": month_sheets,
+            "total_meses": len(month_sheets) - 1,  # Excluding "Ano Inteiro"
+            "years_detected": list(set([m["year"] for m in month_sheets if m["mes_num"] != 13]))
+        }
+        
+    except Exception as e:
+        logger.error(f"Error detecting available months: {str(e)}")
+        # Fallback to current fixed months
+        fallback_months = [
+            {"sheet_name": "SETEMBRO25", "display_name": "Setembro 2025", "value": "setembro"},
+            {"display_name": "Ano Inteiro", "value": "anointeiro"}
+        ]
+        return {
+            "success": False,
+            "error": f"Error detecting months: {str(e)}",
+            "meses": fallback_months,
+            "fallback": True
+        }
+
 @api_router.get("/meses-disponiveis")
 async def get_meses_disponiveis():
     """Get available months"""
