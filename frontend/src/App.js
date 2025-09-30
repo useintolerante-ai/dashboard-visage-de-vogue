@@ -521,7 +521,10 @@ function App() {
         icon: getKPIIcon('saidas'),
         label: 'SAÍDAS',
         value: formatCurrency(dashboardData.saidas),
-        color: 'text-green-400'
+        color: 'text-green-400',
+        clickable: true,
+        onClick: handleSaidasClick,
+        badge: '📊'
       },
       lucro: {
         icon: getKPIIcon('lucro'),
