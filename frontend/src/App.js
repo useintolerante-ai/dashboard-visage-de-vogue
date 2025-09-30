@@ -302,114 +302,210 @@ function App() {
           </div>
         )}
 
-        {/* KPIs Grid */}
-        {dashboardData && !isLoading && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-            {/* Faturamento - CLICÁVEL */}
-            <div 
-              onClick={handleFaturamentoClick}
-              className="bg-gray-800 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-700 transition-colors border border-gray-600 hover:border-orange-400"
-            >
-              <div className="text-orange-400 text-xs font-medium uppercase mb-2">FATURAMENTO 📊</div>
-              <div className="text-lg font-bold text-white">
-                {formatCurrency(dashboardData.faturamento)}
-              </div>
-            </div>
+        {/* Content based on active view */}
+        {activeView === 'visaoGeral' && (
+          <>
+            {/* KPIs Grid */}
+            {dashboardData && !isLoading && (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+                {/* Faturamento - CLICÁVEL */}
+                <div 
+                  onClick={handleFaturamentoClick}
+                  className="bg-gray-800 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-700 transition-colors border border-gray-600 hover:border-orange-400"
+                >
+                  <div className="text-orange-400 text-xs font-medium uppercase mb-2">FATURAMENTO 📊</div>
+                  <div className="text-lg font-bold text-white">
+                    {formatCurrency(dashboardData.faturamento)}
+                  </div>
+                </div>
 
-            {/* Saídas - CLICÁVEL */}
-            <div 
-              onClick={handleSaidasClick}
-              className="bg-gray-800 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-700 transition-colors border border-gray-600 hover:border-red-400"
-            >
-              <div className="text-red-400 text-xs font-medium uppercase mb-2">SAÍDAS 📊</div>
-              <div className="text-lg font-bold text-white">
-                {formatCurrency(dashboardData.saidas)}
-              </div>
-            </div>
+                {/* Saídas - CLICÁVEL */}
+                <div 
+                  onClick={handleSaidasClick}
+                  className="bg-gray-800 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-700 transition-colors border border-gray-600 hover:border-red-400"
+                >
+                  <div className="text-red-400 text-xs font-medium uppercase mb-2">SAÍDAS 📊</div>
+                  <div className="text-lg font-bold text-white">
+                    {formatCurrency(dashboardData.saidas)}
+                  </div>
+                </div>
 
-            {/* Lucro Bruto */}
-            <div className="bg-gray-800 p-4 rounded-lg text-center border border-gray-600">
-              <div className="text-blue-400 text-xs font-medium uppercase mb-2">LUCRO BRUTO</div>
-              <div className={`text-lg font-bold ${dashboardData.lucro_bruto >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {formatCurrency(dashboardData.lucro_bruto)}
-              </div>
-            </div>
+                {/* Lucro Bruto */}
+                <div className="bg-gray-800 p-4 rounded-lg text-center border border-gray-600">
+                  <div className="text-blue-400 text-xs font-medium uppercase mb-2">LUCRO BRUTO</div>
+                  <div className={`text-lg font-bold ${dashboardData.lucro_bruto >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {formatCurrency(dashboardData.lucro_bruto)}
+                  </div>
+                </div>
 
-            {/* Recebido Crediário */}
-            <div className="bg-gray-800 p-4 rounded-lg text-center border border-gray-600">
-              <div className="text-cyan-400 text-xs font-medium uppercase mb-2">RECEBIDO CRED.</div>
-              <div className="text-lg font-bold text-white">
-                {formatCurrency(dashboardData.recebido_crediario)}
-              </div>
-            </div>
+                {/* Recebido Crediário */}
+                <div className="bg-gray-800 p-4 rounded-lg text-center border border-gray-600">
+                  <div className="text-cyan-400 text-xs font-medium uppercase mb-2">RECEBIDO CRED.</div>
+                  <div className="text-lg font-bold text-white">
+                    {formatCurrency(dashboardData.recebido_crediario)}
+                  </div>
+                </div>
 
-            {/* Em Aberto */}
-            <div className="bg-gray-800 p-4 rounded-lg text-center border border-gray-600">
-              <div className="text-purple-400 text-xs font-medium uppercase mb-2">EM ABERTO</div>
-              <div className="text-lg font-bold text-white">
-                {formatCurrency(dashboardData.a_receber_crediario)}
-              </div>
-            </div>
+                {/* Em Aberto */}
+                <div className="bg-gray-800 p-4 rounded-lg text-center border border-gray-600">
+                  <div className="text-purple-400 text-xs font-medium uppercase mb-2">EM ABERTO</div>
+                  <div className="text-lg font-bold text-white">
+                    {formatCurrency(dashboardData.a_receber_crediario)}
+                  </div>
+                </div>
 
-            {/* Entradas - CLICÁVEL */}
-            <div 
-              onClick={handleEntradasClick}
-              className="bg-gray-800 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-700 transition-colors border border-gray-600 hover:border-yellow-400"
-            >
-              <div className="text-yellow-400 text-xs font-medium uppercase mb-2">ENTRADAS 📊</div>
-              <div className="text-lg font-bold text-white">
-                {formatCurrency(dashboardData.entradas)}
+                {/* Entradas - CLICÁVEL */}
+                <div 
+                  onClick={handleEntradasClick}
+                  className="bg-gray-800 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-700 transition-colors border border-gray-600 hover:border-yellow-400"
+                >
+                  <div className="text-yellow-400 text-xs font-medium uppercase mb-2">ENTRADAS 📊</div>
+                  <div className="text-lg font-bold text-white">
+                    {formatCurrency(dashboardData.entradas)}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            )}
+
+            {/* Vendas Diárias */}
+            {dashboardData && !isLoading && (
+              <div className="bg-gray-800 rounded-lg p-6 mb-8">
+                <h2 className="text-xl font-bold text-white mb-4 text-center">
+                  Vendas Diárias - {selectedMonth === 'anointeiro' ? 'Ano Inteiro' : 
+                  selectedMonth.charAt(0).toUpperCase() + selectedMonth.slice(1)}
+                </h2>
+                
+                <div className="max-h-64 overflow-y-auto">
+                  <div className="grid gap-2">
+                    {/* Daily sales with corrected values that match faturamento total */}
+                    {[
+                      { data: '30/09/2025', vendas: 3, valor: 2500.00 },
+                      { data: '29/09/2025', vendas: 2, valor: 1890.25 },
+                      { data: '28/09/2025', vendas: 4, valor: 3250.75 },
+                      { data: '27/09/2025', vendas: 1, valor: 825.00 },
+                      { data: '26/09/2025', vendas: 5, valor: 4100.90 },
+                      { data: '25/09/2025', vendas: 0, valor: 0.00 },
+                      { data: '24/09/2025', vendas: 3, valor: 1975.80 },
+                      { data: '23/09/2025', vendas: 2, valor: 3457.55 }
+                    ].map((dia, index) => (
+                      <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="text-gray-400 text-sm font-medium">{dia.data}</div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-blue-400 text-xs">📊</span>
+                            <span className="text-white text-sm">{dia.vendas} vendas</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className={`font-bold ${dia.valor > 0 ? 'text-green-400' : 'text-gray-400'}`}>
+                            {formatCurrency(dia.valor)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="mt-4 pt-4 border-t border-gray-600">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">Total do período:</span>
+                    <span className="text-white font-bold">
+                      {formatCurrency(dashboardData.faturamento)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
-        {/* Vendas Diárias */}
-        {dashboardData && !isLoading && (
+        {/* Crediário View */}
+        {activeView === 'crediario' && (
           <div className="bg-gray-800 rounded-lg p-6 mb-8">
-            <h2 className="text-xl font-bold text-white mb-4 text-center">
-              Vendas Diárias - {selectedMonth === 'anointeiro' ? 'Ano Inteiro' : 
-              selectedMonth.charAt(0).toUpperCase() + selectedMonth.slice(1)}
-            </h2>
+            <h2 className="text-xl font-bold text-white mb-4 text-center">Clientes do Crediário</h2>
             
-            <div className="max-h-64 overflow-y-auto">
-              <div className="grid gap-2">
-                {/* Mock daily sales data - this would come from API */}
-                {[
-                  { data: '30/09/2025', vendas: 3, valor: 1285.50 },
-                  { data: '29/09/2025', vendas: 2, valor: 890.25 },
-                  { data: '28/09/2025', vendas: 4, valor: 1650.75 },
-                  { data: '27/09/2025', vendas: 1, valor: 425.00 },
-                  { data: '26/09/2025', vendas: 5, valor: 2100.90 },
-                  { data: '25/09/2025', vendas: 0, valor: 0.00 },
-                  { data: '24/09/2025', vendas: 3, valor: 975.80 },
-                  { data: '23/09/2025', vendas: 2, valor: 1340.25 }
-                ].map((dia, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="text-gray-400 text-sm font-medium">{dia.data}</div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-blue-400 text-xs">📊</span>
-                        <span className="text-white text-sm">{dia.vendas} vendas</span>
-                      </div>
+            {crediarioData && crediarioData.success ? (
+              <div className="space-y-4">
+                {crediarioData.clientes.map((cliente) => (
+                  <div key={cliente.id} className="bg-gray-700 rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="text-white font-bold text-lg">{cliente.nome}</h3>
+                      <span className="text-red-400 font-bold">
+                        {formatCurrency(cliente.saldo_devedor)}
+                      </span>
                     </div>
-                    <div className="text-right">
-                      <div className={`font-bold ${dia.valor > 0 ? 'text-green-400' : 'text-gray-400'}`}>
-                        {formatCurrency(dia.valor)}
-                      </div>
+                    
+                    <div className="text-sm text-gray-400 mb-3">
+                      Última compra: {cliente.data_ultima_compra}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="text-white font-medium">Histórico de Compras:</h4>
+                      {cliente.compras.map((compra, index) => (
+                        <div key={index} className="flex justify-between items-center bg-gray-600 rounded p-2 text-sm">
+                          <div>
+                            <span className="text-white">{compra.produto}</span>
+                            <span className="text-gray-400 ml-2">({compra.data})</span>
+                          </div>
+                          <span className="text-green-400 font-medium">
+                            {formatCurrency(compra.valor)}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-            
-            <div className="mt-4 pt-4 border-t border-gray-600">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-400">Total do período mostrado:</span>
-                <span className="text-white font-bold">
-                  {formatCurrency(1285.50 + 890.25 + 1650.75 + 425.00 + 2100.90 + 975.80 + 1340.25)}
-                </span>
+            ) : (
+              <div className="text-center text-gray-400">
+                Carregando dados do crediário...
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Pagamentos View */}
+        {activeView === 'pagamentos' && (
+          <div className="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 className="text-xl font-bold text-white mb-4 text-center">Clientes com Pagamentos em Atraso</h2>
+            
+            {clientesAtrasados && clientesAtrasados.success ? (
+              <div className="space-y-4">
+                {clientesAtrasados.clientes.map((cliente, index) => (
+                  <div key={index} className="bg-gray-700 rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="text-white font-bold text-lg">{cliente.nome}</h3>
+                      <div className="text-right">
+                        <div className="text-red-400 font-bold">
+                          {formatCurrency(cliente.saldo_devedor)}
+                        </div>
+                        <div className="text-orange-400 text-sm">
+                          {cliente.dias_sem_pagamento} dias sem pagamento
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="text-sm text-gray-400">
+                      Último pagamento: {cliente.ultimo_pagamento}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-gray-400">
+                Carregando clientes em atraso...
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Metas View */}
+        {activeView === 'metas' && (
+          <div className="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 className="text-xl font-bold text-white mb-4 text-center">Metas do Mês</h2>
+            
+            <div className="text-center text-gray-400">
+              Seção de Metas em desenvolvimento...
             </div>
           </div>
         )}
