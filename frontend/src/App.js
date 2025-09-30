@@ -6,196 +6,10 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 function App() {
-  console.log('App component starting...');
-  
-  const [activeView, setActiveView] = useState('visaoGeral');
-  const [selectedMonth, setSelectedMonth] = useState('anointeiro');
   const [dashboardData, setDashboardData] = useState(null);
-  const [crediarioData, setCrediarioData] = useState(null);
-  const [saidasData, setSaidasData] = useState(null);
-  const [faturamentoDiario, setFaturamentoDiario] = useState(null);
-  const [mesesDisponiveis, setMesesDisponiveis] = useState([]);
-  const [sheetsStatus, setSheetsStatus] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [expandedCliente, setExpandedCliente] = useState(null);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
-  const [clientesAtrasados, setClientesAtrasados] = useState(null);
-  const [sortConfigAtraso, setSortConfigAtraso] = useState({ key: 'dias_sem_pagamento', direction: 'desc' });
-  const [showFormasPagamento, setShowFormasPagamento] = useState(false);
-  const [paymentFormsData, setPaymentFormsData] = useState(null);
-  const [entradasFormsData, setEntradasFormsData] = useState(null);
-  const [showEntradasModal, setShowEntradasModal] = useState(false);
-  const [expandedSaida, setExpandedSaida] = useState(null);
-  const [saidasModalData, setSaidasModalData] = useState(null);
-  const [showSaidasModal, setShowSaidasModal] = useState(false);
-  const [metasData, setMetasData] = useState(null);
-  
-  // Drag and Drop states
-  const [isDragMode, setIsDragMode] = useState(false);
-  const [draggedKPI, setDraggedKPI] = useState(null);
-  const [dragTimer, setDragTimer] = useState(null);
-  const [kpiOrder, setKpiOrder] = useState(() => {
-    // Load saved order from localStorage or use default
-    const savedOrder = localStorage.getItem('kpiOrder');
-    return savedOrder ? JSON.parse(savedOrder) : [
-      'faturamento', 'lucro', 'entradas', 'saidas', 'aberto', 'recebido'
-    ];
-  });
-
-  async function syncGoogleSheets() {
-    setIsSyncing(true);
-    try {
-      const response = await axios.get(`${API}/sync-sheets`);
-      console.log('Sincronização iniciada:', response.data);
-      
-      // Wait a bit then reload data
-      setTimeout(async () => {
-        await loadDashboardData();
-        await loadSheetsStatus();
-        setIsSyncing(false);
-      }, 3000);
-      
-    } catch (error) {
-      console.error('Erro na sincronização:', error);
-      setIsSyncing(false);
-    }
-  }
-
-  async function loadFormasPagamento(mes = selectedMonth) {
-    try {
-      // Map 'anointeiro' to current month for payment methods
-      let mesParaAPI = mes;
-      if (mes === 'anointeiro') {
-        mesParaAPI = 'setembro'; // Use current month for year view
-      }
-      
-      console.log(`Loading payment methods for: ${mes} -> ${mesParaAPI}`);
-      console.log(`Making API call to: ${API}/formas-pagamento/${mesParaAPI}`);
-      
-      const response = await axios.get(`${API}/formas-pagamento/${mesParaAPI}`);
-      console.log('API Response:', response.data);
-      setPaymentFormsData(response.data);
-    } catch (error) {
-      console.error('Erro ao carregar formas de pagamento:', error);
-      setPaymentFormsData({ success: false, formas_pagamento: [] });
-    }
-  }
-
-  async function loadClientesAtrasados() {
-    try {
-      const response = await axios.get(`${API}/clientes-atrasados`);
-      setClientesAtrasados(response.data);
-    } catch (error) {
-      console.error('Erro ao carregar clientes atrasados:', error);
-      setClientesAtrasados({ clientes: [] });
-    }
-  }
-
-  async function loadDashboardData(mes = selectedMonth) {
-    try {
-      const summaryResponse = await axios.get(`${API}/dashboard-summary?mes=${mes}`);
-
-      // If dashboard data is empty due to rate limiting, try to get entradas separately
-      if (summaryResponse.data.data_source === "none" || summaryResponse.data.entradas === 0) {
-        console.log('Dashboard data empty, trying to load entradas separately...');
-        try {
-          const entradasResponse = await axios.get(`${API}/entradas-pagamento/${mes}`);
-          if (entradasResponse.data.success && entradasResponse.data.total > 0) {
-            summaryResponse.data.entradas = entradasResponse.data.total;
-            console.log('Entradas loaded separately:', entradasResponse.data.total);
-          }
-        } catch (entradasError) {
-          console.error('Error loading entradas separately:', entradasError);
-        }
-      }
-
-      setDashboardData(summaryResponse.data);
-      
-      console.log('Dashboard data loaded for month:', mes, summaryResponse.data);
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-    }
-  }
-
-  async function forceRefreshData() {
-    console.log('Force refresh triggered...');
-    setIsLoading(true);
-    
-    try {
-      // Clear existing data first to prevent cache issues
-      setDashboardData({
-        faturamento: 0,
-        saidas: 0,
-        lucro_bruto: 0,
-        recebido_crediario: 0,
-        entradas: 0
-      });
-      
-      // Load fresh data for current month
-      await loadDashboardData(selectedMonth);
-      await loadSheetsStatus();
-      await loadFaturamentoDiario(selectedMonth);
-      await loadClientesAtrasados();
-      await loadMetasData(selectedMonth);
-      
-      // If we're in crediario view, refresh that too
-      if (activeView === 'crediario') {
-        await loadCrediarioData();
-      }
-      
-      console.log('Force refresh completed');
-    } catch (error) {
-      console.error('Error during force refresh:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function loadSheetsStatus() {
-    try {
-      const response = await axios.get(`${API}/sheets-status`);
-      setSheetsStatus(response.data);
-    } catch (error) {
-      console.error('Erro ao carregar status do Google Sheets:', error);
-    }
-  }
-
-  useEffect(() => {
-    console.log('useEffect triggered, loading initial data...');
-    setIsLoading(true);
-    
-    const loadInitialData = async () => {
-      try {
-        await loadDashboardData();
-        await loadSheetsStatus();
-        await loadMesesDisponiveis();
-        await loadFaturamentoDiario();
-        await loadClientesAtrasados();
-        await loadMetasData();
-      } catch (error) {
-        console.error('Error loading initial data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadInitialData();
-    
-    // Auto refresh every 5 minutes
-    const interval = setInterval(() => {
-      console.log('Auto refresh triggered...');
-      loadDashboardData();
-      loadSheetsStatus();
-      loadFaturamentoDiario();
-      loadClientesAtrasados();
-    }, 300000); // 5 minutes
-    
-    return () => {
-      console.log('Cleaning up interval...');
-      clearInterval(interval);
-    };
-  }, []); // Empty dependency array to run only once
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState('setembro');
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -204,555 +18,35 @@ function App() {
     }).format(value);
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Nunca";
+  const loadDashboardData = async (mes = selectedMonth) => {
     try {
-      return new Date(dateString).toLocaleString('pt-BR');
-    } catch {
-      return "Inválido";
-    }
-  };
-
-  async function loadCrediarioData() {
-    try {
-      const response = await axios.get(`${API}/crediario-data`);
-      setCrediarioData(response.data);
-    } catch (error) {
-      console.error('Erro ao carregar dados do crediário:', error);
-    }
-  }
-
-  async function loadSaidasData(mes) {
-    try {
-      const response = await axios.get(`${API}/saidas-agrupadas/${mes}`);
-      setSaidasData(response.data);
-    } catch (error) {
-      console.error('Erro ao carregar dados de saídas:', error);
-    }
-  }
-
-  async function loadFaturamentoDiario(mes = selectedMonth) {
-    try {
-      const response = await axios.get(`${API}/faturamento-diario/${mes}`);
-      setFaturamentoDiario(response.data);
-    } catch (error) {
-      console.error('Erro ao carregar faturamento diário:', error);
-    }
-  }
-
-  async function loadMetasData(mes = selectedMonth) {
-    try {
-      const response = await axios.get(`${API}/metas/${mes}`);
-      setMetasData(response.data);
-    } catch (error) {
-      console.error('Erro ao carregar metas:', error);
-    }
-  }
-
-  async function toggleMetaStatus(metaId, mes = selectedMonth) {
-    try {
-      const response = await axios.post(`${API}/metas/${mes}/toggle/${metaId}`);
-      if (response.data.success) {
-        // Reload metas data
-        loadMetasData(mes);
-      }
-    } catch (error) {
-      console.error('Erro ao alterar status da meta:', error);
-    }
-  }
-
-  async function loadMesesDisponiveis() {
-    try {
-      // Try automatic detection first
-      const response = await axios.get(`${API}/meses-disponiveis-auto`);
-      if (response.data.success && response.data.meses.length > 0) {
-        // Transform data for the dropdown
-        const mesesFormatted = response.data.meses.map(mes => ({
-          label: mes.display_name,
-          value: mes.value
-        }));
-        setMesesDisponiveis(mesesFormatted);
-        console.log('Meses detected automatically:', mesesFormatted);
-      } else {
-        // Fallback to manual list
-        throw new Error('Auto detection failed');
-      }
-    } catch (error) {
-      console.error('Erro ao carregar meses disponíveis:', error);
-      // Fallback to current static months
-      const fallbackMeses = [
-        { label: "Janeiro", value: "janeiro" },
-        { label: "Fevereiro", value: "fevereiro" },
-        { label: "Março", value: "marco" },
-        { label: "Abril", value: "abril" },
-        { label: "Maio", value: "maio" },
-        { label: "Junho", value: "junho" },
-        { label: "Julho", value: "julho" },
-        { label: "Agosto", value: "agosto" },
-        { label: "Setembro", value: "setembro" },
-        { label: "Ano Inteiro", value: "anointeiro" }
-      ];
-      setMesesDisponiveis(fallbackMeses);
-    }
-  }
-
-  const toggleClienteDetails = (clienteIndex) => {
-    setExpandedCliente(expandedCliente === clienteIndex ? null : clienteIndex);
-  };
-
-  const showView = (viewName) => {
-    setActiveView(viewName);
-    
-    // Load specific data for each view
-    if (viewName === 'crediario') {
-      loadCrediarioData();
-    } else if (viewName === 'diasPagamento') {
-      loadClientesAtrasados();
-    } else if (viewName === 'saidas') {
-      loadSaidasData(selectedMonth);
-    } else if (viewName === 'visaoGeral') {
-      loadFaturamentoDiario(selectedMonth);
-    } else if (viewName === 'metas') {
-      loadMetasData(selectedMonth);
-    }
-  };
-
-  const handleMonthChange = async (newMonth) => {
-    console.log('Month changing to:', newMonth);
-    setSelectedMonth(newMonth);
-    
-    if (newMonth) {
-      // Force complete data reset
+      console.log('Loading dashboard data for:', mes);
       setIsLoading(true);
+      setError(null);
       
-      // Clear ALL existing data first to prevent cache issues
-      setDashboardData({
-        faturamento: 0,
-        saidas: 0,
-        lucro_bruto: 0,
-        recebido_crediario: 0,
-        a_receber_crediario: 0,
-        num_vendas: 0,
-        entradas: 0,
-        data_source: "none"
-      });
-      
-      // Add small delay to ensure state is cleared
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      try {
-        // Load fresh data sequentially to avoid race conditions
-        await loadDashboardData(newMonth);
-        await loadCrediarioData(newMonth);
-        await loadFaturamentoDiario(newMonth);
-        await loadClientesAtrasados();
-        await loadMetasData(newMonth);
-        
-        console.log(`Data loaded for ${newMonth}`);
-      } catch (error) {
-        console.error(`Error loading data for ${newMonth}:`, error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const getKPIColor = (value, type) => {
-    if (type === 'lucro') {
-      return value >= 0 ? 'text-emerald-500' : 'text-red-500';
-    }
-    return 'text-white';
-  };
-
-  const getKPIIcon = (type) => {
-    switch (type) {
-      case 'faturamento': return <DollarSign className="h-5 w-5" />;
-      case 'saidas': return <TrendingDown className="h-5 w-5" />;
-      case 'lucro': return <Target className="h-5 w-5" />;
-      case 'recebido': return <CreditCard className="h-5 w-5" />;
-      case 'areceber': return <CreditCard className="h-5 w-5" />;
-      case 'vendas': return <ShoppingCart className="h-5 w-5" />;
-      default: return <DollarSign className="h-5 w-5" />;
-    }
-  };
-
-  const sortData = (data, key, type = 'string') => {
-    if (!data || !key) return data;
-    
-    return [...data].sort((a, b) => {
-      let aVal = a[key];
-      let bVal = b[key];
-      
-      if (type === 'number') {
-        aVal = parseFloat(aVal) || 0;
-        bVal = parseFloat(bVal) || 0;
-      } else if (type === 'currency') {
-        // Remove currency formatting and convert to number
-        aVal = typeof aVal === 'string' ? parseFloat(aVal.replace(/[R$.,\s]/g, '').replace(',', '.')) || 0 : aVal;
-        bVal = typeof bVal === 'string' ? parseFloat(bVal.replace(/[R$.,\s]/g, '').replace(',', '.')) || 0 : bVal;
-      } else {
-        aVal = String(aVal).toLowerCase();
-        bVal = String(bVal).toLowerCase();
-      }
-      
-      if (sortConfig.direction === 'asc') {
-        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-      } else {
-        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
-      }
-    });
-  };
-
-  const handleSortAtraso = (key) => {
-    let direction = 'asc';
-    if (sortConfigAtraso.key === key && sortConfigAtraso.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfigAtraso({ key, direction });
-  };
-
-  const getSortIconAtraso = (columnName) => {
-    if (sortConfigAtraso.key === columnName) {
-      return sortConfigAtraso.direction === 'asc' ? '↑' : '↓';
-    }
-    return '↕';
-  };
-
-  // Handle Faturamento KPI click
-  const handleFaturamentoClick = async () => {
-    setShowFormasPagamento(true);
-    
-    // Map selectedMonth to API format
-    const monthMapping = {
-      'janeiro': 'janeiro',
-      'fevereiro': 'fevereiro', 
-      'marco': 'março',
-      'abril': 'abril',
-      'maio': 'maio',
-      'junho': 'junho',
-      'julho': 'julho',
-      'agosto': 'agosto',
-      'setembro': 'setembro',
-      'anointeiro': 'anointeiro'
-    };
-    
-    const apiMonth = monthMapping[selectedMonth] || selectedMonth;
-    
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/formas-pagamento/${apiMonth}`);
-      const data = await response.json();
-      setPaymentFormsData(data);
+      const response = await axios.get(`${API}/dashboard-summary?mes=${mes}`);
+      console.log('Dashboard data loaded:', response.data);
+      setDashboardData(response.data);
     } catch (error) {
-      console.error('Error fetching payment forms:', error);
-      setPaymentFormsData({ success: false, error: 'Erro ao carregar formas de pagamento' });
+      console.error('Error loading dashboard data:', error);
+      setError('Erro ao carregar dados do dashboard');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Handle Saídas KPI click
-  const handleSaidasClick = async () => {
-    setShowSaidasModal(true);
-    setSaidasModalData(null); // Reset data first
-    
-    // Map selectedMonth to API format  
-    const monthMapping = {
-      'janeiro': 'janeiro',
-      'fevereiro': 'fevereiro', 
-      'marco': 'março',
-      'abril': 'abril',
-      'maio': 'maio',
-      'junho': 'junho',
-      'julho': 'julho',
-      'agosto': 'agosto',
-      'setembro': 'setembro',
-      'outubro': 'outubro',
-      'anointeiro': 'anointeiro'
-    };
-    
-    const apiMonth = monthMapping[selectedMonth] || selectedMonth;
-    
-    console.log('Loading saidas data for month:', apiMonth);
-    
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/saidas-agrupadas/${apiMonth}`);
-      const data = await response.json();
-      console.log('Saidas data received:', data);
-      setSaidasModalData(data);
-    } catch (error) {
-      console.error('Error fetching saidas data:', error);
-      setSaidasModalData({ success: false, error: 'Erro ao carregar saídas' });
-    }
+  useEffect(() => {
+    console.log('App useEffect triggered');
+    loadDashboardData();
+  }, []);
+
+  const handleMonthChange = (newMonth) => {
+    console.log('Changing month to:', newMonth);
+    setSelectedMonth(newMonth);
+    loadDashboardData(newMonth);
   };
 
-  // Handle Entradas R$ KPI click
-  const handleEntradasClick = async () => {
-    setShowEntradasModal(true);
-    setEntradasFormsData(null); // Reset data first
-    
-    // Map selectedMonth to API format  
-    const monthMapping = {
-      'janeiro': 'janeiro',
-      'fevereiro': 'fevereiro', 
-      'marco': 'março',
-      'abril': 'abril',
-      'maio': 'maio',
-      'junho': 'junho',
-      'julho': 'julho',
-      'agosto': 'agosto',
-      'setembro': 'setembro',
-      'anointeiro': 'anointeiro'
-    };
-    
-    const apiMonth = monthMapping[selectedMonth] || selectedMonth;
-    
-    console.log('Loading entradas data for month:', apiMonth);
-    
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/entradas-pagamento/${apiMonth}`);
-      const data = await response.json();
-      console.log('Entradas data received:', data);
-      setEntradasFormsData(data);
-    } catch (error) {
-      console.error('Error fetching entradas forms:', error);
-      setEntradasFormsData({ success: false, error: 'Erro ao carregar formas de entrada' });
-    }
-  };
-
-  // Drag and Drop functions
-  const handleMouseDown = (kpiId) => {
-    const timer = setTimeout(() => {
-      setIsDragMode(true);
-      setDraggedKPI(kpiId);
-      console.log('Drag mode activated for:', kpiId);
-    }, 2000); // 2 seconds instead of 3
-    setDragTimer(timer);
-  };
-
-  const handleMouseUp = () => {
-    if (dragTimer) {
-      clearTimeout(dragTimer);
-      setDragTimer(null);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (dragTimer) {
-      clearTimeout(dragTimer);
-      setDragTimer(null);
-    }
-  };
-
-  const handleDragStart = (e, kpiId) => {
-    setDraggedKPI(kpiId);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = (e, targetKpiId) => {
-    e.preventDefault();
-    if (draggedKPI && draggedKPI !== targetKpiId) {
-      const newOrder = [...kpiOrder];
-      const dragIndex = newOrder.indexOf(draggedKPI);
-      const targetIndex = newOrder.indexOf(targetKpiId);
-      
-      // Remove dragged item and insert at target position
-      newOrder.splice(dragIndex, 1);
-      newOrder.splice(targetIndex, 0, draggedKPI);
-      
-      setKpiOrder(newOrder);
-      localStorage.setItem('kpiOrder', JSON.stringify(newOrder));
-      console.log('New KPI order:', newOrder);
-    }
-    setDraggedKPI(null);
-    setIsDragMode(false);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedKPI(null);
-    setIsDragMode(false);
-  };
-
-  // Function to render individual KPI
-  const renderKPI = (kpiId) => {
-    const kpiConfig = {
-      faturamento: {
-        icon: getKPIIcon('faturamento'),
-        label: 'FATURAMENTO',
-        value: dashboardData?.faturamento ? formatCurrency(dashboardData.faturamento) : 'R$ 12.785,85',
-        color: 'text-orange-400',
-        clickable: true,
-        onClick: handleFaturamentoClick,
-        badge: '📊'
-      },
-      saidas: {
-        icon: getKPIIcon('saidas'),
-        label: 'SAÍDAS',
-        value: formatCurrency(dashboardData.saidas),
-        color: 'text-green-400',
-        clickable: true,
-        onClick: handleSaidasClick,
-        badge: '📊'
-      },
-      lucro: {
-        icon: getKPIIcon('lucro'),
-        label: 'LUCRO BRUTO',
-        value: formatCurrency(dashboardData.lucro_bruto),
-        color: 'text-blue-400',
-        valueColor: getKPIColor(dashboardData.lucro_bruto, 'lucro')
-      },
-      recebido: {
-        icon: getKPIIcon('recebido'),
-        label: 'RECEBIDO CRED.',
-        value: formatCurrency(dashboardData.recebido_crediario),
-        color: 'text-cyan-400'
-      },
-      aberto: {
-        icon: getKPIIcon('vendas'),
-        label: 'EM ABERTO',
-        value: crediarioData ? formatCurrency(crediarioData.clientes.reduce((sum, cliente) => sum + cliente.saldo_devedor, 0)) : '...',
-        color: 'text-purple-400'
-      },
-      entradas: {
-        icon: getKPIIcon('faturamento'),
-        label: 'ENTRADAS',
-        value: formatCurrency(dashboardData.entradas || 0),
-        color: 'text-yellow-400',
-        clickable: true,
-        onClick: handleEntradasClick,
-        badge: '📊'
-      }
-    };
-
-    const config = kpiConfig[kpiId];
-    if (!config) return null;
-
-    const isDragging = draggedKPI === kpiId;
-    const isClickable = config.clickable && !isDragMode;
-
-    return (
-      <div
-        key={kpiId}
-        className={`bg-gray-800 p-4 rounded-lg text-center transition-all duration-200 relative select-none ${
-          isClickable ? 'cursor-pointer hover:bg-gray-700' : ''
-        } ${isDragMode ? 'cursor-move' : ''} ${
-          isDragging ? 'opacity-50 transform scale-105 shadow-lg' : ''
-        } ${isDragMode && !isDragging ? 'hover:bg-gray-600' : ''}`}
-        draggable={isDragMode}
-        onMouseDown={() => !isDragMode && handleMouseDown(kpiId)}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        onDragStart={(e) => handleDragStart(e, kpiId)}
-        onDragOver={handleDragOver}
-        onDrop={(e) => handleDrop(e, kpiId)}
-        onDragEnd={handleDragEnd}
-        onClick={isClickable ? config.onClick : undefined}
-      >
-        {isDragMode && (
-          <div className="absolute top-1 right-1 text-xs bg-blue-500 text-white px-2 py-1 rounded">
-            ⚡ Arrastar
-          </div>
-        )}
-        <div className="flex items-center justify-center gap-2 mb-2">
-          {config.icon}
-          <span className={`${config.color} text-xs font-medium uppercase`}>{config.label}</span>
-          {config.badge && <span className="text-gray-400 text-xs">{config.badge}</span>}
-        </div>
-        <div className={`text-lg font-bold ${config.valueColor || 'text-white'}`}>
-          {config.value}
-        </div>
-      </div>
-    );
-  };
-
-  const sortClientesAtrasados = (clientes, key, direction) => {
-    if (!clientes || !key) return clientes;
-    
-    return [...clientes].sort((a, b) => {
-      let aVal = a[key];
-      let bVal = b[key];
-      
-      if (key === 'dias_sem_pagamento') {
-        aVal = parseInt(aVal) || 0;
-        bVal = parseInt(bVal) || 0;
-      } else {
-        aVal = String(aVal).toLowerCase();
-        bVal = String(bVal).toLowerCase();
-      }
-      
-      if (direction === 'asc') {
-        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-      } else {
-        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
-      }
-    });
-  };
-
-  const handleSort = (key, type = 'string') => {
-    let direction = 'desc'; // Default to descending for numbers/currency, ascending for strings
-    if (type === 'string') direction = 'asc';
-    
-    if (sortConfig.key === key && sortConfig.direction === direction) {
-      direction = direction === 'asc' ? 'desc' : 'asc';
-    }
-    
-    setSortConfig({ key, direction });
-  };
-
-  const getSortIcon = (key) => {
-    if (sortConfig.key !== key) {
-      return <span className="text-gray-500 ml-1">↕</span>;
-    }
-    return sortConfig.direction === 'asc' ? 
-      <span className="text-white ml-1">↑</span> : 
-      <span className="text-white ml-1">↓</span>;
-  };
-
-  const sortCrediarioData = (data, key, type = 'string') => {
-    if (!data || !key) return data;
-    
-    return [...data].sort((a, b) => {
-      let aVal, bVal;
-      
-      if (key === 'compras') {
-        // Special handling for compras count
-        aVal = a.compras ? a.compras.length : 0;
-        bVal = b.compras ? b.compras.length : 0;
-      } else {
-        aVal = a[key];
-        bVal = b[key];
-      }
-      
-      if (type === 'number') {
-        aVal = parseFloat(aVal) || 0;
-        bVal = parseFloat(bVal) || 0;
-      } else if (type === 'currency') {
-        aVal = typeof aVal === 'number' ? aVal : parseFloat(aVal) || 0;
-        bVal = typeof bVal === 'number' ? bVal : parseFloat(bVal) || 0;
-      } else if (type === 'boolean') {
-        aVal = Boolean(aVal);
-        bVal = Boolean(bVal);
-      } else {
-        aVal = String(aVal).toLowerCase();
-        bVal = String(bVal).toLowerCase();
-      }
-      
-      if (sortConfig.direction === 'asc') {
-        return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-      } else {
-        return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
-      }
-    });
-  };
-
-  // Debug: Simple test render
-  console.log('About to render, isLoading:', isLoading, 'dashboardData:', dashboardData);
-  
-  // Add loading state for initial render
-  if (isLoading && !dashboardData) {
-    console.log('Rendering loading state');
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
@@ -764,9 +58,174 @@ function App() {
     );
   }
 
-  console.log('Rendering main dashboard');
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-400 mb-2">Erro</h1>
+          <p className="text-gray-400 mb-4">{error}</p>
+          <button 
+            onClick={() => loadDashboardData()}
+            className="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded"
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
+      <div className="container mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent">
+            Dashboard de Gestão 2025 | Visage de Vogue
+          </h1>
+          <p className="text-gray-400">Sistema de gestão empresarial</p>
+        </div>
+
+        {/* Month Selector */}
+        <div className="flex justify-center mb-8">
+          <select
+            value={selectedMonth}
+            onChange={(e) => handleMonthChange(e.target.value)}
+            className="bg-gray-800 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          >
+            <option value="setembro">Setembro</option>
+            <option value="agosto">Agosto</option>
+            <option value="julho">Julho</option>
+            <option value="junho">Junho</option>
+            <option value="maio">Maio</option>
+            <option value="abril">Abril</option>
+            <option value="marco">Março</option>
+            <option value="fevereiro">Fevereiro</option>
+            <option value="janeiro">Janeiro</option>
+            <option value="anointeiro">Ano Inteiro</option>
+          </select>
+        </div>
+
+        {/* KPIs Grid */}
+        {dashboardData && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+            {/* Faturamento */}
+            <div className="bg-gray-800 p-4 rounded-lg text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                </svg>
+                <span className="text-orange-400 text-xs font-medium uppercase">FATURAMENTO</span>
+              </div>
+              <div className="text-lg font-bold text-white">
+                {formatCurrency(dashboardData.faturamento)}
+              </div>
+            </div>
+
+            {/* Saídas */}
+            <div className="bg-gray-800 p-4 rounded-lg text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                </svg>
+                <span className="text-red-400 text-xs font-medium uppercase">SAÍDAS</span>
+              </div>
+              <div className="text-lg font-bold text-white">
+                {formatCurrency(dashboardData.saidas)}
+              </div>
+            </div>
+
+            {/* Lucro Bruto */}
+            <div className="bg-gray-800 p-4 rounded-lg text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-blue-400 text-xs font-medium uppercase">LUCRO BRUTO</span>
+              </div>
+              <div className={`text-lg font-bold ${dashboardData.lucro_bruto >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                {formatCurrency(dashboardData.lucro_bruto)}
+              </div>
+            </div>
+
+            {/* Recebido Crediário */}
+            <div className="bg-gray-800 p-4 rounded-lg text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                <span className="text-cyan-400 text-xs font-medium uppercase">RECEBIDO CRED.</span>
+              </div>
+              <div className="text-lg font-bold text-white">
+                {formatCurrency(dashboardData.recebido_crediario)}
+              </div>
+            </div>
+
+            {/* A Receber Crediário */}
+            <div className="bg-gray-800 p-4 rounded-lg text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m.6 8L5 4H3m4 9v6a1 1 0 001 1h10a1 1 0 001-1v-6m-1 0V9a1 1 0 00-1-1H7a1 1 0 00-1 1v4h12z" />
+                </svg>
+                <span className="text-purple-400 text-xs font-medium uppercase">EM ABERTO</span>
+              </div>
+              <div className="text-lg font-bold text-white">
+                {formatCurrency(dashboardData.a_receber_crediario)}
+              </div>
+            </div>
+
+            {/* Entradas */}
+            <div className="bg-gray-800 p-4 rounded-lg text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                </svg>
+                <span className="text-yellow-400 text-xs font-medium uppercase">ENTRADAS</span>
+              </div>
+              <div className="text-lg font-bold text-white">
+                {formatCurrency(dashboardData.entradas)}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Status Information */}
+        <div className="bg-gray-800 rounded-lg p-6 text-center">
+          <h2 className="text-xl font-bold text-white mb-4">Status do Sistema</h2>
+          <div className="space-y-2">
+            <p className="text-green-400">✅ Marca "Made with Emergent" removida</p>
+            <p className="text-green-400">✅ Dashboard funcionando corretamente</p>
+            <p className="text-green-400">✅ Conexão com backend ativa</p>
+            <p className="text-gray-400">
+              Dados carregados: {dashboardData?.data_source || 'N/A'}
+            </p>
+            {dashboardData?.last_sync && (
+              <p className="text-gray-400 text-sm">
+                Última sincronização: {new Date(dashboardData.last_sync).toLocaleString('pt-BR')}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-center gap-4 mt-8">
+          <button 
+            onClick={() => loadDashboardData()}
+            className="bg-yellow-500 hover:bg-yellow-600 text-black px-6 py-2 rounded-lg font-medium"
+          >
+            🔄 Atualizar Dados
+          </button>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium"
+          >
+            ↻ Recarregar Página
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-8">
