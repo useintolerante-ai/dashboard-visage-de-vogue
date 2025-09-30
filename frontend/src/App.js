@@ -241,10 +241,10 @@ function App() {
           <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-xl p-1 shadow-xl border border-gray-600">
             <div className="flex justify-center gap-1">
               {[
-                { id: 'visaoGeral', label: 'Visão Geral', icon: '📊', gradient: 'from-blue-500 to-purple-600', active: true },
-                { id: 'crediario', label: 'Crediário', icon: '💳', gradient: 'from-green-500 to-emerald-600', active: false },
-                { id: 'pagamentos', label: 'Pagamentos', icon: '⏰', gradient: 'from-orange-500 to-red-600', active: false },
-                { id: 'metas', label: 'Metas', icon: '🎯', gradient: 'from-purple-500 to-pink-600', active: false }
+                { id: 'visaoGeral', label: 'Visão Geral', icon: '📊', gradient: 'from-blue-500 to-purple-600' },
+                { id: 'crediario', label: 'Crediário', icon: '💳', gradient: 'from-green-500 to-emerald-600' },
+                { id: 'pagamentos', label: 'Pagamentos', icon: '⏰', gradient: 'from-orange-500 to-red-600' },
+                { id: 'metas', label: 'Metas', icon: '🎯', gradient: 'from-purple-500 to-pink-600' }
               ].map((tab) => (
                 <button
                   key={tab.id}
