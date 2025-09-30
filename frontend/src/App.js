@@ -378,6 +378,41 @@ function App() {
     }
   };
 
+  // Handle Saídas KPI click
+  const handleSaidasClick = async () => {
+    setShowSaidasModal(true);
+    setSaidasModalData(null); // Reset data first
+    
+    // Map selectedMonth to API format  
+    const monthMapping = {
+      'janeiro': 'janeiro',
+      'fevereiro': 'fevereiro', 
+      'marco': 'março',
+      'abril': 'abril',
+      'maio': 'maio',
+      'junho': 'junho',
+      'julho': 'julho',
+      'agosto': 'agosto',
+      'setembro': 'setembro',
+      'outubro': 'outubro',
+      'anointeiro': 'anointeiro'
+    };
+    
+    const apiMonth = monthMapping[selectedMonth] || selectedMonth;
+    
+    console.log('Loading saidas data for month:', apiMonth);
+    
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/saidas-agrupadas/${apiMonth}`);
+      const data = await response.json();
+      console.log('Saidas data received:', data);
+      setSaidasModalData(data);
+    } catch (error) {
+      console.error('Error fetching saidas data:', error);
+      setSaidasModalData({ success: false, error: 'Erro ao carregar saídas' });
+    }
+  };
+
   // Handle Entradas R$ KPI click
   const handleEntradasClick = async () => {
     setShowEntradasModal(true);
