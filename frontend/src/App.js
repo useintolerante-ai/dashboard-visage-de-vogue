@@ -10,7 +10,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 function App() {
-  const [activeView, setActiveView] = useState('visaoGeral');
+  const [activeView, setActiveView] = useState('visao-geral');
   const [selectedMonth, setSelectedMonth] = useState('anointeiro');
   const [dashboardData, setDashboardData] = useState(null);
   const [crediarioData, setCrediarioData] = useState(null);
