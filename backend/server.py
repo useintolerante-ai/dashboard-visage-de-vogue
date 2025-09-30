@@ -148,7 +148,10 @@ async def get_saidas_agrupadas(mes: str):
             "junho": "JUNHO25",
             "julho": "JULHO25",
             "agosto": "AGOSTO25",
-            "setembro": "SETEMBRO25"
+            "setembro": "SETEMBRO25",
+            "outubro": "OUTUBRO25",
+            "novembro": "NOVEMBRO25",
+            "dezembro": "DEZEMBRO25"
         }
         
         sheet_name = month_mapping.get(mes.lower(), "SETEMBRO25")  # Default to September
