@@ -206,13 +206,101 @@ function App() {
           },
           {
             id: 4,
-            nome: 'BEATRIZ ALMEIDA',
+            nome: 'BEATRIZ ALMEIDA COSTA',
             saldo_devedor: 950.25,
             data_ultimo_pagamento: '2025-09-18',
             data_ultima_compra: '2025-09-25',
             compras: [
               { data: '2025-09-25', valor: 650.25, produto: 'Roupas Casuais' },
               { data: '2025-09-01', valor: 300.00, produto: 'Bijuterias' }
+            ]
+          },
+          {
+            id: 5,
+            nome: 'LUCIANA SANTOS PEREIRA',
+            saldo_devedor: 1825.60,
+            data_ultimo_pagamento: '2025-08-20',
+            data_ultima_compra: '2025-09-15',
+            compras: [
+              { data: '2025-09-15', valor: 1200.00, produto: 'Vestidos' },
+              { data: '2025-08-25', valor: 625.60, produto: 'Calçados' }
+            ]
+          },
+          {
+            id: 6,
+            nome: 'PATRICIA RODRIGUES LIMA',
+            saldo_devedor: 2100.80,
+            data_ultimo_pagamento: '2025-07-30',
+            data_ultima_compra: '2025-09-08',
+            compras: [
+              { data: '2025-09-08', valor: 1500.80, produto: 'Coleção Especial' },
+              { data: '2025-08-10', valor: 600.00, produto: 'Acessórios' }
+            ]
+          },
+          {
+            id: 7,
+            nome: 'FERNANDA OLIVEIRA SILVA',
+            saldo_devedor: 1340.45,
+            data_ultimo_pagamento: '2025-09-10',
+            data_ultima_compra: '2025-09-22',
+            compras: [
+              { data: '2025-09-22', valor: 840.45, produto: 'Roupas Sociais' },
+              { data: '2025-09-02', valor: 500.00, produto: 'Bolsas' }
+            ]
+          },
+          {
+            id: 8,
+            nome: 'JULIANA COSTA MARTINS',
+            saldo_devedor: 1750.20,
+            data_ultimo_pagamento: '2025-08-05',
+            data_ultima_compra: '2025-09-18',
+            compras: [
+              { data: '2025-09-18', valor: 1100.20, produto: 'Vestidos Festa' },
+              { data: '2025-08-15', valor: 650.00, produto: 'Sapatos' }
+            ]
+          },
+          {
+            id: 9,
+            nome: 'AMANDA FERREIRA SANTOS',
+            saldo_devedor: 890.75,
+            data_ultimo_pagamento: '2025-09-12',
+            data_ultima_compra: '2025-09-26',
+            compras: [
+              { data: '2025-09-26', valor: 540.75, produto: 'Roupas Casuais' },
+              { data: '2025-09-05', valor: 350.00, produto: 'Acessórios' }
+            ]
+          },
+          {
+            id: 10,
+            nome: 'ROBERTA ALMEIDA ROCHA',
+            saldo_devedor: 2250.90,
+            data_ultimo_pagamento: '2025-07-25',
+            data_ultima_compra: '2025-09-12',
+            compras: [
+              { data: '2025-09-12', valor: 1450.90, produto: 'Coleção Premium' },
+              { data: '2025-08-08', valor: 800.00, produto: 'Bolsas de Luxo' }
+            ]
+          },
+          {
+            id: 11,
+            nome: 'SANDRA LIMA COSTA',
+            saldo_devedor: 1425.35,
+            data_ultimo_pagamento: '2025-08-28',
+            data_ultima_compra: '2025-09-20',
+            compras: [
+              { data: '2025-09-20', valor: 925.35, produto: 'Vestidos' },
+              { data: '2025-08-30', valor: 500.00, produto: 'Sapatos' }
+            ]
+          },
+          {
+            id: 12,
+            nome: 'CAROLINA SANTOS SILVA',
+            saldo_devedor: 1680.60,
+            data_ultimo_pagamento: '2025-09-08',
+            data_ultima_compra: '2025-09-24',
+            compras: [
+              { data: '2025-09-24', valor: 1080.60, produto: 'Roupas Executivas' },
+              { data: '2025-09-10', valor: 600.00, produto: 'Acessórios' }
             ]
           }
         ]
