@@ -625,26 +625,68 @@ function App() {
             <h2 className="text-xl font-bold text-white mb-4 text-center">Clientes com Pagamentos em Atraso</h2>
             
             {clientesAtrasados && clientesAtrasados.success ? (
-              <div className="space-y-4">
-                {clientesAtrasados.clientes.map((cliente, index) => (
-                  <div key={index} className="bg-gray-700 rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-3">
-                      <h3 className="text-white font-bold text-lg">{cliente.nome}</h3>
-                      <div className="text-right">
-                        <div className="text-red-400 font-bold">
-                          {formatCurrency(cliente.saldo_devedor)}
+              <div>
+                {/* Header with sorting */}
+                <div className="bg-gray-700 p-3 rounded-lg mb-4">
+                  <div className="grid grid-cols-4 gap-4">
+                    <button 
+                      onClick={() => sortPagamentos('nome')}
+                      className="text-left text-white font-medium hover:text-yellow-400 transition-colors flex items-center"
+                    >
+                      Nome do Cliente {getSortIcon('pagamentos', 'nome')}
+                    </button>
+                    <button 
+                      onClick={() => sortPagamentos('saldo_devedor')}
+                      className="text-right text-white font-medium hover:text-yellow-400 transition-colors flex items-center justify-end"
+                    >
+                      Saldo Devedor {getSortIcon('pagamentos', 'saldo_devedor')}
+                    </button>
+                    <button 
+                      onClick={() => sortPagamentos('dias_sem_pagamento')}
+                      className="text-center text-white font-medium hover:text-yellow-400 transition-colors flex items-center justify-center"
+                    >
+                      Dias em Atraso {getSortIcon('pagamentos', 'dias_sem_pagamento')}
+                    </button>
+                    <div className="text-center text-gray-300 font-medium">Último Pagamento</div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {getSortedPagamentosData(clientesAtrasados.clientes).map((cliente, index) => (
+                    <div key={index} className="bg-gray-700 rounded-lg p-4">
+                      <div className="grid grid-cols-4 gap-4 items-center">
+                        <h3 className="text-white font-bold text-sm">{cliente.nome}</h3>
+                        <div className="text-right">
+                          <div className="text-red-400 font-bold text-lg">
+                            {formatCurrency(cliente.saldo_devedor)}
+                          </div>
                         </div>
-                        <div className="text-orange-400 text-sm">
-                          {cliente.dias_sem_pagamento} dias sem pagamento
+                        <div className="text-center">
+                          <div className="text-orange-400 font-bold text-lg">
+                            {cliente.dias_sem_pagamento} dias
+                          </div>
+                        </div>
+                        <div className="text-center text-gray-300 text-sm">
+                          {cliente.data_ultimo_pagamento}
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="text-sm text-gray-400">
-                      Último pagamento: {cliente.ultimo_pagamento}
-                    </div>
+                  ))}
+                </div>
+
+                {/* Summary */}
+                <div className="mt-6 pt-4 border-t border-gray-600">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">Total de clientes em atraso:</span>
+                    <span className="text-white font-bold">{clientesAtrasados.clientes.length}</span>
                   </div>
-                ))}
+                  <div className="flex justify-between items-center text-sm mt-2">
+                    <span className="text-gray-400">Valor total em atraso:</span>
+                    <span className="text-red-400 font-bold">
+                      {formatCurrency(clientesAtrasados.clientes.reduce((total, cliente) => total + cliente.saldo_devedor, 0))}
+                    </span>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="text-center text-gray-400">
