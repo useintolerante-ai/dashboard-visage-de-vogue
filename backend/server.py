@@ -2416,21 +2416,18 @@ async def get_meses_disponiveis_auto():
     Automatically detect available months from Google Sheets tabs
     """
     try:
-        import gspread
-        from google.oauth2.service_account import Credentials
+        # Use existing Google Sheets API to get worksheet information
+        import requests
         
-        # Set up credentials and connect to Google Sheets
-        scopes = [
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive"
-        ]
+        # Get spreadsheet metadata using Google Sheets API
+        api_url = f"https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_ID}"
+        params = {"key": GOOGLE_SHEETS_API_KEY}
         
-        service_account_info = json.loads(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON'))
-        credentials = Credentials.from_service_account_info(service_account_info, scopes=scopes)
-        client = gspread.authorize(credentials)
+        response = requests.get(api_url, params=params)
+        response.raise_for_status()
         
-        # Open the spreadsheet
-        spreadsheet = client.open_by_key(GOOGLE_SHEETS_ID)
+        spreadsheet_data = response.json()
+        all_sheet_names = [sheet["properties"]["title"] for sheet in spreadsheet_data["sheets"]]
         
         # Get all worksheet names
         worksheets = spreadsheet.worksheets()
