@@ -2429,10 +2429,6 @@ async def get_meses_disponiveis_auto():
         spreadsheet_data = response.json()
         all_sheet_names = [sheet["properties"]["title"] for sheet in spreadsheet_data["sheets"]]
         
-        # Get all worksheet names
-        worksheets = spreadsheet.worksheets()
-        all_sheet_names = [sheet.title for sheet in worksheets]
-        
         logger.info(f"Found sheets: {all_sheet_names}")
         
         # Filter sheets that match month pattern (JANEIRO25, OUTUBRO25, etc.)
