@@ -1390,6 +1390,92 @@ function App() {
           </Card>
         )}
 
+        {/* Modal de Saídas */}
+        {showSaidasModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-900 rounded-lg border border-gray-600 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-white">
+                    Saídas por Categoria - {selectedMonth === 'anointeiro' ? 'Ano Inteiro' : 
+                      mesesDisponiveis.find(m => m.value === selectedMonth)?.label || selectedMonth}
+                  </h2>
+                  <button
+                    onClick={() => setShowSaidasModal(false)}
+                    className="text-gray-400 hover:text-white text-2xl font-bold"
+                  >
+                    ×
+                  </button>
+                </div>
+                
+                {saidasModalData ? (
+                  saidasModalData.success && saidasModalData.saidas_agrupadas && saidasModalData.saidas_agrupadas.length > 0 ? (
+                    <div>
+                      <div className="mb-4 p-4 bg-gray-800 rounded-lg">
+                        <div className="text-gray-300 text-sm mb-2">Total de Saídas:</div>
+                        <div className="text-2xl font-bold text-red-400">
+                          {formatCurrency(saidasModalData.total_valor)}
+                        </div>
+                        <div className="text-gray-400 text-sm mt-2">
+                          {saidasModalData.total_grupos} categorias • {saidasModalData.total_entradas} entradas
+                        </div>
+                      </div>
+                      
+                      <div className="grid gap-4 max-h-96 overflow-y-auto">
+                        {saidasModalData.saidas_agrupadas.map((grupo, index) => (
+                          <div key={grupo.id || index} className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                            <div className="flex justify-between items-center mb-2">
+                              <div className="text-white font-semibold text-lg">
+                                {grupo.descricao}
+                              </div>
+                              <div className="text-right">
+                                <div className="text-red-400 font-bold text-lg">
+                                  {formatCurrency(grupo.total_valor)}
+                                </div>
+                                <div className="text-gray-400 text-sm">
+                                  {grupo.numero_entradas} entrada{grupo.numero_entradas !== 1 ? 's' : ''}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="w-full bg-gray-700 rounded-full h-2">
+                              <div 
+                                className="bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${(grupo.total_valor / saidasModalData.total_valor) * 100}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-gray-400 text-lg mb-2">
+                        {saidasModalData.message || "Nenhuma saída encontrada para este período."}
+                      </div>
+                      <div className="text-gray-500 text-sm">
+                        Os dados de saídas podem não estar preenchidos para este mês.
+                      </div>
+                    </div>
+                  )
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400">Carregando saídas...</div>
+                  </div>
+                )}
+                
+                <div className="mt-6 flex justify-end">
+                  <button
+                    onClick={() => setShowSaidasModal(false)}
+                    className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors"
+                  >
+                    Fechar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Empty State */}
         {!dashboardData && !isLoading && (
           <Card className="bg-gray-900 border-gray-700 text-center py-12">
