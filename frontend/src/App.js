@@ -266,6 +266,8 @@ function App() {
       loadSaidasData(selectedMonth);
     } else if (viewName === 'visaoGeral') {
       loadFaturamentoDiario(selectedMonth);
+    } else if (viewName === 'metas') {
+      loadMetasData(selectedMonth);
     }
   };
 
