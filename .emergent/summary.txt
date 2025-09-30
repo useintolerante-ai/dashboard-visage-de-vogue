@@ -1,77 +1,68 @@
 <analysis>
-The AI engineer's work primarily involved iteratively building and refining a dynamic sales dashboard, transitioning from initial Excel support to Google Sheets integration. A significant focus was on accurately parsing complex, inconsistent data structures from various Google Sheet tabs, managing total lines to prevent KPI duplication, and handling API rate limits through caching. The development was highly iterative, driven by granular user feedback on numerical discrepancies and UI/UX improvements. Key achievements include implementing accurate  calculations with fuzzy matching (), adding  and  history, developing a dedicated Dias s/ Pagamento tab for overdue clients (initially a column, then revised), resolving data inconsistencies (e.g., client deduplication, specific client value corrections), and implementing an interactive modal for payment forms on the Faturamento KPI. The most recent task involves replacing the Ticket Médio KPI with Entradas R by aggregating all payment forms. Debugging  loops in the frontend was crucial for stable performance.
+The trajectory details the iterative development of a dynamic sales dashboard, transitioning from a basic concept to a feature-rich application. The work began by replacing the Ticket Médio KPI with a more comprehensive Entradas R metric, complete with a clickable modal showing a breakdown of payment forms. This initial task revealed a recurring challenge: Google Sheets API rate limiting (HTTP 429 errors), which was mitigated through caching and implementing fallback mechanisms.
+
+A significant portion of the work involved UI/UX enhancements driven by direct user feedback. This included creating a grouped, expandable view for expenses (Saídas), first as a separate tab and later integrated into a modal to improve mobile layout. A key interactive feature, drag-and-drop reordering for KPI cards, was implemented and refined—transitioning from a 3-second hold to a double-click, and finally to a 2-second hold with CSS to prevent text selection conflicts.
+
+The engineer also implemented backend improvements for scalability, such as automatic detection of new month tabs in the Google Sheet. Debugging was a constant process, addressing data inconsistencies between the backend and frontend (e.g., Entradas value mismatch between KPI and modal) and fixing bugs where months with no data incorrectly displayed data from other months. The most recent work focuses on a major UI overhaul, moving from a tabbed interface to a single, consolidated view to improve layout and usability, especially on mobile devices.
 </analysis>
-
 <product_requirements>
-The user required a dynamic sales dashboard, originally from Excel, now a specific Google Sheet (ID: ). The UI features a modern, dark Visage de Vogue theme with multi-tabbed navigation (Visão Geral, Crediário, Saídas, and a newly added Dias s/ Pagamento). Key KPIs (Faturamento, Saídas, Lucro Bruto, Recebido Crediário) must be accurate and dynamically update for selected months and Ano Inteiro. Nº de Vendas was replaced by Total em Aberto Cred. and Total de Clientes in the overview, and Ticket Médio was added as a 6th KPI, with a pending request to replace it with Entradas R. The Crediário tab needs to list clients with accurate  and display  and  history on click. Clients with  < R, zero, or negative should be excluded. A Dias s/ Pagamento tab was created to list clients > 30 days without payment, sortable, with visual indicators for overdue ranges (30-60, 60-90, 90+ days), using month-based payment logic. The Faturamento KPI in Visão Geral must be clickable to show a modal detailing payment forms (Crediário, PIX, Débito, Dinheiro, Crédito) by month, with values and percentages.
+The application is a dynamic sales dashboard that pulls data directly from a specific Google Sheet. The primary user interface is a Visão Geral (Overview) that displays key financial KPIs.
+
+**Core Features Implemented:**
+1.  **KPI Dashboard:** Displays Faturamento (Billing), Saídas (Expenses), Lucro Bruto (Gross Profit), Recebido Crediário (Installments Received), and Total em Aberto Cred. (Open Installment Balance).
+2.  **Interactive KPIs:**
+    *   **Faturamento & Entradas:** These KPIs are clickable, opening a modal that shows a detailed breakdown of all payment forms (Crediário, PIX, Débito, Dinheiro, Crédito) with amounts and percentages.
+    *   **Saídas:** This KPI is also clickable, opening a modal that displays expenses grouped by description. Each group is expandable to show individual transaction dates and values.
+3.  **Customizable Layout:** Users can reorder the KPI cards by holding any card for 2 seconds to activate a drag-and-drop mode. The application remembers the user's custom layout. A specific default order is set for first-time users.
+4.  **Dynamic Data Filtering:** A dropdown menu allows users to view data for specific months or the entire year (Ano Inteiro). The list of available months is automatically detected from the tabs in the Google Sheet.
+5.  **Dedicated Views:** The application includes sections for Crediário (client installment details), Pagamentos (overdue client tracking), and Metas (a new section for monthly goals).
+6.  **UI/UX:** The application features a modern, dark Visage de Vogue theme with gradient-enhanced navigation elements, designed to be responsive and mobile-friendly. The current objective is to consolidate all views onto a single scrollable page to enhance usability.
 </product_requirements>
-
 <key_technical_concepts>
--   **FastAPI**: Backend for API endpoints, Google Sheets integration.
--   **React**: Frontend framework for UI and data visualization.
--   **MongoDB**: Database for processed dashboard data.
--   **Google Sheets API & **: Data fetching from spreadsheets.
--   ****: Python library for fuzzy string matching (client names).
--   **Caching**: Implemented to mitigate Google Sheets API rate limits.
--   **Tailwind CSS**: Frontend styling.
--   **Pydantic**: Data validation and serialization.
--   **React **: Managing component side effects and API calls, with careful dependency management to prevent loops.
+- **Backend:** FastAPI for RESTful APIs.
+- **Frontend:** React for building the dynamic user interface.
+- **Data Source:** Google Sheets API ( library) for real-time data extraction.
+- **Data Handling:** Pydantic for data validation, server-side caching to manage API rate limits.
+- **UI Interactivity:** HTML5 Drag and Drop API implemented in React for KPI reordering.
+- **Styling:** Tailwind CSS for utility-first styling.
+- **Fuzzy Matching:**  library used for matching inconsistent client names.
 </key_technical_concepts>
-
 <code_architecture>
+The application follows a standard client-server architecture with a React frontend and a FastAPI backend.
 
--   
-    -   **Summary of why important**: This file is the core backend, handling all API routes, data extraction, processing, aggregation from Google Sheets, and interactions with MongoDB. It defines the logic for calculating KPIs, fetching client data, managing expenses, and extracting payment forms.
-    -   **Summary of changes made**:
-        -   **Data Extraction & Filtering**: Extensive modifications for Google Sheets API integration and data parsing. Implemented  to accurately calculate KPIs and  with complex logic to identify and exclude total lines.
-        -   **Crediário Data**:  was heavily modified to fetch client names, ,  from various sheets, and  ().
-        -   **Client Deduplication**: Added logic to prevent duplicate client entries (e.g., Catia Roth).
-        -   **Fuzzy Matching**: Introduced  for improved client name matching (e.g., Daiane Defante, ALEKSYA DALLABRIDA).
-        -   **Overdue Clients**: Implemented  (initially date-based, then month-based) and  (later ) to identify clients without recent payments.
-        -   **Client Filtering**: Filtered out clients with  less than R, zero, or negative.
-        -   **New KPIs**: Added  calculation (later to be replaced by ).
-        -   **Payment Forms**: Created  endpoint to extract payment method breakdown by month from Google Sheets, handling cases with no data and providing fallbacks.
-        -   **Caching**: Implemented caching () to prevent Google Sheets API rate limiting.
 
--   
-    -   **Summary of why important**: The main React component rendering the entire dashboard UI, managing state, making API calls to the backend, and presenting data. It defines the application's visual theme and user interactions.
-    -   **Summary of changes made**:
-        -   **Theming**: Applied Visage de Vogue dark theme with specific fonts and gradients.
-        -   **Navigation**: Implemented multi-tabbed navigation (Visão Geral, Crediário, Saídas, and added Dias s/ Pagamento).
-        -   **Crediário Tab**:
-            -   Displayed  alongside .
-            -   Simplified client list to show only Client and Saldo Devedor in line, with expanded details on click.
-            -   Corrected text labels (e.g., compras to vendas).
-            -   Decreased font sizes for better visualization.
-        -   **Dias s/ Pagamento Tab**:
-            -   Initially a panel in Visão Geral, then converted to a dedicated tab.
-            -   Displays clients > 30 days without payment, with sorting and visual overdue indicators.
-            -   Decreased font sizes.
-        -   **KPIs in Visão Geral**:
-            -   Removed faturamento vs saída chart and Resumo Crediário pillar.
-            -   Replaced Nº Vendas with Total em Aberto Cred. and Total de Clientes.
-            -   Added Ticket Médio as a 6th KPI (pending replacement).
-            -   Improved KPI layout with a compact, responsive grid.
-        -   **Faturamento KPI Interactivity**:
-            -   Made Faturamento KPI clickable.
-            -   Implemented a modal to display payment forms breakdown by month ().
-            -   Managed state for modal visibility and .
-            -   Fixed  dependency issues causing infinite loops and incorrect data fetching for the modal.
-            -   Adjusted month mapping for API calls (e.g., 'anointeiro' to 'setembro').
-        -   **Sorting**: Added interactive sorting to table headers across multiple tabs.
 
--   
-    -   **Summary of changes made**: Added  dependency.
+-   ****
+    -   **Importance:** This is the application's core logic hub. It contains all FastAPI endpoints for fetching, processing, and aggregating data from Google Sheets. It handles KPI calculations, data caching, client data processing, and serves all data required by the frontend.
+    -   **Summary of Changes:**
+        -   Added multiple new endpoints:  for payment breakdown,  for grouped expenses, and  for dynamic month discovery.
+        -   Heavily modified the main  endpoint to fix data inconsistencies, handle API rate limiting with fallbacks, and use unified logic for calculations (e.g., ensuring the Entradas KPI calculation matches its modal's calculation).
+        -   Corrected a critical bug in the  dictionary to ensure months without data (like outubro) correctly return zero values instead of falling back to another month's data.
+        -   Integrated  for better string matching on payment method descriptions.
+
+-   ****
+    -   **Importance:** This file is the single source for the entire frontend application. It manages all application state, renders all UI components (KPIs, modals, tables), and handles all user interactions and API calls to the backend.
+    -   **Summary of Changes:**
+        -   Replaced the Ticket Médio KPI with Entradas, including state management (, ) and the associated modal component.
+        -   Implemented a similar modal for the Saídas KPI, displaying grouped and expandable expense data.
+        -   Added complex state and event handlers (, , , etc.) to implement the drag-and-drop functionality for KPIs. This was refactored from a  based trigger to a double-click, and back to a refined  to resolve UX conflicts.
+        -   Refactored the navigation from a static list to a dynamic one populated by the  endpoint.
+        -   The entire layout logic was repeatedly modified based on user feedback, moving from a multi-tab view ( state) towards a single, consolidated page view.
+        -   Corrected API call bugs, notably replacing  with  to fix  issues.
+
+-   ****
+    -   **Importance:** Contains custom CSS to supplement Tailwind CSS, especially for animations and specific UI behaviors.
+    -   **Summary of Changes:** Added custom classes (, ) and properties () to support the drag-and-drop functionality and prevent unwanted text selection during the hold interaction.
 </code_architecture>
-
 <pending_tasks>
--   Replace Ticket Médio KPI with Entradas R, which will sum the values from , , , , and  in the Visão Geral tab.
+- **Complete the Metas Feature:** The backend endpoints and a basic frontend tab have been created, but the full functionality (creating, viewing, editing, and marking weekly tasks as complete) has not been implemented.
+- **Implement Dashboard Editing:** The user expressed interest in being able to edit data directly from the dashboard and have it sync back to the Google Sheet. This is a major feature that has been discussed but not started.
 </pending_tasks>
-
 <current_work>
-The AI engineer is currently working on implementing the user's request to replace the Ticket Médio KPI with a new KPI called Entradas R. This new KPI is intended to aggregate the total received from all payment forms, specifically , , , , and , to display a comprehensive total of incoming funds. This change aims to provide a more relevant financial metric in the Visão Geral section. The last action taken was acknowledging this request and modifying the  model in . This is the initial step to update the backend data structure before implementing the calculation logic and updating the frontend to display the new KPI.
-</current_work>
+The AI engineer was in the middle of a significant UI/UX overhaul based on the user's latest request for a more compact and unified interface. The goal is to eliminate the tabbed navigation system and display all major sections—Visão Geral (with KPIs), Crediário, Pagamentos, and Metas—on a single, scrollable page.
 
+The immediate task was to rearrange the navigation elements, which were previously styled as large, distinct tabs. The user requested they be compacted into a single line at the top to save vertical space, allowing the financial indicators to be visible immediately upon loading the page. The AI engineer was actively editing  to remove the conditional rendering logic () and restructure the JSX to present all components sequentially. This involves removing the tab-switching state () and associated handler functions, and reorganizing the layout to flow vertically. Renaming Dias s/ Pagamento to Pagamentos was also part of this refactoring.
+</current_work>
 <optional_next_step>
-Calculate the total Entradas R in  by summing all individual payment methods (Crediário, PIX, Débito, Dinheiro, Crédito).
+Continue refactoring the UI in  to create a single-page layout, placing the navigation elements (Visão Geral, Crediário, Pagamentos, Metas) into a single, compact row at the top as requested.
 </optional_next_step>
