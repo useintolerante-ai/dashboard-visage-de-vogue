@@ -769,42 +769,27 @@ function App() {
           </div>
         </div>
 
-        {/* Navigation Tabs - Compact Single Line */}
-        <div className="flex justify-center mb-4 px-2">
-          <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-xl p-1 shadow-xl border border-gray-600">
-            <div className="flex justify-center gap-1">
-              {[
-                { id: 'visaoGeral', label: 'Visão Geral', icon: '📊', gradient: 'from-blue-500 to-purple-600' },
-                { id: 'crediario', label: 'Crediário', icon: '💳', gradient: 'from-green-500 to-emerald-600' },
-                { id: 'diasPagamento', label: 'Pagamentos', icon: '⏰', gradient: 'from-orange-500 to-red-600' },
-                { id: 'metas', label: 'Metas', icon: '🎯', gradient: 'from-purple-500 to-pink-600' }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => showView(tab.id)}
-                  className={`group relative px-3 py-2 rounded-lg font-medium text-xs transition-all duration-300 ${
-                    activeView === tab.id 
-                      ? `bg-gradient-to-r ${tab.gradient} text-white shadow-md` 
-                      : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
-                  }`}
-                >
-                  {/* Icon and Label in one line */}
-                  <div className="flex items-center gap-1">
-                    <span className={`text-sm ${activeView === tab.id ? 'animate-pulse' : ''}`}>
-                      {tab.icon}
-                    </span>
-                    <span className="hidden xs:inline sm:inline">
-                      {tab.label}
-                    </span>
-                  </div>
-                  
-                  {/* Active Indicator */}
-                  {activeView === tab.id && (
-                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
-                  )}
-                </button>
-              ))}
-            </div>
+        {/* Navigation Tabs - Original Simple Version */}
+        <div className="flex justify-center mb-8">
+          <div className="flex bg-gray-800 rounded-lg p-1 space-x-1">
+            {[
+              { id: 'visao-geral', label: 'Visão Geral', icon: '📊' },
+              { id: 'crediario', label: 'Crediário', icon: '💳' },
+              { id: 'saidas', label: 'Saídas', icon: '📉' },
+              { id: 'dias-sem-pagamento', label: 'Dias s/ Pagamento', icon: '⏰' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveView(tab.id)}
+                className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                  activeView === tab.id 
+                    ? 'bg-pink-600 text-white' 
+                    : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                {tab.icon} {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
