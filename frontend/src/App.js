@@ -248,14 +248,15 @@ function App() {
               ].map((tab) => (
                 <button
                   key={tab.id}
+                  onClick={() => handleNavigation(tab.id)}
                   className={`group relative px-3 py-2 rounded-lg font-medium text-xs transition-all duration-300 ${
-                    tab.active 
+                    activeView === tab.id 
                       ? `bg-gradient-to-r ${tab.gradient} text-white shadow-md` 
                       : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
                   }`}
                 >
                   <div className="flex items-center gap-1">
-                    <span className={`text-sm ${tab.active ? 'animate-pulse' : ''}`}>
+                    <span className={`text-sm ${activeView === tab.id ? 'animate-pulse' : ''}`}>
                       {tab.icon}
                     </span>
                     <span className="hidden xs:inline sm:inline">
@@ -263,7 +264,7 @@ function App() {
                     </span>
                   </div>
                   
-                  {tab.active && (
+                  {activeView === tab.id && (
                     <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
                   )}
                 </button>
