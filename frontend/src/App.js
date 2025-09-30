@@ -193,6 +193,27 @@ function App() {
     }
   }
 
+  async function loadMetasData(mes = selectedMonth) {
+    try {
+      const response = await axios.get(`${API}/metas/${mes}`);
+      setMetasData(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar metas:', error);
+    }
+  }
+
+  async function toggleMetaStatus(metaId, mes = selectedMonth) {
+    try {
+      const response = await axios.post(`${API}/metas/${mes}/toggle/${metaId}`);
+      if (response.data.success) {
+        // Reload metas data
+        loadMetasData(mes);
+      }
+    } catch (error) {
+      console.error('Erro ao alterar status da meta:', error);
+    }
+  }
+
   async function loadMesesDisponiveis() {
     try {
       // Try automatic detection first
