@@ -114,6 +114,16 @@ class ClienteCrediario(BaseModel):
     dias_sem_pagamento: int = 0
     atrasado_60_dias: bool = False
 
+class Meta(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    mes: str
+    semana: int  # 1, 2, 3, 4
+    dia_semana: str  # segunda, terca, quarta, quinta, sexta, sabado
+    data: str  # DD/MM/YYYY
+    tarefa: str
+    status: str = "pendente"  # pendente, concluida
+    categoria: str = ""
+
 class SaidaAgrupada(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     descricao: str
