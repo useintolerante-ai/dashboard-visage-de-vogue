@@ -92,6 +92,7 @@ function App() {
             onChange={(e) => handleMonthChange(e.target.value)}
             className="bg-gray-800 text-white border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
           >
+            <option value="outubro">Outubro</option>
             <option value="setembro">Setembro</option>
             <option value="agosto">Agosto</option>
             <option value="julho">Julho</option>
