@@ -246,7 +246,8 @@ function App() {
             valor_pago: 0.00,
             data_pagamento: '',
             compras: [
-              { data: '28/09/2025', valor: 1519.90 }
+              { data: '15/09/2025', valor: 750.00 },
+              { data: '28/09/2025', valor: 769.90 }
             ]
           },
           {
@@ -257,8 +258,12 @@ function App() {
             valor_pago: 3884.00,
             data_pagamento: '12/09/2025',
             compras: [
-              { data: '20/09/2025', valor: 3000.00 },
-              { data: '05/08/2025', valor: 2592.20 }
+              { data: '10/03/2024', valor: 850.00 },
+              { data: '22/05/2024', valor: 1200.00 },
+              { data: '15/08/2024', valor: 980.00 },
+              { data: '20/11/2024', valor: 1180.20 },
+              { data: '05/02/2025', valor: 782.00 },
+              { data: '18/04/2025', valor: 600.00 }
             ]
           },
           {
@@ -269,8 +274,14 @@ function App() {
             valor_pago: 6059.00,
             data_pagamento: '25/08/2025',
             compras: [
-              { data: '18/09/2025', valor: 4500.00 },
-              { data: '22/07/2025', valor: 3805.10 }
+              { data: '12/01/2024', valor: 1200.00 },
+              { data: '25/03/2024', valor: 980.00 },
+              { data: '18/06/2024', valor: 1500.00 },
+              { data: '22/08/2024', valor: 1100.00 },
+              { data: '15/10/2024', valor: 825.10 },
+              { data: '20/12/2024', valor: 1350.00 },
+              { data: '28/02/2025', valor: 750.00 },
+              { data: '10/05/2025', valor: 600.00 }
             ]
           },
           {
