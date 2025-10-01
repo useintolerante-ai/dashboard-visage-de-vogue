@@ -362,8 +362,9 @@ function App() {
             valor_pago: 875.01,
             data_pagamento: '20/09/2025',
             compras: [
-              { data: '18/09/2025', valor: 800.00 },
-              { data: '02/08/2025', valor: 405.90 }
+              { data: '18/05/2024', valor: 450.00 },
+              { data: '22/08/2024', valor: 380.00 },
+              { data: '15/11/2024', valor: 375.90 }
             ]
           },
           {
@@ -374,7 +375,8 @@ function App() {
             valor_pago: 1436.00,
             data_pagamento: '25/09/2025',
             compras: [
-              { data: '10/08/2025', valor: 1436.00 }
+              { data: '10/06/2024', valor: 680.00 },
+              { data: '22/09/2024', valor: 756.00 }
             ]
           },
           {
@@ -382,11 +384,16 @@ function App() {
             nome: 'LUCIANDREA MOURA',
             vendas: 7141.00,
             saldo_devedor: 887.00,
-            valor_pago: 52184.00, // Valor muito alto - pode ser erro na planilha
+            valor_pago: 52184.00,
             data_pagamento: '18/09/2025',
             compras: [
-              { data: '22/09/2025', valor: 4000.00 },
-              { data: '15/08/2025', valor: 3141.00 }
+              { data: '15/02/2024', valor: 1200.00 },
+              { data: '22/04/2024', valor: 980.00 },
+              { data: '18/07/2024', valor: 1350.00 },
+              { data: '25/09/2024', valor: 1100.00 },
+              { data: '20/11/2024', valor: 861.00 },
+              { data: '15/01/2025', valor: 750.00 },
+              { data: '28/03/2025', valor: 900.00 }
             ]
           },
           {
