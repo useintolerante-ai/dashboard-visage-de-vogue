@@ -908,19 +908,49 @@ function App() {
                         </div>
                       </div>
 
-                      {/* Expanded history - only shows when clicked */}
-                      {expandedCliente === cliente.id && cliente.compras && (
+                      {/* Expanded history - shows both purchase and payment history */}
+                      {expandedCliente === cliente.id && (
                         <div className="px-3 pb-3 border-t border-gray-600">
-                          <h4 className="text-white font-medium mb-2 text-sm mt-2">Histórico de Compras:</h4>
-                          <div className="space-y-1">
-                            {cliente.compras.map((compra, index) => (
-                              <div key={index} className="flex justify-between items-center bg-gray-600 rounded p-2 text-xs">
-                                <span className="text-gray-300">{formatDateBR(compra.data)}</span>
-                                <span className="text-green-400 font-medium">
-                                  {formatCurrency(compra.valor)}
-                                </span>
-                              </div>
-                            ))}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                            
+                            {/* Purchase History */}
+                            <div>
+                              <h4 className="text-white font-medium mb-2 text-sm">Histórico de Compras:</h4>
+                              {cliente.compras && cliente.compras.length > 0 ? (
+                                <div className="space-y-1">
+                                  {cliente.compras.map((compra, index) => (
+                                    <div key={index} className="flex justify-between items-center bg-gray-600 rounded p-2 text-xs">
+                                      <span className="text-gray-300">{formatDateBR(compra.data)}</span>
+                                      <span className="text-green-400 font-medium">
+                                        {formatCurrency(compra.valor)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-gray-400 text-xs italic">Nenhuma compra registrada</div>
+                              )}
+                            </div>
+
+                            {/* Payment History */}
+                            <div>
+                              <h4 className="text-white font-medium mb-2 text-sm">Histórico de Pagamentos:</h4>
+                              {cliente.pagamentos && cliente.pagamentos.length > 0 ? (
+                                <div className="space-y-1">
+                                  {cliente.pagamentos.map((pagamento, index) => (
+                                    <div key={index} className="flex justify-between items-center bg-blue-600 rounded p-2 text-xs">
+                                      <span className="text-gray-200">{formatDateBR(pagamento.data)}</span>
+                                      <span className="text-blue-300 font-medium">
+                                        {formatCurrency(pagamento.valor)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-gray-400 text-xs italic">Nenhum pagamento registrado</div>
+                              )}
+                            </div>
+
                           </div>
                         </div>
                       )}
