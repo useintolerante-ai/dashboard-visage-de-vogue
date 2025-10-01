@@ -720,7 +720,7 @@ function App() {
                             </span>
                           </div>
                           <div className="text-center text-gray-300 text-xs">
-                            {formatDateBR(cliente.data_ultimo_pagamento)}
+                            {cliente.data_pagamento ? formatDateBR(cliente.data_pagamento) : '-'}
                           </div>
                         </div>
                       </div>
