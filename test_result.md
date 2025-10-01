@@ -188,11 +188,14 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
     file: "App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
         - agent: "main"
         - comment: "Successfully implemented side-by-side display of purchase and payment history. Payment history shows in blue coloring to differentiate from green purchase history. Grid layout provides clear organization of both types of transactions."
+        - working: true
+        - agent: "main"
+        - comment: "Enhanced crediário expanded view to show both compras and pagamentos side-by-side. Fixed formatDateBR function to properly handle DD/MM/YYYY dates from backend. Added proper handling for empty arrays. Purchase history in green, payment history in blue for visual distinction."
 
   - task: "Remove confusing >60 days column from Crediário and create dedicated overdue clients section"
     implemented: true
