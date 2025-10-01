@@ -322,8 +322,9 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
 
 ## test_plan:
   current_focus:
-    - "Fix saldo devedor calculation with improved fuzzy matching"
-  stuck_tasks: []
+    - "Fix KPI modal functionality issues"
+  stuck_tasks: 
+    - "Fix KPI modal functionality issues"
   test_all: false
   test_priority: "high_first"
 
