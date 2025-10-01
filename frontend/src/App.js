@@ -404,7 +404,7 @@ function App() {
             valor_pago: 329.00,
             data_pagamento: '28/09/2025',
             compras: [
-              { data: '05/08/2025', valor: 329.00 }
+              { data: '05/08/2024', valor: 329.00 }
             ]
           },
           {
@@ -415,7 +415,8 @@ function App() {
             valor_pago: 0.00,
             data_pagamento: '',
             compras: [
-              { data: '12/09/2025', valor: 529.00 }
+              { data: '12/07/2024', valor: 280.00 },
+              { data: '15/09/2024', valor: 249.00 }
             ]
           },
           {
@@ -426,8 +427,11 @@ function App() {
             valor_pago: 2949.09,
             data_pagamento: '22/09/2025',
             compras: [
-              { data: '25/09/2025', valor: 2000.00 },
-              { data: '18/08/2025', valor: 1587.00 }
+              { data: '18/03/2024', valor: 900.00 },
+              { data: '25/05/2024', valor: 750.00 },
+              { data: '22/08/2024', valor: 1100.00 },
+              { data: '15/11/2024', valor: 587.00 },
+              { data: '20/02/2025', valor: 250.00 }
             ]
           },
           {
@@ -438,8 +442,8 @@ function App() {
             valor_pago: 629.00,
             data_pagamento: '15/09/2025',
             compras: [
-              { data: '20/09/2025', valor: 600.00 },
-              { data: '12/08/2025', valor: 367.00 }
+              { data: '20/06/2024', valor: 450.00 },
+              { data: '15/09/2024', valor: 517.00 }
             ]
           },
           {
@@ -450,7 +454,7 @@ function App() {
             valor_pago: 429.00,
             data_pagamento: '30/09/2025',
             compras: [
-              { data: '08/08/2025', valor: 429.00 }
+              { data: '08/08/2024', valor: 429.00 }
             ]
           },
           {
@@ -461,8 +465,10 @@ function App() {
             valor_pago: 2738.00,
             data_pagamento: '28/09/2025',
             compras: [
-              { data: '20/09/2025', valor: 1800.00 },
-              { data: '15/08/2025', valor: 1408.00 }
+              { data: '20/04/2024', valor: 980.00 },
+              { data: '15/07/2024', valor: 850.00 },
+              { data: '22/09/2024', valor: 678.00 },
+              { data: '18/12/2024', valor: 700.00 }
             ]
           },
           {
@@ -470,11 +476,15 @@ function App() {
             nome: 'THAIS GOMES',
             vendas: 6005.00,
             saldo_devedor: 1944.00,
-            valor_pago: 49991.00, // Valor muito alto - pode ser erro na planilha
+            valor_pago: 49991.00,
             data_pagamento: '25/09/2025',
             compras: [
-              { data: '28/09/2025', valor: 3500.00 },
-              { data: '22/08/2025', valor: 2505.00 }
+              { data: '22/01/2024', valor: 1200.00 },
+              { data: '18/04/2024', valor: 950.00 },
+              { data: '25/06/2024', valor: 1100.00 },
+              { data: '20/09/2024', valor: 1355.00 },
+              { data: '15/12/2024', valor: 800.00 },
+              { data: '28/03/2025', valor: 600.00 }
             ]
           },
           {
