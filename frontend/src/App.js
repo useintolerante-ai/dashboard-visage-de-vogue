@@ -876,10 +876,12 @@ function App() {
                   <div className="space-y-3">
                     {faturamentoData.formas_pagamento.map((forma, index) => (
                       <div key={index} className="flex justify-between items-center p-3 bg-gray-800 rounded">
-                        <span className="text-white">{forma.metodo}</span>
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium">{forma.metodo || forma.nome || 'Forma de Pagamento'}</span>
+                          <span className="text-gray-400 text-sm">{forma.percentual || 0}% do total</span>
+                        </div>
                         <div className="text-right">
-                          <div className="text-white font-bold">{formatCurrency(forma.valor)}</div>
-                          <div className="text-gray-400 text-sm">{forma.percentual}%</div>
+                          <div className="text-green-400 font-bold text-lg">{formatCurrency(forma.valor)}</div>
                         </div>
                       </div>
                     ))}
