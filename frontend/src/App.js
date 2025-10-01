@@ -292,7 +292,8 @@ function App() {
             valor_pago: 1256.60,
             data_pagamento: '30/09/2025',
             compras: [
-              { data: '15/08/2025', valor: 1256.60 }
+              { data: '15/08/2024', valor: 680.00 },
+              { data: '22/11/2024', valor: 576.60 }
             ]
           },
           {
@@ -303,8 +304,11 @@ function App() {
             valor_pago: 1573.00,
             data_pagamento: '10/08/2025',
             compras: [
-              { data: '22/09/2025', valor: 2500.00 },
-              { data: '18/08/2025', valor: 1985.00 }
+              { data: '20/02/2024', valor: 900.00 },
+              { data: '15/05/2024', valor: 1200.00 },
+              { data: '22/08/2024', valor: 850.00 },
+              { data: '10/11/2024', valor: 735.00 },
+              { data: '18/01/2025', valor: 800.00 }
             ]
           },
           {
@@ -315,7 +319,8 @@ function App() {
             valor_pago: 948.20,
             data_pagamento: '28/09/2025',
             compras: [
-              { data: '12/08/2025', valor: 948.20 }
+              { data: '12/08/2024', valor: 500.00 },
+              { data: '25/11/2024', valor: 448.20 }
             ]
           },
           {
@@ -326,8 +331,12 @@ function App() {
             valor_pago: 2034.65,
             data_pagamento: '05/09/2025',
             compras: [
-              { data: '20/09/2025', valor: 3200.00 },
-              { data: '08/08/2025', valor: 2607.70 }
+              { data: '18/04/2024', valor: 1100.00 },
+              { data: '22/07/2024', valor: 950.00 },
+              { data: '15/09/2024', valor: 1200.00 },
+              { data: '20/12/2024', valor: 880.00 },
+              { data: '10/03/2025', valor: 977.70 },
+              { data: '25/06/2025', valor: 700.00 }
             ]
           },
           {
@@ -338,8 +347,11 @@ function App() {
             valor_pago: 1964.40,
             data_pagamento: '15/09/2025',
             compras: [
-              { data: '25/09/2025', valor: 2000.00 },
-              { data: '12/08/2025', valor: 1392.40 }
+              { data: '25/01/2024', valor: 800.00 },
+              { data: '18/04/2024', valor: 680.00 },
+              { data: '22/07/2024', valor: 912.40 },
+              { data: '15/10/2024', valor: 650.00 },
+              { data: '12/02/2025', valor: 350.00 }
             ]
           },
           {
