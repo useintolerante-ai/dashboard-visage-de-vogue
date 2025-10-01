@@ -956,12 +956,20 @@ function App() {
                             {cliente.data_pagamento ? formatDateBR(cliente.data_pagamento) : '-'}
                           </div>
                         </div>
+                        
+                        {/* Show additional info in collapsed state */}
+                        <div className="mt-2 text-xs text-gray-400">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>Total Vendas: {formatCurrency(cliente.vendas || 0)}</div>
+                            <div>Valor Pago: {formatCurrency(cliente.valor_pago || 0)}</div>
+                          </div>
+                        </div>
                       </div>
 
                       {/* Expanded history - only shows when clicked */}
-                      {expandedCliente === cliente.id && (
+                      {expandedCliente === cliente.id && cliente.compras && (
                         <div className="px-3 pb-3 border-t border-gray-600">
-                          <h4 className="text-white font-medium mb-2 text-sm mt-2">Histórico:</h4>
+                          <h4 className="text-white font-medium mb-2 text-sm mt-2">Histórico de Compras:</h4>
                           <div className="space-y-1">
                             {cliente.compras.map((compra, index) => (
                               <div key={index} className="flex justify-between items-center bg-gray-600 rounded p-2 text-xs">
@@ -978,17 +986,44 @@ function App() {
                   ))}
                 </div>
 
-                {/* Summary */}
+                {/* Summary with real totals */}
                 <div className="mt-6 pt-4 border-t border-gray-600">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-400">Total de clientes:</span>
-                    <span className="text-white font-bold">{crediarioData.clientes.length}</span>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Total de clientes:</span>
+                      <span className="text-white font-bold">{crediarioData.clientes.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Total Vendas Crediário:</span>
+                      <span className="text-blue-400 font-bold">
+                        {formatCurrency(crediarioData.totals?.total_vendas_credi || 0)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Total a Receber:</span>
+                      <span className="text-yellow-400 font-bold">
+                        {formatCurrency(crediarioData.totals?.total_a_receber || 0)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Total Pago:</span>
+                      <span className="text-green-400 font-bold">
+                        {formatCurrency(crediarioData.totals?.total_pago || 0)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center text-sm mt-2">
-                    <span className="text-gray-400">Saldo total em aberto:</span>
-                    <span className="text-red-400 font-bold">
-                      {formatCurrency(crediarioData.clientes.reduce((total, cliente) => total + cliente.saldo_devedor, 0))}
-                    </span>
+                  <div className="mt-3 pt-3 border-t border-gray-500">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Saldo Devedor Total:</span>
+                      <div className="text-right">
+                        <span className="text-red-400 font-bold text-lg">
+                          {formatCurrency(crediarioData.totals?.saldo_devedor || 0)}
+                        </span>
+                        <span className="text-gray-400 text-sm ml-2">
+                          ({crediarioData.totals?.percentual_saldo || 0}%)
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
