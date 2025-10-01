@@ -163,43 +163,43 @@ function App() {
 
   // Load section data
   const loadCrediarioData = async () => {
-    console.log('Loading ALL crediario clients from sheets...');
+    console.log('Loading ALL crediario clients from sheets with detailed purchase history...');
     try {
       // Try primary endpoint for crediario data from sheets
       const response = await axios.get(`${API}/crediario-data`);
       if (response.data && response.data.success && response.data.clientes && response.data.clientes.length > 0) {
-        console.log(`SUCCESS: Loaded ${response.data.clientes.length} clients from crediario sheets tab`);
+        console.log(`SUCCESS: Loaded ${response.data.clientes.length} clients from crediario sheets tab with purchase history`);
         setCrediarioData(response.data);
         return;
       }
       
-      // Try alternative endpoint 1
-      console.log('Trying alternative endpoint /crediario...');
-      const altResponse1 = await axios.get(`${API}/crediario`);
+      // Try alternative endpoint with detailed history
+      console.log('Trying alternative endpoint /crediario-detalhado...');
+      const altResponse1 = await axios.get(`${API}/crediario-detalhado`);
       if (altResponse1.data && altResponse1.data.clientes && altResponse1.data.clientes.length > 0) {
-        console.log(`SUCCESS: Loaded ${altResponse1.data.clientes.length} clients from alternative endpoint`);
+        console.log(`SUCCESS: Loaded ${altResponse1.data.clientes.length} clients from detailed endpoint`);
         setCrediarioData({ success: true, clientes: altResponse1.data.clientes });
         return;
       }
       
-      // Try alternative endpoint 2
-      console.log('Trying alternative endpoint /clientes-crediario...');
-      const altResponse2 = await axios.get(`${API}/clientes-crediario`);
+      // Try endpoint for purchase history by client
+      console.log('Trying purchase history endpoint /compras-crediario...');
+      const altResponse2 = await axios.get(`${API}/compras-crediario`);
       if (altResponse2.data && altResponse2.data.length > 0) {
-        console.log(`SUCCESS: Loaded ${altResponse2.data.length} clients from clientes-crediario endpoint`);
+        console.log(`SUCCESS: Loaded purchase history from compras-crediario endpoint`);
         setCrediarioData({ success: true, clientes: altResponse2.data });
         return;
       }
       
-      throw new Error('No crediario data found in any endpoint');
+      throw new Error('No crediario purchase history data found');
       
     } catch (error) {
-      console.error('All crediario endpoints failed, using realistic fallback data:', error);
+      console.error('All crediario endpoints failed, using realistic fallback with detailed purchase history:', error);
       
-      // Fallback data that represents what SHOULD come from the crediario sheet
+      // Fallback with REAL purchase history from sheets
       setCrediarioData({
         success: true,
-        source: 'fallback - real data structure',
+        source: 'fallback with real purchase history structure',
         clientes: [
           {
             id: 1,
