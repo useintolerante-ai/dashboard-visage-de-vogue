@@ -169,6 +169,18 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
         - agent: "main"
         - comment: "Added comprehensive caching system with fetch_google_sheets_data_cached function. Implemented 5-minute TTL for sheet data and 10-minute TTL for crediario data. Added rate limiting delays to prevent 429 quota errors."
 
+  - task: "Test crediario-data endpoint for purchase history extraction"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+        - agent: "testing"
+        - comment: "✅ ENDPOINT /api/crediario-data COMPLETAMENTE FUNCIONAL: 1) Status 200 com JSON válido, 2) Retorna 22 clientes com array 'compras' para cada um, 3) Cada compra tem 'data' e 'valor' corretos, 4) Datas no formato DD/MM/YYYY válido, 5) Extração da planilha 'CREDIARIO POR CONTRATO' funcionando perfeitamente. VALIDAÇÃO ESPECÍFICA: Cliente ALIEZE NASCIMENTO com total R$ 2.367,00 e 3 compras exatas (03/10/2024: R$ 598,00, 04/12/2024: R$ 549,00, 16/08/2025: R$ 1.220,00). Todos os 5 requisitos solicitados foram atendidos com sucesso."
+
 ## frontend:
   - task: "Add payment history display alongside purchase history"
     implemented: true
