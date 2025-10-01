@@ -471,7 +471,7 @@ function App() {
   };
 
   const getSortedPagamentosData = (clientes) => {
-    if (!pagamentosSort.key) return clientes;
+    if (!pagamentosSort.key || !clientes || !Array.isArray(clientes)) return clientes || [];
     
     return [...clientes].sort((a, b) => {
       let aVal = a[pagamentosSort.key];
