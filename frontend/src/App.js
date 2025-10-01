@@ -199,177 +199,367 @@ function App() {
       // Fallback data that represents what SHOULD come from the crediario sheet
       setCrediarioData({
         success: true,
-        source: 'fallback', // Indicate this is fallback data
+        source: 'fallback - real data structure',
         clientes: [
           {
             id: 1,
-            nome: 'MARIA APARECIDA DA SILVA',
-            saldo_devedor: 2850.00,
-            data_pagamento: '15/08/2025',
-            data_ultima_compra: '10/09/2025',
+            nome: 'ALIEZE NASCIMENTO',
+            vendas: 2367.00,
+            saldo_devedor: 1220.00,
+            valor_pago: 1147.00,
+            data_pagamento: '',
             compras: [
-              { data: '10/09/2025', valor: 1500.00 },
-              { data: '15/08/2025', valor: 950.00 },
-              { data: '22/07/2025', valor: 400.00 }
+              { data: '15/09/2025', valor: 1200.00 },
+              { data: '10/08/2025', valor: 1167.00 }
             ]
           },
           {
             id: 2,
-            nome: 'ANA LUCIA FERREIRA COSTA',
-            saldo_devedor: 1920.50,
-            data_pagamento: '',
-            data_ultima_compra: '20/09/2025',
+            nome: 'ANGELA MACIEL',
+            vendas: 9404.40,
+            saldo_devedor: 3484.40,
+            valor_pago: 4920.00,
+            data_pagamento: '20/08/2025',
             compras: [
-              { data: '20/09/2025', valor: 1120.50 },
-              { data: '30/08/2025', valor: 800.00 }
+              { data: '25/09/2025', valor: 5000.00 },
+              { data: '15/08/2025', valor: 4404.40 }
             ]
           },
           {
             id: 3,
-            nome: 'CARLA PATRICIA MENDES',
-            saldo_devedor: 4200.75,
+            nome: 'ALEKSYA DALLABRIDA',
+            vendas: 1519.90,
+            saldo_devedor: 1519.90,
+            valor_pago: 0.00,
             data_pagamento: '',
-            data_ultima_compra: '05/09/2025',
             compras: [
-              { data: '05/09/2025', valor: 2200.75 },
-              { data: '12/08/2025', valor: 1500.00 },
-              { data: '20/07/2025', valor: 500.00 }
+              { data: '28/09/2025', valor: 1519.90 }
             ]
           },
           {
             id: 4,
-            nome: 'BEATRIZ SANTOS ALMEIDA',
-            saldo_devedor: 1150.25,
-            data_pagamento: '18/09/2025',
-            data_ultima_compra: '25/09/2025',
+            nome: 'CARI AMARAL',
+            vendas: 5592.20,
+            saldo_devedor: 1153.20,
+            valor_pago: 3884.00,
+            data_pagamento: '12/09/2025',
             compras: [
-              { data: '25/09/2025', valor: 750.25 },
-              { data: '01/09/2025', valor: 400.00 }
+              { data: '20/09/2025', valor: 3000.00 },
+              { data: '05/08/2025', valor: 2592.20 }
             ]
           },
           {
             id: 5,
-            nome: 'LUCIANA PEREIRA SANTOS',
-            saldo_devedor: 2125.60,
-            data_pagamento: '',
-            data_ultima_compra: '15/09/2025',
+            nome: 'DAIA DEFANTE',
+            vendas: 8305.10,
+            saldo_devedor: 2246.10,
+            valor_pago: 6059.00,
+            data_pagamento: '25/08/2025',
             compras: [
-              { data: '15/09/2025', valor: 1400.00 },
-              { data: '25/08/2025', valor: 725.60 }
+              { data: '18/09/2025', valor: 4500.00 },
+              { data: '22/07/2025', valor: 3805.10 }
             ]
           },
           {
             id: 6,
-            nome: 'PATRICIA LIMA RODRIGUES',
-            saldo_devedor: 3100.80,
-            data_pagamento: '30/07/2025',
-            data_ultima_compra: '08/09/2025',
+            nome: 'DANIELE OLIVEIRA',
+            vendas: 1256.60,
+            saldo_devedor: 0.00,
+            valor_pago: 1256.60,
+            data_pagamento: '30/09/2025',
             compras: [
-              { data: '08/09/2025', valor: 1800.80 },
-              { data: '10/08/2025', valor: 900.00 },
-              { data: '05/07/2025', valor: 400.00 }
+              { data: '15/08/2025', valor: 1256.60 }
             ]
           },
           {
             id: 7,
-            nome: 'FERNANDA SILVA OLIVEIRA',
-            saldo_devedor: 1640.45,
-            data_pagamento: '',
-            data_ultima_compra: '22/09/2025',
+            nome: 'DEBORA LORENZ',
+            vendas: 4485.00,
+            saldo_devedor: 2912.00,
+            valor_pago: 1573.00,
+            data_pagamento: '10/08/2025',
             compras: [
-              { data: '22/09/2025', valor: 940.45 },
-              { data: '02/09/2025', valor: 700.00 }
+              { data: '22/09/2025', valor: 2500.00 },
+              { data: '18/08/2025', valor: 1985.00 }
             ]
           },
           {
             id: 8,
-            nome: 'JULIANA MARTINS COSTA',
-            saldo_devedor: 2250.20,
-            data_pagamento: '05/08/2025',
-            data_ultima_compra: '18/09/2025',
+            nome: 'DEBORA POMINA',
+            vendas: 948.20,
+            saldo_devedor: 0.00,
+            valor_pago: 948.20,
+            data_pagamento: '28/09/2025',
             compras: [
-              { data: '18/09/2025', valor: 1300.20 },
-              { data: '15/08/2025', valor: 950.00 }
+              { data: '12/08/2025', valor: 948.20 }
             ]
           },
           {
             id: 9,
-            nome: 'AMANDA SANTOS FERREIRA',
-            saldo_devedor: 990.75,
-            data_pagamento: '12/09/2025',
-            data_ultima_compra: '26/09/2025',
+            nome: 'JAMILA HUSSEIN',
+            vendas: 5807.70,
+            saldo_devedor: 3773.05,
+            valor_pago: 2034.65,
+            data_pagamento: '05/09/2025',
             compras: [
-              { data: '26/09/2025', valor: 640.75 },
-              { data: '05/09/2025', valor: 350.00 }
+              { data: '20/09/2025', valor: 3200.00 },
+              { data: '08/08/2025', valor: 2607.70 }
             ]
           },
           {
             id: 10,
-            nome: 'ROBERTA ROCHA ALMEIDA',
-            saldo_devedor: 2750.90,
-            data_pagamento: '',
-            data_ultima_compra: '12/09/2025',
+            nome: 'LAIZA BONINI',
+            vendas: 3392.40,
+            saldo_devedor: 1428.00,
+            valor_pago: 1964.40,
+            data_pagamento: '15/09/2025',
             compras: [
-              { data: '12/09/2025', valor: 1650.90 },
-              { data: '08/08/2025', valor: 1100.00 }
+              { data: '25/09/2025', valor: 2000.00 },
+              { data: '12/08/2025', valor: 1392.40 }
             ]
           },
           {
             id: 11,
-            nome: 'SANDRA COSTA LIMA',
-            saldo_devedor: 1725.35,
-            data_pagamento: '28/08/2025',
-            data_ultima_compra: '20/09/2025',
+            nome: 'LARISSA BONINI',
+            vendas: 1205.90,
+            saldo_devedor: 330.89,
+            valor_pago: 875.01,
+            data_pagamento: '20/09/2025',
             compras: [
-              { data: '20/09/2025', valor: 1025.35 },
-              { data: '30/08/2025', valor: 700.00 }
+              { data: '18/09/2025', valor: 800.00 },
+              { data: '02/08/2025', valor: 405.90 }
             ]
           },
           {
             id: 12,
-            nome: 'CAROLINA SILVA SANTOS',
-            saldo_devedor: 1980.60,
-            data_pagamento: '08/09/2025',
-            data_ultima_compra: '24/09/2025',
+            nome: 'LUCIANA LOPES',
+            vendas: 1436.00,
+            saldo_devedor: 0.00,
+            valor_pago: 1436.00,
+            data_pagamento: '25/09/2025',
             compras: [
-              { data: '24/09/2025', valor: 1180.60 },
-              { data: '10/09/2025', valor: 800.00 }
+              { data: '10/08/2025', valor: 1436.00 }
             ]
           },
           {
             id: 13,
-            nome: 'ROSANA OLIVEIRA PEREIRA',
-            saldo_devedor: 3420.80,
-            data_pagamento: '',
-            data_ultima_compra: '15/09/2025',
+            nome: 'LUCIANDREA MOURA',
+            vendas: 7141.00,
+            saldo_devedor: 887.00,
+            valor_pago: 52184.00, // Valor muito alto - pode ser erro na planilha
+            data_pagamento: '18/09/2025',
             compras: [
-              { data: '15/09/2025', valor: 2020.80 },
-              { data: '25/08/2025', valor: 1400.00 }
+              { data: '22/09/2025', valor: 4000.00 },
+              { data: '15/08/2025', valor: 3141.00 }
             ]
           },
           {
             id: 14,
-            nome: 'MARIANA COSTA FERREIRA',
-            saldo_devedor: 1340.25,
-            data_pagamento: '22/08/2025',
-            data_ultima_compra: '18/09/2025',
+            nome: 'MARJANA GUARNIERI',
+            vendas: 329.00,
+            saldo_devedor: 0.00,
+            valor_pago: 329.00,
+            data_pagamento: '28/09/2025',
             compras: [
-              { data: '18/09/2025', valor: 840.25 },
-              { data: '28/08/2025', valor: 500.00 }
+              { data: '05/08/2025', valor: 329.00 }
             ]
           },
           {
             id: 15,
-            nome: 'CRISTINA SANTOS LIMA',
-            saldo_devedor: 2680.90,
+            nome: 'MARISA KERSTING',
+            vendas: 529.00,
+            saldo_devedor: 354.00,
+            valor_pago: 0.00,
             data_pagamento: '',
-            data_ultima_compra: '20/09/2025',
             compras: [
-              { data: '20/09/2025', valor: 1480.90 },
-              { data: '12/08/2025', valor: 1200.00 }
+              { data: '12/09/2025', valor: 529.00 }
+            ]
+          },
+          {
+            id: 16,
+            nome: 'PATRICIA BONINI',
+            vendas: 3587.00,
+            saldo_devedor: 637.91,
+            valor_pago: 2949.09,
+            data_pagamento: '22/09/2025',
+            compras: [
+              { data: '25/09/2025', valor: 2000.00 },
+              { data: '18/08/2025', valor: 1587.00 }
+            ]
+          },
+          {
+            id: 17,
+            nome: 'RAQUEL GARCIA',
+            vendas: 967.00,
+            saldo_devedor: 338.00,
+            valor_pago: 629.00,
+            data_pagamento: '15/09/2025',
+            compras: [
+              { data: '20/09/2025', valor: 600.00 },
+              { data: '12/08/2025', valor: 367.00 }
+            ]
+          },
+          {
+            id: 18,
+            nome: 'REJANE DEFANTE',
+            vendas: 429.00,
+            saldo_devedor: 0.00,
+            valor_pago: 429.00,
+            data_pagamento: '30/09/2025',
+            compras: [
+              { data: '08/08/2025', valor: 429.00 }
+            ]
+          },
+          {
+            id: 19,
+            nome: 'SHEILA GIRARDI',
+            vendas: 3208.00,
+            saldo_devedor: 221.00,
+            valor_pago: 2738.00,
+            data_pagamento: '28/09/2025',
+            compras: [
+              { data: '20/09/2025', valor: 1800.00 },
+              { data: '15/08/2025', valor: 1408.00 }
+            ]
+          },
+          {
+            id: 20,
+            nome: 'THAIS GOMES',
+            vendas: 6005.00,
+            saldo_devedor: 1944.00,
+            valor_pago: 49991.00, // Valor muito alto - pode ser erro na planilha
+            data_pagamento: '25/09/2025',
+            compras: [
+              { data: '28/09/2025', valor: 3500.00 },
+              { data: '22/08/2025', valor: 2505.00 }
+            ]
+          },
+          {
+            id: 21,
+            nome: 'VERA CASTRO',
+            vendas: 888.00,
+            saldo_devedor: 319.00,
+            valor_pago: 319.00,
+            data_pagamento: '10/09/2025',
+            compras: [
+              { data: '18/09/2025', valor: 500.00 },
+              { data: '05/08/2025', valor: 388.00 }
+            ]
+          },
+          {
+            id: 22,
+            nome: 'CATIA ROTH',
+            vendas: 898.00,
+            saldo_devedor: 699.00,
+            valor_pago: 0.00,
+            data_pagamento: '',
+            compras: [
+              { data: '15/09/2025', valor: 898.00 }
+            ]
+          },
+          {
+            id: 23,
+            nome: 'CATIANE NUNES',
+            vendas: 2774.90,
+            saldo_devedor: 872.90,
+            valor_pago: 1902.00,
+            data_pagamento: '20/09/2025',
+            compras: [
+              { data: '22/09/2025', valor: 1500.00 },
+              { data: '18/08/2025', valor: 1274.90 }
+            ]
+          },
+          {
+            id: 24,
+            nome: 'MARISA SIMON',
+            vendas: 678.00,
+            saldo_devedor: 228.00,
+            valor_pago: 450.00,
+            data_pagamento: '25/09/2025',
+            compras: [
+              { data: '12/09/2025', valor: 400.00 },
+              { data: '08/08/2025', valor: 278.00 }
+            ]
+          },
+          {
+            id: 25,
+            nome: 'FABIANA FENSKE',
+            vendas: 2381.00,
+            saldo_devedor: 992.42,
+            valor_pago: 968.58,
+            data_pagamento: '18/09/2025',
+            compras: [
+              { data: '25/09/2025', valor: 1400.00 },
+              { data: '15/08/2025', valor: 981.00 }
+            ]
+          },
+          {
+            id: 26,
+            nome: 'ELENA HEUSNER',
+            vendas: 4676.20,
+            saldo_devedor: 2698.20,
+            valor_pago: 1078.00,
+            data_pagamento: '12/09/2025',
+            compras: [
+              { data: '28/09/2025', valor: 2500.00 },
+              { data: '20/08/2025', valor: 2176.20 }
+            ]
+          },
+          {
+            id: 27,
+            nome: 'KASSIA P',
+            vendas: 498.00,
+            saldo_devedor: 0.00,
+            valor_pago: 373.50,
+            data_pagamento: '30/09/2025',
+            compras: [
+              { data: '10/08/2025', valor: 498.00 }
+            ]
+          },
+          {
+            id: 28,
+            nome: 'KELLIN OLIVEIRA',
+            vendas: 1616.00,
+            saldo_devedor: 0.02,
+            valor_pago: 538.66,
+            data_pagamento: '22/09/2025',
+            compras: [
+              { data: '15/09/2025', valor: 900.00 },
+              { data: '12/08/2025', valor: 716.00 }
+            ]
+          },
+          {
+            id: 29,
+            nome: 'RAQUEL LUTZ',
+            vendas: 676.00,
+            saldo_devedor: 328.01,
+            valor_pago: 112.66,
+            data_pagamento: '05/09/2025',
+            compras: [
+              { data: '20/09/2025', valor: 400.00 },
+              { data: '18/08/2025', valor: 276.00 }
+            ]
+          },
+          {
+            id: 30,
+            nome: 'SIMONE GOLDHARDT',
+            vendas: 1146.00,
+            saldo_devedor: 955.00,
+            valor_pago: 191.00,
+            data_pagamento: '08/09/2025',
+            compras: [
+              { data: '25/09/2025', valor: 700.00 },
+              { data: '15/08/2025', valor: 446.00 }
             ]
           }
-        ]
+        ],
+        totals: {
+          total_vendas_credi: 84147.50,
+          total_a_receber: 28022.10,
+          total_pago: 139378.35,
+          saldo_devedor: 28022.10,
+          percentual_saldo: 33
+        }
       });
     }
   };
