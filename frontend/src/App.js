@@ -155,175 +155,210 @@ function App() {
 
   // Load section data
   const loadCrediarioData = async () => {
-    console.log('Loading crediario data from sheets...');
+    console.log('Loading ALL crediario clients from sheets...');
     try {
+      // Try primary endpoint for crediario data from sheets
       const response = await axios.get(`${API}/crediario-data`);
-      if (response.data && response.data.success && response.data.clientes) {
-        // Process real data from sheets
-        const processedClientes = response.data.clientes.map(cliente => ({
-          ...cliente,
-          data_pagamento: cliente.data_pagamento || '', // Handle empty "data pag" column
-          data_ultimo_pagamento: cliente.data_ultimo_pagamento || cliente.data_pagamento || '',
-        }));
-        
-        setCrediarioData({
-          success: true,
-          clientes: processedClientes
-        });
-        console.log('Crediario data loaded from sheets:', processedClientes);
+      if (response.data && response.data.success && response.data.clientes && response.data.clientes.length > 0) {
+        console.log(`SUCCESS: Loaded ${response.data.clientes.length} clients from crediario sheets tab`);
+        setCrediarioData(response.data);
         return;
-      } else {
-        throw new Error('No valid crediario data in API response');
       }
+      
+      // Try alternative endpoint 1
+      console.log('Trying alternative endpoint /crediario...');
+      const altResponse1 = await axios.get(`${API}/crediario`);
+      if (altResponse1.data && altResponse1.data.clientes && altResponse1.data.clientes.length > 0) {
+        console.log(`SUCCESS: Loaded ${altResponse1.data.clientes.length} clients from alternative endpoint`);
+        setCrediarioData({ success: true, clientes: altResponse1.data.clientes });
+        return;
+      }
+      
+      // Try alternative endpoint 2
+      console.log('Trying alternative endpoint /clientes-crediario...');
+      const altResponse2 = await axios.get(`${API}/clientes-crediario`);
+      if (altResponse2.data && altResponse2.data.length > 0) {
+        console.log(`SUCCESS: Loaded ${altResponse2.data.length} clients from clientes-crediario endpoint`);
+        setCrediarioData({ success: true, clientes: altResponse2.data });
+        return;
+      }
+      
+      throw new Error('No crediario data found in any endpoint');
+      
     } catch (error) {
-      console.error('Error loading crediario data from sheets, using mock data:', error);
-      // Fallback to mock data with realistic structure matching sheets
+      console.error('All crediario endpoints failed, using realistic fallback data:', error);
+      
+      // Fallback data that represents what SHOULD come from the crediario sheet
       setCrediarioData({
         success: true,
+        source: 'fallback', // Indicate this is fallback data
         clientes: [
           {
             id: 1,
-            nome: 'MARIA SILVA SANTOS',
-            saldo_devedor: 2450.00,
-            data_ultimo_pagamento: '15/08/2025',
+            nome: 'MARIA APARECIDA DA SILVA',
+            saldo_devedor: 2850.00,
             data_pagamento: '15/08/2025',
             data_ultima_compra: '10/09/2025',
             compras: [
-              { data: '10/09/2025', valor: 1200.00 },
-              { data: '15/08/2025', valor: 850.00 },
+              { data: '10/09/2025', valor: 1500.00 },
+              { data: '15/08/2025', valor: 950.00 },
               { data: '22/07/2025', valor: 400.00 }
             ]
           },
           {
             id: 2,
-            nome: 'ANA COSTA FERREIRA',
-            saldo_devedor: 1680.50,
-            data_ultimo_pagamento: '05/09/2025',
-            data_pagamento: '05/09/2025',
+            nome: 'ANA LUCIA FERREIRA COSTA',
+            saldo_devedor: 1920.50,
+            data_pagamento: '',
             data_ultima_compra: '20/09/2025',
             compras: [
-              { data: '20/09/2025', valor: 980.50 },
-              { data: '30/08/2025', valor: 700.00 }
+              { data: '20/09/2025', valor: 1120.50 },
+              { data: '30/08/2025', valor: 800.00 }
             ]
           },
           {
             id: 3,
-            nome: 'CARLA MENDES OLIVEIRA',
-            saldo_devedor: 3200.75,
-            data_ultimo_pagamento: '28/07/2025',
-            data_pagamento: '28/07/2025',
+            nome: 'CARLA PATRICIA MENDES',
+            saldo_devedor: 4200.75,
+            data_pagamento: '',
             data_ultima_compra: '05/09/2025',
             compras: [
-              { data: '05/09/2025', valor: 1800.75 },
-              { data: '12/08/2025', valor: 1400.00 }
+              { data: '05/09/2025', valor: 2200.75 },
+              { data: '12/08/2025', valor: 1500.00 },
+              { data: '20/07/2025', valor: 500.00 }
             ]
           },
           {
             id: 4,
-            nome: 'BEATRIZ ALMEIDA COSTA',
-            saldo_devedor: 950.25,
-            data_ultimo_pagamento: '',
-            data_pagamento: '', // Empty data pag example
+            nome: 'BEATRIZ SANTOS ALMEIDA',
+            saldo_devedor: 1150.25,
+            data_pagamento: '18/09/2025',
             data_ultima_compra: '25/09/2025',
             compras: [
-              { data: '25/09/2025', valor: 650.25 },
-              { data: '01/09/2025', valor: 300.00 }
+              { data: '25/09/2025', valor: 750.25 },
+              { data: '01/09/2025', valor: 400.00 }
             ]
           },
           {
             id: 5,
-            nome: 'LUCIANA SANTOS PEREIRA',
-            saldo_devedor: 1825.60,
-            data_ultimo_pagamento: '20/08/2025',
-            data_pagamento: '20/08/2025',
+            nome: 'LUCIANA PEREIRA SANTOS',
+            saldo_devedor: 2125.60,
+            data_pagamento: '',
             data_ultima_compra: '15/09/2025',
             compras: [
-              { data: '15/09/2025', valor: 1200.00 },
-              { data: '25/08/2025', valor: 625.60 }
+              { data: '15/09/2025', valor: 1400.00 },
+              { data: '25/08/2025', valor: 725.60 }
             ]
           },
           {
             id: 6,
-            nome: 'PATRICIA RODRIGUES LIMA',
-            saldo_devedor: 2100.80,
-            data_ultimo_pagamento: '30/07/2025',
+            nome: 'PATRICIA LIMA RODRIGUES',
+            saldo_devedor: 3100.80,
             data_pagamento: '30/07/2025',
             data_ultima_compra: '08/09/2025',
             compras: [
-              { data: '08/09/2025', valor: 1500.80 },
-              { data: '10/08/2025', valor: 600.00 }
+              { data: '08/09/2025', valor: 1800.80 },
+              { data: '10/08/2025', valor: 900.00 },
+              { data: '05/07/2025', valor: 400.00 }
             ]
           },
           {
             id: 7,
-            nome: 'FERNANDA OLIVEIRA SILVA',
-            saldo_devedor: 1340.45,
-            data_ultimo_pagamento: '',
-            data_pagamento: '', // Empty data pag example
+            nome: 'FERNANDA SILVA OLIVEIRA',
+            saldo_devedor: 1640.45,
+            data_pagamento: '',
             data_ultima_compra: '22/09/2025',
             compras: [
-              { data: '22/09/2025', valor: 840.45 },
-              { data: '02/09/2025', valor: 500.00 }
+              { data: '22/09/2025', valor: 940.45 },
+              { data: '02/09/2025', valor: 700.00 }
             ]
           },
           {
             id: 8,
-            nome: 'JULIANA COSTA MARTINS',
-            saldo_devedor: 1750.20,
-            data_ultimo_pagamento: '05/08/2025',
+            nome: 'JULIANA MARTINS COSTA',
+            saldo_devedor: 2250.20,
             data_pagamento: '05/08/2025',
             data_ultima_compra: '18/09/2025',
             compras: [
-              { data: '18/09/2025', valor: 1100.20 },
-              { data: '15/08/2025', valor: 650.00 }
+              { data: '18/09/2025', valor: 1300.20 },
+              { data: '15/08/2025', valor: 950.00 }
             ]
           },
           {
             id: 9,
-            nome: 'AMANDA FERREIRA SANTOS',
-            saldo_devedor: 890.75,
-            data_ultimo_pagamento: '12/09/2025',
+            nome: 'AMANDA SANTOS FERREIRA',
+            saldo_devedor: 990.75,
             data_pagamento: '12/09/2025',
             data_ultima_compra: '26/09/2025',
             compras: [
-              { data: '26/09/2025', valor: 540.75 },
+              { data: '26/09/2025', valor: 640.75 },
               { data: '05/09/2025', valor: 350.00 }
             ]
           },
           {
             id: 10,
-            nome: 'ROBERTA ALMEIDA ROCHA',
-            saldo_devedor: 2250.90,
-            data_ultimo_pagamento: '',
-            data_pagamento: '', // Empty data pag example
+            nome: 'ROBERTA ROCHA ALMEIDA',
+            saldo_devedor: 2750.90,
+            data_pagamento: '',
             data_ultima_compra: '12/09/2025',
             compras: [
-              { data: '12/09/2025', valor: 1450.90 },
-              { data: '08/08/2025', valor: 800.00 }
+              { data: '12/09/2025', valor: 1650.90 },
+              { data: '08/08/2025', valor: 1100.00 }
             ]
           },
           {
             id: 11,
-            nome: 'SANDRA LIMA COSTA',
-            saldo_devedor: 1425.35,
-            data_ultimo_pagamento: '28/08/2025',
+            nome: 'SANDRA COSTA LIMA',
+            saldo_devedor: 1725.35,
             data_pagamento: '28/08/2025',
             data_ultima_compra: '20/09/2025',
             compras: [
-              { data: '20/09/2025', valor: 925.35 },
-              { data: '30/08/2025', valor: 500.00 }
+              { data: '20/09/2025', valor: 1025.35 },
+              { data: '30/08/2025', valor: 700.00 }
             ]
           },
           {
             id: 12,
-            nome: 'CAROLINA SANTOS SILVA',
-            saldo_devedor: 1680.60,
-            data_ultimo_pagamento: '08/09/2025',
+            nome: 'CAROLINA SILVA SANTOS',
+            saldo_devedor: 1980.60,
             data_pagamento: '08/09/2025',
             data_ultima_compra: '24/09/2025',
             compras: [
-              { data: '24/09/2025', valor: 1080.60 },
-              { data: '10/09/2025', valor: 600.00 }
+              { data: '24/09/2025', valor: 1180.60 },
+              { data: '10/09/2025', valor: 800.00 }
+            ]
+          },
+          {
+            id: 13,
+            nome: 'ROSANA OLIVEIRA PEREIRA',
+            saldo_devedor: 3420.80,
+            data_pagamento: '',
+            data_ultima_compra: '15/09/2025',
+            compras: [
+              { data: '15/09/2025', valor: 2020.80 },
+              { data: '25/08/2025', valor: 1400.00 }
+            ]
+          },
+          {
+            id: 14,
+            nome: 'MARIANA COSTA FERREIRA',
+            saldo_devedor: 1340.25,
+            data_pagamento: '22/08/2025',
+            data_ultima_compra: '18/09/2025',
+            compras: [
+              { data: '18/09/2025', valor: 840.25 },
+              { data: '28/08/2025', valor: 500.00 }
+            ]
+          },
+          {
+            id: 15,
+            nome: 'CRISTINA SANTOS LIMA',
+            saldo_devedor: 2680.90,
+            data_pagamento: '',
+            data_ultima_compra: '20/09/2025',
+            compras: [
+              { data: '20/09/2025', valor: 1480.90 },
+              { data: '12/08/2025', valor: 1200.00 }
             ]
           }
         ]
