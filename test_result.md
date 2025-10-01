@@ -302,6 +302,18 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
         - agent: "main"
         - comment: "✅ DRAG AND DROP DE KPIs IMPLEMENTADO: 1) Frontend: Funcionalidade de segurar KPI por 3 segundos para ativar modo arrastar, 2) Estados de gerenciamento: isDragMode, draggedKPI, dragTimer, kpiOrder com localStorage, 3) Funções completas: handleMouseDown (timer 3s), handleDragStart/Drop/End, reordenação dinâmica, 4) CSS personalizado: animações, efeitos visuais, indicadores de drag, 5) Interface: instruções claras, feedback visual durante drag, persistência da ordem no localStorage, 6) Todos os 6 KPIs (Faturamento, Saídas, Lucro Bruto, Recebido Cred., Em Aberto, Entradas) funcionais com drag and drop."
 
+  - task: "Fix KPI modal functionality issues"
+    implemented: false
+    working: false
+    file: "App.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "❌ PROBLEMAS CRÍTICOS NOS MODAIS KPI: 1) Modal Faturamento ✅ funcionando corretamente, 2) Modal Saídas ❌ erro React 'Cannot read properties of undefined (reading map)' - dados carregam mas modal não renderiza, 3) Modal Entradas ❌ não abre - nenhum seletor funciona. CAUSA: Possível problema na estrutura de dados retornados pelos endpoints ou erro de mapeamento no componente modal. IMPACTO: Usuário não consegue visualizar detalhes de Saídas e Entradas, funcionalidade crítica comprometida."
+
 ## metadata:
   created_by: "main_agent"
   version: "1.1"
