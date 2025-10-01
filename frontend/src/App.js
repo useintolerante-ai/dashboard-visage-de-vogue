@@ -40,6 +40,13 @@ function App() {
   // Date formatting function
   const formatDateBR = (dateString) => {
     if (!dateString) return '';
+    
+    // If the date is already in DD/MM/YYYY format, return as is
+    if (typeof dateString === 'string' && dateString.includes('/')) {
+      return dateString;
+    }
+    
+    // Otherwise, try to parse as Date object
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString('pt-BR');
