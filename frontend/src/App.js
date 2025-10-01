@@ -448,7 +448,7 @@ function App() {
   };
 
   const getSortedCrediarioData = (clientes) => {
-    if (!crediarioSort.key) return clientes;
+    if (!crediarioSort.key || !clientes || !Array.isArray(clientes)) return clientes || [];
     
     return [...clientes].sort((a, b) => {
       let aVal = a[crediarioSort.key];
