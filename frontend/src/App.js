@@ -1083,10 +1083,168 @@ function App() {
         {/* Metas View */}
         {activeView === 'metas' && (
           <div className="bg-gray-800 rounded-lg p-6 mb-8">
-            <h2 className="text-xl font-bold text-white mb-4 text-center">Metas do Mês</h2>
+            <h2 className="text-xl font-bold text-white mb-4 text-center">Metas do Mês - {selectedMonth.charAt(0).toUpperCase() + selectedMonth.slice(1)}</h2>
             
-            <div className="text-center text-gray-400">
-              Seção de Metas em desenvolvimento...
+            <div className="space-y-6">
+              {/* Meta de Faturamento */}
+              <div className="bg-gray-700 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-lg font-semibold text-yellow-400">Meta de Faturamento</h3>
+                  <span className="text-sm text-gray-400">Setembro 2025</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-yellow-400">R$ 50.000,00</div>
+                    <div className="text-sm text-gray-400">Meta</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-400">
+                      {dashboardData ? formatCurrency(dashboardData.faturamento) : 'R$ 0,00'}
+                    </div>
+                    <div className="text-sm text-gray-400">Realizado</div>
+                  </div>
+                  <div className="text-center">
+                    <div className={`text-2xl font-bold ${dashboardData && dashboardData.faturamento >= 50000 ? 'text-green-400' : 'text-red-400'}`}>
+                      {dashboardData ? `${((dashboardData.faturamento / 50000) * 100).toFixed(1)}%` : '0%'}
+                    </div>
+                    <div className="text-sm text-gray-400">Atingido</div>
+                  </div>
+                </div>
+                
+                <div className="mt-4">
+                  <div className="bg-gray-600 rounded-full h-3">
+                    <div 
+                      className={`h-3 rounded-full ${dashboardData && dashboardData.faturamento >= 50000 ? 'bg-green-500' : 'bg-yellow-500'}`}
+                      style={{ 
+                        width: `${dashboardData ? Math.min((dashboardData.faturamento / 50000) * 100, 100) : 0}%` 
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Meta de Lucro */}
+              <div className="bg-gray-700 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-lg font-semibold text-green-400">Meta de Lucro Bruto</h3>
+                  <span className="text-sm text-gray-400">Setembro 2025</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-400">R$ 20.000,00</div>
+                    <div className="text-sm text-gray-400">Meta</div>
+                  </div>
+                  <div className="text-center">
+                    <div className={`text-2xl font-bold ${dashboardData && dashboardData.lucro_bruto >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {dashboardData ? formatCurrency(dashboardData.lucro_bruto) : 'R$ 0,00'}
+                    </div>
+                    <div className="text-sm text-gray-400">Realizado</div>
+                  </div>
+                  <div className="text-center">
+                    <div className={`text-2xl font-bold ${dashboardData && dashboardData.lucro_bruto >= 20000 ? 'text-green-400' : 'text-red-400'}`}>
+                      {dashboardData ? `${((dashboardData.lucro_bruto / 20000) * 100).toFixed(1)}%` : '0%'}
+                    </div>
+                    <div className="text-sm text-gray-400">Atingido</div>
+                  </div>
+                </div>
+                
+                <div className="mt-4">
+                  <div className="bg-gray-600 rounded-full h-3">
+                    <div 
+                      className={`h-3 rounded-full ${dashboardData && dashboardData.lucro_bruto >= 20000 ? 'bg-green-500' : dashboardData && dashboardData.lucro_bruto >= 0 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                      style={{ 
+                        width: `${dashboardData && dashboardData.lucro_bruto > 0 ? Math.min((dashboardData.lucro_bruto / 20000) * 100, 100) : 0}%` 
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Meta de Recebimento Crediário */}
+              <div className="bg-gray-700 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-lg font-semibold text-blue-400">Meta de Recebimento Crediário</h3>
+                  <span className="text-sm text-gray-400">Setembro 2025</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-400">R$ 8.000,00</div>
+                    <div className="text-sm text-gray-400">Meta</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-300">
+                      {dashboardData ? formatCurrency(dashboardData.recebido_crediario) : 'R$ 0,00'}
+                    </div>
+                    <div className="text-sm text-gray-400">Realizado</div>
+                  </div>
+                  <div className="text-center">
+                    <div className={`text-2xl font-bold ${dashboardData && dashboardData.recebido_crediario >= 8000 ? 'text-green-400' : 'text-yellow-400'}`}>
+                      {dashboardData ? `${((dashboardData.recebido_crediario / 8000) * 100).toFixed(1)}%` : '0%'}
+                    </div>
+                    <div className="text-sm text-gray-400">Atingido</div>
+                  </div>
+                </div>
+                
+                <div className="mt-4">
+                  <div className="bg-gray-600 rounded-full h-3">
+                    <div 
+                      className={`h-3 rounded-full ${dashboardData && dashboardData.recebido_crediario >= 8000 ? 'bg-green-500' : 'bg-blue-500'}`}
+                      style={{ 
+                        width: `${dashboardData ? Math.min((dashboardData.recebido_crediario / 8000) * 100, 100) : 0}%` 
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Resumo Geral */}
+              <div className="bg-gray-700 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-white mb-4 text-center">Resumo das Metas</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                  <div className="p-3 bg-gray-600 rounded">
+                    <div className="text-lg font-bold text-white">Metas Atingidas</div>
+                    <div className="text-2xl font-bold text-green-400">
+                      {[
+                        dashboardData && dashboardData.faturamento >= 50000,
+                        dashboardData && dashboardData.lucro_bruto >= 20000,
+                        dashboardData && dashboardData.recebido_crediario >= 8000
+                      ].filter(Boolean).length} / 3
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 bg-gray-600 rounded">
+                    <div className="text-lg font-bold text-white">Performance Geral</div>
+                    <div className="text-2xl font-bold text-yellow-400">
+                      {dashboardData ? (((
+                        (dashboardData.faturamento / 50000) +
+                        (dashboardData.lucro_bruto / 20000) +
+                        (dashboardData.recebido_crediario / 8000)
+                      ) / 3) * 100).toFixed(1) : '0'}%
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 bg-gray-600 rounded">
+                    <div className="text-lg font-bold text-white">Status</div>
+                    <div className={`text-2xl font-bold ${
+                      dashboardData && [
+                        dashboardData.faturamento >= 50000,
+                        dashboardData.lucro_bruto >= 20000,
+                        dashboardData.recebido_crediario >= 8000
+                      ].filter(Boolean).length >= 2 ? 'text-green-400' : 'text-yellow-400'
+                    }`}>
+                      {dashboardData && [
+                        dashboardData.faturamento >= 50000,
+                        dashboardData.lucro_bruto >= 20000,
+                        dashboardData.recebido_crediario >= 8000
+                      ].filter(Boolean).length >= 2 ? 'Bom' : 'Atenção'}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
