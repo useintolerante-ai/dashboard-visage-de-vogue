@@ -325,9 +325,8 @@ Corrigir saldo devedor dos clientes do crediário que não estão sendo atualiza
 
 ## test_plan:
   current_focus:
-    - "Fix KPI modal functionality issues"
-  stuck_tasks: 
-    - "Fix KPI modal functionality issues"
+    - "All critical tasks completed"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
