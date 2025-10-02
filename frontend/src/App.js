@@ -55,6 +55,72 @@ function App() {
     }
   };
 
+  // Generate daily sales based on selected month and total revenue
+  const generateDailySales = (month, totalRevenue) => {
+    const monthData = {
+      setembro: { month: 9, year: 2025, days: 30 },
+      outubro: { month: 10, year: 2025, days: 31 },
+      novembro: { month: 11, year: 2025, days: 30 },
+      dezembro: { month: 12, year: 2025, days: 31 },
+      janeiro: { month: 1, year: 2025, days: 31 },
+      fevereiro: { month: 2, year: 2025, days: 28 },
+      marco: { month: 3, year: 2025, days: 31 },
+      abril: { month: 4, year: 2025, days: 30 },
+      maio: { month: 5, year: 2025, days: 31 },
+      junho: { month: 6, year: 2025, days: 30 },
+      julho: { month: 7, year: 2025, days: 31 },
+      agosto: { month: 8, year: 2025, days: 31 }
+    };
+
+    if (month === 'anointeiro') {
+      // For full year, show summary of different months
+      return [
+        { data: 'Setembro/2025', valor: totalRevenue * 0.15 },
+        { data: 'Agosto/2025', valor: totalRevenue * 0.12 },
+        { data: 'Julho/2025', valor: totalRevenue * 0.18 },
+        { data: 'Junho/2025', valor: totalRevenue * 0.10 },
+        { data: 'Maio/2025', valor: totalRevenue * 0.14 },
+        { data: 'Abril/2025', valor: totalRevenue * 0.08 },
+        { data: 'Março/2025', valor: totalRevenue * 0.11 },
+        { data: 'Fevereiro/2025', valor: totalRevenue * 0.12 }
+      ];
+    }
+
+    const currentMonthData = monthData[month];
+    if (!currentMonthData) {
+      return [];
+    }
+
+    const dailySales = [];
+    const { month: monthNum, year, days } = currentMonthData;
+    
+    // Generate last 8 days of the selected month
+    const numDaysToShow = Math.min(8, days);
+    
+    for (let i = 0; i < numDaysToShow; i++) {
+      const day = days - i;
+      const dateStr = `${day.toString().padStart(2, '0')}/${monthNum.toString().padStart(2, '0')}/${year}`;
+      
+      // Distribute revenue across days with some variation
+      let dailyValue;
+      if (i === 0) dailyValue = totalRevenue * 0.15; // Most recent day
+      else if (i === 1) dailyValue = totalRevenue * 0.12;
+      else if (i === 2) dailyValue = totalRevenue * 0.18;
+      else if (i === 3) dailyValue = totalRevenue * 0.08;
+      else if (i === 4) dailyValue = totalRevenue * 0.20;
+      else if (i === 5) dailyValue = 0; // Some days with no sales
+      else if (i === 6) dailyValue = totalRevenue * 0.12;
+      else dailyValue = totalRevenue * 0.15;
+      
+      dailySales.push({
+        data: dateStr,
+        valor: dailyValue
+      });
+    }
+    
+    return dailySales;
+  };
+
   const loadDashboardData = async () => {
     try {
       console.log('Loading dashboard data...');
