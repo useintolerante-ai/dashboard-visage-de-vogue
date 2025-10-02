@@ -317,6 +317,18 @@ Testar a funcionalidade de mudança de mês no dashboard para verificar se as ve
         - agent: "testing"
         - comment: "✅ MODAIS FATURAMENTO E ENTRADAS FUNCIONANDO PERFEITAMENTE: 1) Modal Faturamento ✅ abre corretamente, mostra 5 formas de pagamento (Crédito 65.8%, Crediário 25.1%, PIX 4.7%, Débito 4.1%, Dinheiro 0.3%), valores e percentuais corretos, total R$ 20.233,25, 2) Modal Entradas ✅ abre corretamente, mostra 5 formas de entrada (Crédito 74.2%, Crediário Recebido 15.5%, PIX 5.3%, Débito 4.6%, Dinheiro 0.4%), total R$ 17.933,18, 3) Ambos modais abrem/fecham corretamente, são responsivos, KPIs têm cursor pointer, eventos de click funcionam, 4) Nenhum erro React no console, funcionalidade completamente restaurada. CORREÇÕES APLICADAS COM SUCESSO."
 
+  - task: "Test month change functionality in daily sales"
+    implemented: true
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "user"
+        - comment: "USER REQUEST: Testar a funcionalidade de mudança de mês no dashboard para verificar se as vendas diárias estão atualizando corretamente. Problema anterior: Título mostrava 'Outubro' mas datas eram de setembro, vendas diárias não mudavam quando mês era alterado. Validar: 1) Localizar e clicar no seletor de mês (atualmente 'Setembro'), 2) Selecionar mês diferente (Outubro, Agosto, etc.), 3) Verificar se título 'Vendas Diárias' muda para novo mês, 4) Verificar se datas das vendas diárias mudam para mês selecionado, 5) Verificar se não mostra mais datas de setembro quando outro mês é selecionado, 6) Validar se quantidade de vendas foi removida, 7) Verificar se apenas data e valor aparecem, 8) Verificar se layout está limpo."
+
 ## metadata:
   created_by: "main_agent"
   version: "1.1"
