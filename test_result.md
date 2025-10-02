@@ -337,7 +337,7 @@ Testar a funcionalidade de mudança de mês no dashboard para verificar se as ve
 
 ## test_plan:
   current_focus:
-    - "All critical tasks completed"
+    - "Test month change functionality in daily sales"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
