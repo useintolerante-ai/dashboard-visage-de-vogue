@@ -103,7 +103,7 @@
 #====================================================================================================
 
 ## user_problem_statement: 
-Corrigir saldo devedor dos clientes do crediário que não estão sendo atualizados corretamente (ex: Daiane Defante) e adicionar histórico de pagamentos junto com o histórico de compras na aba Crediário.
+Testar a funcionalidade de mudança de mês no dashboard para verificar se as vendas diárias estão atualizando corretamente.
 
 ## backend:
   - task: "Fix saldo devedor calculation with improved fuzzy matching"
