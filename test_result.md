@@ -319,11 +319,11 @@ Testar a funcionalidade de mudança de mês no dashboard para verificar se as ve
 
   - task: "Test month change functionality in daily sales"
     implemented: true
-    working: "NA"
+    working: true
     file: "App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "user"
