@@ -334,8 +334,8 @@ Testar a funcionalidade de mudança de mês no dashboard para verificar se as ve
 
 ## metadata:
   created_by: "main_agent"
-  version: "1.1"
-  test_sequence: 2
+  version: "1.2"
+  test_sequence: 3
   run_ui: true
 
 ## test_plan:
