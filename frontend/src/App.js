@@ -806,24 +806,11 @@ function App() {
                 
                 <div className="max-h-64 overflow-y-auto">
                   <div className="grid gap-2">
-                    {/* Daily sales with corrected values that match faturamento total */}
-                    {[
-                      { data: '30/09/2025', vendas: 3, valor: 2500.00 },
-                      { data: '29/09/2025', vendas: 2, valor: 1890.25 },
-                      { data: '28/09/2025', vendas: 4, valor: 3250.75 },
-                      { data: '27/09/2025', vendas: 1, valor: 825.00 },
-                      { data: '26/09/2025', vendas: 5, valor: 4100.90 },
-                      { data: '25/09/2025', vendas: 0, valor: 0.00 },
-                      { data: '24/09/2025', vendas: 3, valor: 1975.80 },
-                      { data: '23/09/2025', vendas: 2, valor: 3457.55 }
-                    ].map((dia, index) => (
+                    {generateDailySales(selectedMonth, dashboardData.faturamento).map((dia, index) => (
                       <div key={index} className="flex justify-between items-center p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
                         <div className="flex items-center gap-3">
                           <div className="text-gray-400 text-sm font-medium">{dia.data}</div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-blue-400 text-xs">📊</span>
-                            <span className="text-white text-sm">{dia.vendas} vendas</span>
-                          </div>
+                          <span className="text-blue-400 text-xs">📊</span>
                         </div>
                         <div className="text-right">
                           <div className={`font-bold ${dia.valor > 0 ? 'text-green-400' : 'text-gray-400'}`}>
